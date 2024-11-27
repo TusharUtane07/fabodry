@@ -1,4 +1,9 @@
+import { useNavigate } from "react-router-dom";
+
 const Login = () => {
+
+  const navigate = useNavigate();
+
   return (
     <div className="flex min-h-full flex-col justify-center px-6 py-40 lg:px-8 ">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm mx-auto text-center ">
@@ -113,7 +118,7 @@ const Login = () => {
         </h2>
       </div>
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6" action="#" method="POST">
+        <form className="space-y-6">
           <div>
             <label
               htmlFor="email"
@@ -162,6 +167,7 @@ const Login = () => {
           </div>
           <div>
             <button
+              onClick={() => navigate("/home")}
               type="submit"
               className="flex w-full justify-center rounded-md bg-[#004D57] px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
             >

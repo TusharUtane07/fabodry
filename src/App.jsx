@@ -1,17 +1,9 @@
-import MainSection from "./components/MainSection";
-import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
+import Home from "./pages/Home";
 
-const Home = () => {
+const App = () => {
   return (
-    <div>
-      <Navbar />
-      <div className="flex grid-cols-2">
-        <Sidebar />
-        <MainSection />
-      </div>
-    </div>
+    <Home/>
   );
 };
 
-export default Home;
+export default App;
