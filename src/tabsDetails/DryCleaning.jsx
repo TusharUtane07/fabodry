@@ -118,7 +118,7 @@ const DryCleaning = () => {
       <div className="mt-3">
         <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
       </div>
-      <div className="grid grid-cols-5 gap-4 my-4">
+      <div className="grid lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
         {filteredProducts.map((item, index) => (
           <div
             key={index}

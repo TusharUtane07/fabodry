@@ -149,19 +149,19 @@ const Cleaning = () => {
           <div className="mt-3">
             <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
           </div>
-          <div className="grid grid-cols-5 gap-4 my-4">
+          <div className="grid lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
             {filteredProducts.map((item, index) => (
               <div
                 key={index}
                 className="border border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
               >
                 <img src={item.img} alt={item.type} className="w-16 h-16 mx-auto" />
-                <p className="text-2xl">{item.type}</p>
+                <p className="text-lg">{item.type}</p>
                 <p className="text-gray-400 text-xs my-2">Starting from</p>
-                <p className="text-xl text-[#006370]">{item.price}</p>
+                <p className="text-sm text-[#006370]">{item.price}</p>
                 <button
                   onClick={() => handleProductClick(item)}
-                  className="bg-[#004D57] text-white text-sm w-full gap-2 mt-3 py-3 rounded-lg"
+                  className="bg-[#004D57] text-white lg:text-xs lg:px-2 xl:text-sm w-full gap-2 mt-3 py-3 rounded-lg"
                 >
                   Add Product
                 </button>

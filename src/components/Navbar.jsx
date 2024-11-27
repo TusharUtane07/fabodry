@@ -2,7 +2,7 @@ import profile from '../assets/profile.png'
 
 const Navbar = () => {
   return (
-    <header className="h-[70px] shadow-md">
+    <header className="h-[70px] w-full shadow-md">
         <div className="flex justify-between px-14 py-2">
       <div>
         <svg

@@ -18,8 +18,8 @@ const MainSection = () => {
   };
 
   return (
-    <div className="w-full grid grid-cols-6 justify-between gap-10 text-[#00414e]">
-      <div className="col-span-4">
+    <div className=" mx-auto flex  justify-between gap-10 text-[#00414e]">
+      <div className="lg:w-[650px] xl:w-[780px] 2xl:w-[820px]">
         <div className="border-2 border-[#eef0f2] rounded-xl m-5 w-full mt-8">
           <div className="p-5">
             <label
@@ -43,8 +43,8 @@ const MainSection = () => {
             </div>
           </div>
         </div>
-        <div className="border-2 border-[#eef0f2] rounded-xl mx-5 w-full my-4">
-          <div className="flex p-5 justify-between items-center gap-3">
+        <div className="border-2 border-[#eef0f2] rounded-xl mx-5 w-full  my-4">
+          <div className="flex p-5 justify-between items-center gap-2 text-sm">
             {[
               "Laundry",
               "Dry Cleaning",
@@ -54,7 +54,7 @@ const MainSection = () => {
             ].map((tab) => (
               <button
                 key={tab}
-                className={`px-10 py-4 rounded-lg ${
+                className={`lg:px-4 xl:px-8 py-4 rounded-lg ${
                   selectedTab === tab
                     ? "bg-[#004D57] text-white"
                     : "bg-[#d5e7ec] text-[#00414E]"

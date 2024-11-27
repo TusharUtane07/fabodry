@@ -84,18 +84,18 @@ const Ironing = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <div
-          className={`flex items-center justify-between w-96 text-sm bg-[#D5E7EC] rounded-xl cursor-pointer`}
+          className={`flex items-center justify-between lg:w-80 xl:w-96 text-xs bg-[#D5E7EC] rounded-xl cursor-pointer`}
           onClick={handleToggle}
         >
           <div
-            className={`flex-1 text-center py-2.5 rounded-xl px-3 transition-all ${
+            className={`flex-1 text-center lg:py-1.5 xl:py-2.5 rounded-xl px-3 transition-all ${
               !isPremium ? "bg-[#006370] text-white" : "text-black"
             }`}
           >
             Steam Press
           </div>
           <div
-            className={`flex-1 text-center py-2.5  rounded-xl px-3 transition-all ${
+            className={`flex-1 text-center lg:py-1.5 xl:py-2.5 rounded-xl px-3 transition-all ${
               isPremium ? "bg-[#006370] text-white" : "text-black"
             }`}
           >
@@ -104,7 +104,7 @@ const Ironing = () => {
         </div>
 
         <div className="flex justify-between items-center gap-5">
-      <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
+      <div className="border rounded-lg border-gray-300 lg:w-60 xl:w-72 ml-4 flex items-center justify-between">
         <input
           type="text"
           className="py-2 pl-3 focus:outline-none"
@@ -144,7 +144,7 @@ const Ironing = () => {
         <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
       </div>
 
-      <div className="grid grid-cols-5 gap-4 my-4">
+      <div className="grid  lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
         {filteredProducts.map((item, index) => (
           <div
             key={index}

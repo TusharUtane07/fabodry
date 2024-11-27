@@ -80,19 +80,19 @@ const Laundry = () => {
 
   return (
     <>
-      <div className="flex justify-center items-center text-center gap-5">
+      <div className="grid grid-cols-3 justify-center items-center text-center gap-5">
         {selectedItem === null ? (
           laundryProducts.map((item, index) => (
             <div
               key={index}
-              className="group flex flex-col rounded-xl border p-5 border-[#eef0f2] hover:bg-[#004D57] hover:text-white transition-colors"
+              className="group flex flex-col h-full justify-between rounded-xl border p-5 border-[#eef0f2] hover:bg-[#004D57] hover:text-white transition-colors"
             >
               <img
                 src={item.img}
                 alt=""
-                className="w-20 h-20 mx-auto rounded-full"
+                className="xl:w-20 xl:h-20 lg:w-16  mx-auto rounded-full"
               />
-              <h3 className="text-[#006370] text-2xl group-hover:text-white">
+              <h3 className="text-[#006370] lg:text-xl xl:text-2xl group-hover:text-white">
                 {item.name}
               </h3>
               <p className="text-xs mx-5 mt-3 text-gray-400 group-hover:text-white">
@@ -104,14 +104,14 @@ const Laundry = () => {
               <div className="flex items-center mt-3 gap-3">
                 <label
                   htmlFor="totalWeight"
-                  className="text-sm text-gray-400 group-hover:text-white"
+                  className="xl:text-sm text-gray-400 group-hover:text-white"
                 >
                   Total Weight
                 </label>
                 <input
                   type="number"
                   placeholder="0.00"
-                  className="border border-gray-300 py-2 outline-none pl-3 w-32 rounded-xl group-hover:bg-[#004d57] pr-2"
+                  className="border border-gray-300 py-2 outline-none pl-3 lg:w-20 xl:w-32 rounded-xl group-hover:bg-[#004d57] pr-2"
                 />
               </div>
               <button

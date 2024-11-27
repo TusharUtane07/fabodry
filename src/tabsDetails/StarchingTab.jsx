@@ -118,15 +118,15 @@ const StarchingTab = () => {
       <div className="mt-3">
         <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
       </div>
-      <div className="grid grid-cols-5 gap-4 my-4">
+      <div className="grid lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
         {filteredProducts.map((item, index) => (
           <div
             key={index}
             className="border cursor-pointer border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
           >
             <img src={shirt} alt="" className="w-16 h-16 mx-auto " />
-            <p className="text-2xl">{item.type}</p>
-            <p className="text-xl text-[#006370]">{item.price}</p>
+            <p className="text-xl pt-2">{item.type}</p>
+            <p className="text-sm py-1 text-[#006370]">{item.price}</p>
             <div className="border border-gray-300 rounded-lg my-2 p-1 flex items-center">
               <button
                 className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"

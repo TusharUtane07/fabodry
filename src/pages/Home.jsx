@@ -7,7 +7,7 @@ const Home = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex grid-cols-2">
+      <div className="flex ">
         <Sidebar />
         <MainSection />
       </div>

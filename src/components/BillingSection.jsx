@@ -21,7 +21,7 @@ const BillingSection = () => {
   };
 
   return (
-    <div className="col-span-2 mt-8 border-2 mr-4 mb-4 border-[#eef0f2] rounded-xl">
+    <div className="lg:w-[320px] xl:w-[360px] 2xl:w-full mt-8 border-2 mr-4 mb-4 border-[#eef0f2] rounded-xl">
       <div className="p-5">
         <h3 className="font-semibold">Billing Section</h3>
         <div className="mt-3">
