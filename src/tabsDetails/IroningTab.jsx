@@ -2,6 +2,7 @@ import { useState } from "react";
 import AlphabetsComponent from "./alphabetsComponent";
 import shirt from "../assets/shirt.png";
 import Popup from "../components/Popup";
+import SidebarPopup from "../components/SidebarPopup";
 
 const Ironing = () => {
   const normalPrice = "$ 10.00/Pc";
@@ -40,6 +41,7 @@ const Ironing = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); 
   const [filteredProducts, setFilteredProducts] = useState(dryCleaningProduct);
+  const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
 
   const handleToggle = () => {
     setIsPremium(!isPremium);
@@ -66,6 +68,7 @@ const Ironing = () => {
   const handleAlphabetClick = (letter) => {
     setSearchQuery(letter.toLowerCase());
     filterProducts(letter.toLowerCase());
+    setSearchQuery("");
   };
 
   const filterProducts = (query) => {
@@ -74,7 +77,9 @@ const Ironing = () => {
     );
     setFilteredProducts(filtered);
   };
-
+  const handlePreviewClick = () => {
+    setIsPreviewPopupOpen(true);
+  }
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -98,31 +103,41 @@ const Ironing = () => {
           </div>
         </div>
 
-        <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
-          <input
-            type="text"
-            className="py-2 pl-3 focus:outline-none"
-            placeholder="Search Product"
-            value={searchQuery}
-            onChange={handleSearch}
-          />
-          <button
-            type="submit"
-            className="p-1 focus:outline-none items-end-end focus:shadow-outline"
+        <div className="flex justify-between items-center gap-5">
+      <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
+        <input
+          type="text"
+          className="py-2 pl-3 focus:outline-none"
+          placeholder="Search Product"
+          value={searchQuery}
+          onChange={handleSearch}
+        />
+        <button
+          type="submit"
+          className="p-1 focus:outline-none items-end-end focus:shadow-outline"
+        >
+          <svg
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            className="w-4 h-4"
           >
-            <svg
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              className="w-4 h-4"
-            >
-              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </button>
-        </div>
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+      </div>
+      <div>
+              <button 
+                onClick={handlePreviewClick}
+                className="bg-[#004D57] text-white rounded-lg px-8 py-2"
+              >
+                Preview
+              </button>
+            </div>
+      </div>
       </div>
 
       <div className="mt-3">
@@ -159,6 +174,8 @@ const Ironing = () => {
         ))}
       </div>
       <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
+      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} />
+
     </div>
   );
 };

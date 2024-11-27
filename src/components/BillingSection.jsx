@@ -1,7 +1,9 @@
 import { useState } from "react";
+import HomeDeliveryPopup from "./HomeDeliveryPopup";
 
 const BillingSection = () => {
   const [isChecked, setIsChecked] = useState(false);
+  const [isHomeDeliveryPopupOpen, setIsHomeDeliveryPopupOpen] = useState(false);
 
   const products = [
     { name: "Sofa", qty: "02", price: "20" },
@@ -13,6 +15,9 @@ const BillingSection = () => {
 
   const handleCheckboxChange = () => {
     setIsChecked((prevState) => !prevState);
+    if (!isChecked) {
+      setIsHomeDeliveryPopupOpen(true);
+    }
   };
 
   return (
@@ -182,25 +187,11 @@ const BillingSection = () => {
           </label>
         </div>
         {isChecked && (
-          <div className="mt-3">
-            <div className="mb-3">
-              <input
-                type="text"
-                className="border border-gray-300 text-sm rounded-lg block w-full p-2.5"
-                placeholder="Enter Pin Code"
-                required
-              />
-            </div>
-            <div>
-              <textarea
-                className="border border-gray-300 text-sm rounded-lg block w-full p-2.5"
-                placeholder="Enter Full Address"
-                rows="3"
-                required
-              ></textarea>
-            </div>
-          </div>
-        )}
+    <HomeDeliveryPopup 
+      isOpen={isHomeDeliveryPopupOpen} 
+      setIsOpen={setIsHomeDeliveryPopupOpen} 
+    />
+  )}
 
         <div className="flex items-center border-[#eef0f2] rounded-xl mt-3 space-x-4 border p-2">
           <input

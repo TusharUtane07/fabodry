@@ -2,6 +2,7 @@ import { useState } from "react";
 import AlphabetsComponent from "./alphabetsComponent";
 import shirt from "../assets/shirt.png";
 import Popup from "../components/Popup";
+import SidebarPopup from "../components/SidebarPopup";
 
 const StarchingTab = () => {
   const dryCleaningProduct = [
@@ -39,6 +40,8 @@ const StarchingTab = () => {
 
   const [searchQuery, setSearchQuery] = useState(""); 
   const [filteredProducts, setFilteredProducts] = useState(dryCleaningProduct);
+  const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
+
 
   const handleIncrement = () => {
     setIsPopupOpen(true);
@@ -61,6 +64,7 @@ const StarchingTab = () => {
   const handleAlphabetClick = (letter) => {
     setSearchQuery(letter.toLowerCase());
     filterProducts(letter.toLowerCase());
+    setSearchQuery("");
   };
 
   const filterProducts = (query) => {
@@ -69,10 +73,13 @@ const StarchingTab = () => {
     );
     setFilteredProducts(filtered);
   };
+  const handlePreviewClick = () => {
+    setIsPreviewPopupOpen(true);
+  };
 
   return (
     <div>
-      {/* Search Bar */}
+       <div className="flex justify-between items-center">
       <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
         <input
           type="text"
@@ -98,12 +105,19 @@ const StarchingTab = () => {
           </svg>
         </button>
       </div>
+      <div>
+              <button 
+                onClick={handlePreviewClick}
+                className="bg-[#004D57] text-white rounded-lg px-8 py-2"
+              >
+                Preview
+              </button>
+            </div>
+      </div>
 
       <div className="mt-3">
         <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
       </div>
-
-      {/* Products Grid */}
       <div className="grid grid-cols-5 gap-4 my-4">
         {filteredProducts.map((item, index) => (
           <div
@@ -133,6 +147,8 @@ const StarchingTab = () => {
       </div>
 
       <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
+      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} />
+
     </div>
   );
 };

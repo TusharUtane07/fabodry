@@ -3,12 +3,12 @@ import productGif from "../assets/product.gif";
 import AlphabetsComponent from "./alphabetsComponent";
 import shirt from "../assets/shirt.png";
 import Popup from "../components/Popup";
+import SidebarPopup from "../components/SidebarPopup";
 
 const Laundry = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // State for text search term
-  const [alphabetFilter, setAlphabetFilter] = useState(""); // State for alphabet filter
+  const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
 
   const laundryProducts = [
     {
@@ -40,6 +40,8 @@ const Laundry = () => {
   ];
 
   const [quantities, setQuantities] = useState(dryCleaningProduct.map(() => 1));
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState(dryCleaningProduct);
 
   const handleIncrement = () => {
     setIsPopupOpen(true);
@@ -53,21 +55,28 @@ const Laundry = () => {
     }
   };
 
-  // Handle alphabet click to filter products
-  const handleAlphabetClick = (letter) => {
-    setAlphabetFilter(letter);
-    setSearchTerm(""); // Clear text search when alphabet filter is applied
+  const handleSearch = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+    filterProducts(query);
   };
 
-  // Filter products based on both search term and alphabet filter
-  const filteredProducts = dryCleaningProduct.filter((product) => {
-    const matchesTextSearch = product.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesAlphabetFilter = alphabetFilter 
-      ? product.type.toLowerCase().startsWith(alphabetFilter.toLowerCase()) 
-      : true;
-    
-    return matchesTextSearch && matchesAlphabetFilter;
-  });
+  const handleAlphabetClick = (letter) => {
+    setSearchQuery(letter.toLowerCase());
+    filterProducts(letter.toLowerCase());
+    setSearchQuery("");
+  };
+
+  const filterProducts = (query) => {
+    const filtered = dryCleaningProduct.filter((product) =>
+      product.type.toLowerCase().startsWith(query)
+    );
+    setFilteredProducts(filtered);
+  };
+
+  const handlePreviewClick = () => {
+    setIsPreviewPopupOpen(true);
+  };
 
   return (
     <>
@@ -118,19 +127,17 @@ const Laundry = () => {
             <h2 className="text-lg bg-[#004D57] text-white w-full py-2.5 rounded-lg">
               {selectedItem}
             </h2>
-            <div className="border mt-4 rounded-lg border-gray-300 w-72 flex items-center justify-between">
+
+            <div className="flex justify-between items-center">
+            <div className="border rounded-lg border-gray-300 w-72 ml-4 mt-5 flex items-center justify-between">
               <input
                 type="text"
                 className="py-2 pl-3 focus:outline-none w-full"
                 placeholder="Search Product"
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-
-                }}
+                value={searchQuery}
+                onChange={handleSearch}
               />
               <button
-                type="submit"
                 className="p-1 focus:outline-none items-end-end focus:shadow-outline"
               >
                 <svg
@@ -146,7 +153,17 @@ const Laundry = () => {
                 </svg>
               </button>
             </div>
-            <div className="mt-4">
+            <div>
+              <button 
+                onClick={handlePreviewClick}
+                className="bg-[#004D57] text-white rounded-lg px-8 py-2 mt-4"
+              >
+                Preview
+              </button>
+            </div>
+            </div>
+
+            <div className="mt-3">
               <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
             </div>
             <div className="grid grid-cols-5 gap-4 my-4">
@@ -182,6 +199,7 @@ const Laundry = () => {
         )}
       </div>
       <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
+      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} />
     </>
   );
 };

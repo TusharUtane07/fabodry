@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const 
+Login = () => {
 
   const navigate = useNavigate();
 
@@ -147,7 +148,6 @@ const Login = () => {
               </label>
               <div className="text-sm">
                 <a
-                  href="#"
                   className="font-semibold text-[#004D57]"
                 >
                   Forgot password?

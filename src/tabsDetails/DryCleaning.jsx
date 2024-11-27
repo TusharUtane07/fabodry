@@ -2,6 +2,7 @@ import { useState } from "react";
 import AlphabetsComponent from "./alphabetsComponent";
 import shirt from "../assets/shirt.png";
 import Popup from "../components/Popup";
+import SidebarPopup from "../components/SidebarPopup";
 
 const DryCleaning = () => {
   const dryCleaningProduct = [
@@ -39,6 +40,8 @@ const DryCleaning = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState(dryCleaningProduct);
+  const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
+
 
   const handleIncrement = () => {
     setIsPopupOpen(true);
@@ -61,6 +64,7 @@ const DryCleaning = () => {
   const handleAlphabetClick = (letter) => {
     setSearchTerm(letter.toLowerCase());
     filterProducts(letter.toLowerCase());
+    setSearchTerm("");
   };
 
   const filterProducts = (query) => {
@@ -70,8 +74,13 @@ const DryCleaning = () => {
     setFilteredProducts(filtered);
   };
 
+  const handlePreviewClick = () => {
+    setIsPreviewPopupOpen(true);
+  };
+
   return (
     <div>
+      <div className="flex justify-between items-center">
       <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
         <input
           type="text"
@@ -96,6 +105,15 @@ const DryCleaning = () => {
             <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </button>
+      </div>
+      <div>
+              <button 
+                onClick={handlePreviewClick}
+                className="bg-[#004D57] text-white rounded-lg px-8 py-2"
+              >
+                Preview
+              </button>
+            </div>
       </div>
       <div className="mt-3">
         <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
@@ -128,6 +146,8 @@ const DryCleaning = () => {
         ))}
       </div>
       <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
+      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} />
+
     </div>
   );
 };

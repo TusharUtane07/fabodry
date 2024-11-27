@@ -57,7 +57,9 @@ const Sidebar = () => {
             </svg>
             <p>New Walk in</p>
           </button>
-          <button className="flex items-center gap-2 p-3 ">
+        </div>
+        <div className="bg-[#004d57] text-sm mt-4 rounded-xl flex flex-col text-white ml-8 mr-8 pt-3 pb-3  gt gap-3">
+        <button className="flex items-center justify-center gap-2 p-3 ">
             <svg
               width="25"
               height="25"

@@ -4,6 +4,7 @@ import toilet from "../assets/toilet.png";
 import kitchen from "../assets/kitchen.png";
 import { useState } from "react";
 import Popup from "../components/Popup";
+import SidebarPopup from "../components/SidebarPopup";
 
 const Cleaning = () => {
   const cleaningProduct = [
@@ -24,6 +25,8 @@ const Cleaning = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAlphabet, setSelectedAlphabet] = useState("");
+  const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
+
 
   const handleProductClick = (item) => {
     if (item.category === "sofa") {
@@ -39,7 +42,7 @@ const Cleaning = () => {
 
   const handleAlphabetClick = (alphabet) => {
     setSelectedAlphabet(alphabet);
-    setSearchTerm(""); // Clear the search term when alphabet is clicked
+    setSearchTerm(""); 
   };
 
   const filteredProducts = cleaningProduct.filter((item) => {
@@ -50,6 +53,10 @@ const Cleaning = () => {
 
     return matchesSearchTerm && matchesAlphabet;
   });
+
+  const handlePreviewClick = () => {
+    setIsPreviewPopupOpen(true);
+  };
 
   return (
     <div>
@@ -101,34 +108,44 @@ const Cleaning = () => {
         )
       ) : (
         <>
-          <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
-            <input
-              type="text"
-              className="py-2 pl-3 focus:outline-none"
-              placeholder="Search Product"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setSelectedAlphabet("");
-              }}
-            />
-            <button
-              type="submit"
-              className="p-1 focus:outline-none items-end-end focus:shadow-outline"
-            >
-              <svg
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                className="w-4 h-4"
+          <div className="flex justify-between items-center">
+      <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
+        <input
+          type="text"
+          className="py-2 pl-3 focus:outline-none"
+          placeholder="Search Product"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setSelectedAlphabet("");
+          }}
+        />
+        <button
+          type="submit"
+          className="p-1 focus:outline-none items-end-end focus:shadow-outline"
+        >
+          <svg
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            className="w-4 h-4"
+          >
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+      </div>
+      <div>
+              <button 
+                onClick={handlePreviewClick}
+                className="bg-[#004D57] text-white rounded-lg px-8 py-2"
               >
-                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </button>
-          </div>
+                Preview
+              </button>
+            </div>
+      </div>
           <div className="mt-3">
             <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
           </div>
@@ -155,6 +172,8 @@ const Cleaning = () => {
       )}
 
       <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
+      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} />
+
     </div>
   );
 };
