@@ -1,16 +1,67 @@
 import { useState } from "react";
+import shirt from '../assets/shirt.png';
 
-const SidebarPopup = ({isOpen, setIsOpen}) => {
+const SidebarPopup = ({ isOpen, setIsOpen }) => {
   const products = [
-    { id: 1, name: "Product 1", price: "$10" },
-    { id: 2, name: "Product 2", price: "$20" },
-    { id: 3, name: "Product 3", price: "$30" },
+    {
+      productId: 1,
+      type: "Shirt",
+      price: "$ 10.00/Pc",
+      img: shirt,
+    },
+    {
+      productId: 2,
+      type: "Pant",
+      price: "$ 12.00/Pc",
+      img: shirt,
+    },
+    {
+      productId: 3,
+      type: "T-Shirt",
+      price: "$ 8.00/Pc",
+      img: shirt,
+    },
+    {
+      productId: 4,
+      type: "Jacket",
+      price: "$ 15.00/Pc",
+      img: shirt,
+    },
+    {
+      productId: 5,
+      type: "Shirt",
+      price: "$ 10.00/Pc",
+      img: shirt,
+    },
   ];
 
   const [productList, setProductList] = useState(products);
+  const [quantities, setQuantities] = useState(
+    productList.map(() => 1) // Initialize quantities with 1 for each product
+  );
 
   const deleteProduct = (id) => {
-    setProductList(productList.filter((product) => product.id !== id));
+    const updatedProducts = productList.filter(
+      (product) => product.productId !== id
+    );
+    setProductList(updatedProducts);
+
+    // Update quantities to match the filtered product list
+    setQuantities(updatedProducts.map(() => 1));
+  };
+
+  const handleIncrement = (index) => {
+    const updatedQuantities = [...quantities];
+    updatedQuantities[index] += 1;
+    setQuantities(updatedQuantities);
+  };
+
+  const handleDecrement = (index) => {
+    const updatedQuantities = [...quantities];
+    if (updatedQuantities[index] > 1) {
+      updatedQuantities[index] -= 1;
+      setQuantities(updatedQuantities);
+    }
   };
 
   return (
@@ -22,88 +73,83 @@ const SidebarPopup = ({isOpen, setIsOpen}) => {
         ></div>
       )}
       <div
-        className={`fixed inset-y-0 right-0 bg-white w-[450px] h-full shadow-lg z-50 transform transition-transform duration-300 ${
+        className={`fixed inset-y-0 right-0 bg-white w-[550px] h-full shadow-lg z-50 transform transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-bold">Sidebar Popup</h2>
+          <h2 className="text-lg font-bold">Added Products</h2>
           <button
             className="text-gray-500 hover:text-gray-700"
             onClick={() => setIsOpen(false)}
           >
-            Close
+            X
           </button>
         </div>
 
         <div className="p-4 space-y-6">
-          <div>
-            <h3 className="text-md font-semibold mb-2">Choose an Option:</h3>
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="option"
-                  className="form-radio text-blue-600"
-                />
-                <span>Option 1</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="option"
-                  className="form-radio text-blue-600"
-                />
-                <span>Option 2</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="option"
-                  className="form-radio text-blue-600"
-                />
-                <span>Option 3</span>
-              </label>
-            </div>
-          </div>
-          <div>
-            <h3 className="text-md font-semibold mb-2">Products</h3>
-            <table className="table-auto w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-4 py-2 text-left">
-                    Name
-                  </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
-                    Price
-                  </th>
-                  <th className="border border-gray-300 px-4 py-2 text-left">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {productList.map((product) => (
-                  <tr key={product.id}>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {product.name}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
-                      {product.price}
-                    </td>
-                    <td className="border border-gray-300 px-4 py-2">
+          <h3 className="text-md font-semibold mb-2">Products</h3>
+          <table className="table-auto w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 px-4 py-2 text-left">
+                  Image
+                </th>
+                <th className="border border-gray-300 px-4 py-2 text-left">
+                  Name
+                </th>
+                <th className="border border-gray-300 px-4 py-2 text-left">
+                  Price
+                </th>
+                <th className="border border-gray-300 px-4 py-2 text-left">
+                  Count
+                </th>
+                <th className="border border-gray-300 px-4 py-2 text-left">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {productList.map((product, index) => (
+                <tr key={product.productId}>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <img src={product.img} className="w-20 h-20 rounded-lg" alt="" />
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    {product.type}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    {product.price}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <div className="border border-gray-300 rounded-lg my-2 p-1 flex items-center">
                       <button
-                        className="text-red-600 hover:underline"
-                        onClick={() => deleteProduct(product.id)}
+                        className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"
+                        onClick={() => handleIncrement(index)}
                       >
-                        Delete
+                        +
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <span className="text-gray-500 px-5">{quantities[index]}</span>
+                      <button
+                        className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"
+                        onClick={() => handleDecrement(index)}
+                      >
+                        -
+                      </button>
+                    </div>
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <button
+                      className="text-red-600 hover:underline"
+                      onClick={() => deleteProduct(product.productId)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
