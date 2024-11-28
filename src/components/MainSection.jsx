@@ -18,8 +18,8 @@ const MainSection = () => {
   };
 
   return (
-    <div className=" mx-auto flex  justify-between gap-10 text-[#00414e]">
-      <div className="lg:w-[650px] xl:w-[780px] 2xl:w-[820px]">
+    <div className=" flex  w-full gap-10 text-[#00414e]">
+      <div className="flex-1">
         <div className="border-2 border-[#eef0f2] rounded-xl m-5 w-full mt-8">
           <div className="p-5">
             <label

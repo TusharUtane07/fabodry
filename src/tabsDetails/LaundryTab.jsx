@@ -80,9 +80,10 @@ const Laundry = () => {
 
   return (
     <>
-      <div className="grid grid-cols-3 justify-center items-center text-center gap-5">
+      <div className=" text-center gap-5">
         {selectedItem === null ? (
-          laundryProducts.map((item, index) => (
+          <div className="grid grid-cols-3 items-center justify-between gap-3">
+          {laundryProducts.map((item, index) => (
             <div
               key={index}
               className="group flex flex-col h-full justify-between rounded-xl border p-5 border-[#eef0f2] hover:bg-[#004D57] hover:text-white transition-colors"
@@ -121,7 +122,8 @@ const Laundry = () => {
                 Add Product
               </button>
             </div>
-          ))
+          ))}
+          </div>
         ) : (
           <div className="text-center w-full">
             <h2 className="text-lg bg-[#004D57] text-white w-full py-2.5 rounded-lg">

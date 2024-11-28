@@ -21,7 +21,7 @@ const BillingSection = () => {
   };
 
   return (
-    <div className="lg:w-[320px] xl:w-[360px] 2xl:w-full mt-8 border-2 mr-4 mb-4 border-[#eef0f2] rounded-xl">
+    <div className="col-span-1 bg-white mt-8 border-2 mr-4 mb-4 border-[#eef0f2] rounded-xl">
       <div className="p-5">
         <h3 className="font-semibold">Billing Section</h3>
         <div className="mt-3">
@@ -67,7 +67,7 @@ const BillingSection = () => {
         </div>
         <div className="relative overflow-x-auto  border-[#eef0f2] rounded-xl mt-3 border">
           <table className="w-full text-left ">
-            <thead className=" text-[14px]  ">
+            <thead className=" text-[11px]  ">
               <tr>
                 <th scope="col" className="px-4 py-2">
                   Item
@@ -83,7 +83,7 @@ const BillingSection = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="text-[12px]">
+            <tbody className="text-[10px]">
               {products.map((product, index) => (
                 <tr key={index}>
                   <th scope="row" className="px-3 py-2  whitespace-nowrap">

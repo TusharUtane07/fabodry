@@ -5,7 +5,7 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
     <>
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/3 p-6 relative">
+          <div className="bg-white rounded-lg shadow-lg w-[90vw] h-[90vh] p-6 relative">
             <h2 className="text-xl font-semibold mb-4">Delivery Details</h2>
             <button
               onClick={togglePopup}
@@ -13,6 +13,10 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
             >
               ✕
             </button>
+            <div className="flex w-full justify-between">
+<div>
+  map details
+</div>
             <form>
               {/* Full Address */}
               <div className="mb-4">
@@ -50,6 +54,8 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
                 Save Details
               </button>
             </form>
+            </div>
+
           </div>
         </div>
       )}
