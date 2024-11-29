@@ -35,7 +35,7 @@ const BillingSection = () => {
         <div className="mt-3">
           <input
             type="text"
-            className=" border border-gray-300 text-sm rounded-lg  block w-full p-2.5"
+            className=" border border-gray-300 focus:outline-none text-sm rounded-lg  block w-full p-2.5"
             placeholder="Main"
             required
           />
@@ -51,7 +51,7 @@ const BillingSection = () => {
             />
             <label
               htmlFor="walk_in"
-              className="ml-2 text-sm font-medium text-gray-400 cursor-pointer"
+              className="ml-2 text-sm  text-gray-400 cursor-pointer"
             >
               Walk In
             </label>
@@ -67,7 +67,7 @@ const BillingSection = () => {
             />
             <label
               htmlFor="pick_up"
-              className="ml-2 text-sm font-medium text-gray-400 cursor-pointer"
+              className="ml-2 text-sm  text-gray-400 cursor-pointer"
             >
               Pick Up
             </label>
@@ -119,7 +119,7 @@ const BillingSection = () => {
           <div className="flex items-center border-[#eef0f2] rounded-xl mt-3 space-x-4 border py-1.5 px-2 w-full">
             <Space direction="vertical" className="w-full">
               <DatePicker
-                className="border-none outline-none focus:outline-none focus:border-transparent w-full"
+                className="border-none outline-none focus:outline-none focus:border-transparent w-full text-gray-400 placeholder:text-gray-400"
                 onChange={onChange}
                 placeholder="Delivery Date"
               />
@@ -131,7 +131,8 @@ const BillingSection = () => {
               <TimePicker
                 value={value}
                 onChange={onChangeForTime}
-                className="border-none outline-none focus:outline-none focus:border-transparent w-full"
+                format="HH:mm"
+                className="border-none outline-none focus:outline-none focus:border-transparent w-full text-gray-400 placeholder:text-gray-400"
                 placeholder="Delivery Time"
               />
             </Space>
@@ -158,7 +159,7 @@ const BillingSection = () => {
 
           <label
             htmlFor="home_delivery"
-            className="ml-2 text-sm font-medium text-gray-400 cursor-pointer"
+            className="ml-2 text-sm text-gray-400 cursor-pointer"
           >
             Home Delivery
           </label>
@@ -173,7 +174,7 @@ const BillingSection = () => {
         <div className="flex items-center border-[#eef0f2] rounded-xl mt-3 space-x-4 border p-2">
           <input
             type="text"
-            className=" text-sm rounded-lg py-3  block w-full"
+            className=" text-sm rounded-lg py-3 focus:outline-none block w-full"
             placeholder="Coupon Code"
             required
           />
@@ -195,7 +196,7 @@ const BillingSection = () => {
               />
               <label
                 htmlFor="cash"
-                className="ml-2 text-sm font-medium text-gray-400 cursor-pointer"
+                className="ml-2 text-sm  text-gray-400 cursor-pointer"
               >
                 Cash
               </label>
@@ -211,7 +212,7 @@ const BillingSection = () => {
               />
               <label
                 htmlFor="card"
-                className="ml-2 text-sm font-medium text-gray-400 cursor-pointer"
+                className="ml-2 text-sm  text-gray-400 cursor-pointer"
               >
                 Card
               </label>
@@ -227,7 +228,7 @@ const BillingSection = () => {
               />
               <label
                 htmlFor="cod"
-                className="ml-2 text-sm font-medium text-gray-400 cursor-pointer"
+                className="ml-2 text-sm  text-gray-400 cursor-pointer"
               >
                 COD
               </label>

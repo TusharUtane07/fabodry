@@ -21,70 +21,70 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
                 <div className="mb-4 ">
                   <label
                     htmlFor="fullAddress"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm  text-gray-400 mb-1"
                   >
                     Enter Location
                   </label>
                   <input
                     id="fullAddress"
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm"
-                    placeholder="Enter your full address"
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm placeholder:text-gray-300"
+                    placeholder="Enter your location"
                   />
                 </div>
                 <div className="mb-4">
                   <label
                     htmlFor="selected-address"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm  text-gray-400 mb-1"
                   >
                     Selected Address
                   </label>
                   <input
                     type="text"
                     id="selected-address"
-                    className="w-full px-3 py-2 border border-gray-300  focus:outline-none rounded-md shadow-sm "
+                    className="w-full px-3 py-2 border border-gray-300  focus:outline-none rounded-md shadow-sm  placeholder:text-gray-300"
                     placeholder="Enter your selected address"
                   />
                 </div>
                 <div className="mb-4">
                   <label
                     htmlFor="plot-number"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm  text-gray-400 mb-1"
                   >
                     Plot Number
                   </label>
                   <input
                     type="text"
                     id="plot-number"
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm "
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm placeholder:text-gray-300 "
                     placeholder="Enter your plot number"
                   />
                 </div>
                 <div className="mb-4">
                   <label
                     htmlFor="landmark"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm  text-gray-400 mb-1"
                   >
                     Enter your landmark
                   </label>
                   <input
                     type="text"
                     id="landmark"
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm "
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm placeholder:text-gray-300 "
                     placeholder="Enter your landmark"
                   />
                 </div>
                 <div className="mb-4">
                   <label
                     htmlFor="lable"
-                    className="block text-sm font-medium text-gray-700 mb-1"
+                    className="block text-sm  text-gray-400 mb-1"
                   >
                     Select Label
                   </label>
                   <div className="flex gap-3 ">
                   <button className="px-4 py-1 text-white bg-[#00414e] rounded-full ">Home</button>
-                  <button className="px-4 py-1 text-white bg-[#00414e] rounded-full ">Office</button>
-                  <button className="px-4 py-1 text-white bg-[#00414e] rounded-full ">Other</button>
+                  <button className="px-4 py-1 text-white bg-[#00414e]/80 rounded-full ">Office</button>
+                  <button className="px-4 py-1 text-white bg-[#00414e]/80 rounded-full ">Other</button>
                   </div>
                 </div>
                 <button
