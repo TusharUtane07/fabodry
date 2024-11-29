@@ -6,3 +6,8 @@
 * {
     font-family: 'Poppins', serif;
 }
+
+.ant-switch-checked {
+    background-color: green !important; 
+  }
+  

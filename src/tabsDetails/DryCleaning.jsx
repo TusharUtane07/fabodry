@@ -106,7 +106,10 @@ const DryCleaning = () => {
           </svg>
         </button>
       </div>
-      <div>
+      <div className="flex gap-1 items-center">
+            <div className="text-sm rounded-lg px-8 py-2 text-gray-500">
+                Total Count: 14
+            </div>
               <button 
                 onClick={handlePreviewClick}
                 className="bg-[#004D57] text-white rounded-lg px-8 py-2"

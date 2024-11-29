@@ -13,19 +13,19 @@ const Laundry = () => {
   const laundryProducts = [
     {
       name: "Wash & Fold",
-      description: "lorem ipsumelorem ipsumelorem ipsumelorem ipsumelorem ipsum",
+      description: "lorem ipsumelorem ipsumelorem ipsumelorem",
       price: "$ 50.00/Kg",
       img: productGif,
     },
     {
       name: "Wash & Iron",
-      description: "lorem ipsumelorem ipsumelorem ipsumelorem ipsumelorem ipsum",
+      description: "lorem ipsumelorem ipsumelorem ipsumelorem",
       price: "$ 50.00/Kg",
       img: productGif,
     },
     {
       name: "Premium Laundry",
-      description: "lorem ipsumelorem ipsumelorem ipsumelorem ipsumelorem ipsum",
+      description: "lorem ipsumelorem ipsumelorem ipsumelorem",
       price: "$ 50.00/Kg",
       img: productGif,
     },
@@ -93,26 +93,26 @@ const Laundry = () => {
                 alt=""
                 className="xl:w-20 xl:h-20 lg:w-16  mx-auto rounded-full"
               />
-              <h3 className="text-[#006370] lg:text-xl xl:text-2xl group-hover:text-white">
+              <h3 className="text-[#006370] lg:text-sm xl:text-xl group-hover:text-white">
                 {item.name}
               </h3>
-              <p className="text-xs mx-5 mt-3 text-gray-400 group-hover:text-white">
+              <p className="lg:text-[10px] xl:text-sm  mt-3 text-gray-400 group-hover:text-white">
                 {item.description}
               </p>
-              <p className="mt-3 text-[#006370] group-hover:text-white">
+              <p className="mt-3 text-[#006370] group-hover:text-white lg:text-sm xl:text-xl">
                 {item.price}
               </p>
-              <div className="flex items-center mt-3 gap-3">
+              <div className="flex items-center w-full justify-center  mt-3 gap-3">
                 <label
                   htmlFor="totalWeight"
-                  className="xl:text-sm text-gray-400 group-hover:text-white"
+                  className="lg:text-sm text-[10px] text-gray-400 group-hover:text-white"
                 >
                   Total Weight
                 </label>
                 <input
                   type="number"
                   placeholder="0.00"
-                  className="border border-gray-300 py-2 outline-none pl-3 lg:w-20 xl:w-32 rounded-xl group-hover:bg-[#004d57] pr-2"
+                  className="border border-gray-300 py-1 outline-none pl-3 lg:w-20 xl:w-32 rounded-xl group-hover:bg-[#004d57] pr-2"
                 />
               </div>
               <button
@@ -126,7 +126,7 @@ const Laundry = () => {
           </div>
         ) : (
           <div className="text-center w-full">
-            <h2 className="text-lg bg-[#004D57] text-white w-full py-2.5 rounded-lg">
+            <h2 className="text-lg bg-[#004D57] text-white w-full py-2.5 rounded-lg ">
               {selectedItem}
             </h2>
 
@@ -155,7 +155,10 @@ const Laundry = () => {
                 </svg>
               </button>
             </div>
-            <div>
+            <div className="flex gap-1 items-center">
+            <div className="text-sm rounded-lg px-8 py-2 mt-4 text-gray-500">
+                Total Count: 14
+            </div>
               <button 
                 onClick={handlePreviewClick}
                 className="bg-[#004D57] text-white rounded-lg px-8 py-2 mt-4"
@@ -169,32 +172,40 @@ const Laundry = () => {
               <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
             </div>
             <div className="grid grid-cols-5 gap-4 my-4">
+              {/* Change the color of selected item when added */}
               {filteredProducts.map((item, index) => (
-                <div
-                  key={index}
-                  className="border cursor-pointer border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
-                >
-                  <img src={shirt} alt="" className="w-16 h-16 mx-auto " />
-                  <p className="text-2xl">{item.type}</p>
-                  <p className="text-xl text-[#006370]">{item.price}</p>
-                  <div className="border border-gray-300 rounded-lg my-2 p-1 flex items-center">
-                    <button
-                      className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"
-                      onClick={() => handleIncrement(index)}
-                    >
-                      +
-                    </button>
-                    <span className="text-gray-500 px-5">
-                      {quantities[index]}
-                    </span>
-                    <button
-                      className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"
-                      onClick={() => handleDecrement(index)}
-                    >
-                      -
-                    </button>
-                  </div>
-                </div>
+               <div
+               key={index}
+               className="group border cursor-pointer border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center hover:bg-[#004D57] hover:text-white"
+             >
+               <img
+                 src={shirt}
+                 alt=""
+                 className="w-16 h-16 mx-auto group-hover:opacity-75"
+               />
+               <p className="text-2xl group-hover:text-white">{item.type}</p>
+               <p className="text-xl text-[#006370] group-hover:text-gray-400">
+                 {item.price}
+               </p>
+               <div className="border border-gray-300 rounded-lg my-2 p-1 flex items-center group-hover:border-white">
+                 <button
+                   className="bg-[#006370] text-white rounded-full p-0.5 px-2.5 group-hover:bg-white group-hover:text-[#004D57]"
+                   onClick={() => handleIncrement(index)}
+                 >
+                   +
+                 </button>
+                 <span className="text-gray-500 px-5 group-hover:text-white">
+                   {quantities[index]}
+                 </span>
+                 <button
+                   className="bg-[#006370] text-white rounded-full p-0.5 px-2.5 group-hover:bg-white group-hover:text-[#004D57]"
+                   onClick={() => handleDecrement(index)}
+                 >
+                   -
+                 </button>
+               </div>
+             </div>
+             
               ))}
             </div>
           </div>

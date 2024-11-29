@@ -1,5 +1,6 @@
 import { useState } from "react";
-import shirt from '../assets/shirt.png';
+import shirt from "../assets/shirt.png";
+import { MdDelete, MdEdit } from "react-icons/md";
 
 const SidebarPopup = ({ isOpen, setIsOpen }) => {
   const products = [
@@ -7,37 +8,47 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
       productId: 1,
       type: "Shirt",
       price: "$ 10.00/Pc",
+      services: "DC",
+      comments: "NGFS",
       img: shirt,
     },
     {
       productId: 2,
       type: "Pant",
       price: "$ 12.00/Pc",
+      services: "SP",
+      comments: "NGFS",
       img: shirt,
     },
     {
       productId: 3,
       type: "T-Shirt",
       price: "$ 8.00/Pc",
+      services: "DC",
+      comments: "NGFS",
       img: shirt,
     },
     {
       productId: 4,
       type: "Jacket",
       price: "$ 15.00/Pc",
+      services: "SP",
+      comments: "NGFS",
       img: shirt,
     },
     {
       productId: 5,
       type: "Shirt",
       price: "$ 10.00/Pc",
+      services: "DC",
+      comments: "NGFS",
       img: shirt,
     },
   ];
 
   const [productList, setProductList] = useState(products);
   const [quantities, setQuantities] = useState(
-    productList.map(() => 1) // Initialize quantities with 1 for each product
+    productList.map(() => 1)
   );
 
   const deleteProduct = (id) => {
@@ -46,7 +57,6 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
     );
     setProductList(updatedProducts);
 
-    // Update quantities to match the filtered product list
     setQuantities(updatedProducts.map(() => 1));
   };
 
@@ -78,7 +88,7 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
         }`}
       >
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-bold">Added Products</h2>
+          <h2 className="text-lg font-bold">Added Garments</h2>
           <button
             className="text-gray-500 hover:text-gray-700"
             onClick={() => setIsOpen(false)}
@@ -88,63 +98,52 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
         </div>
 
         <div className="p-4 space-y-6">
-          <h3 className="text-md font-semibold mb-2">Products</h3>
-          <table className="table-auto w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-gray-300 px-4 py-2 text-left">
-                  Image
-                </th>
-                <th className="border border-gray-300 px-4 py-2 text-left">
-                  Name
-                </th>
-                <th className="border border-gray-300 px-4 py-2 text-left">
-                  Price
-                </th>
-                <th className="border border-gray-300 px-4 py-2 text-left">
-                  Count
-                </th>
-                <th className="border border-gray-300 px-4 py-2 text-left">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+          <table className="table-auto w-full border-collapse border border-gray-200">
+            <tbody className="text-[10px]">
               {productList.map((product, index) => (
                 <tr key={product.productId}>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <img src={product.img} className="w-20 h-20 rounded-lg" alt="" />
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className=" px-2 py-1 border border-gray-200">
                     {product.type}
                   </td>
-                  <td className="border border-gray-300 text-center px-4 py-2">
+                  <td className=" text-center px-2 py-1 border border-gray-200">
                     {product.price}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <div className=" rounded-lg my-2 p-1 flex items-center">
+                  <td className=" px-2 py-1 border border-gray-200">
+                    Services: {product.services}, Comments: {product.comments}
+                  </td>
+                  <td className=" px-2 py-1 border border-gray-200">
+                 <div className=" rounded-lg my-2 p-1 flex items-center">
                       <button
-                                                className="bg-[#006370] text-white rounded-full p-0.5 px-2"
-
+                        className="bg-[#006370] text-white rounded-sm p-0.5 px-2"
                         onClick={() => handleIncrement(index)}
                       >
                         +
                       </button>
-                      <span className="text-gray-500 px-5 border border-gray-300 mx-1 rounded-full">{quantities[index]}</span>
+                      <span className="text-gray-500 px-1.5  mx-1 rounded-sm">
+                        {quantities[index]}
+                      </span>
                       <button
-                        className="bg-[#006370] text-white rounded-full p-0.5 px-2"
+                        className="bg-[#006370] text-white rounded-sm p-0.5 px-2"
                         onClick={() => handleDecrement(index)}
                       >
                         -
                       </button>
-                    </div>
+                    </div> 
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="px-2 text-xl py-1 border border-gray-200">
                     <button
-                      className="text-red-600 hover:underline"
-                      onClick={() => deleteProduct(product.productId)}
+                      className="text-green-600 "
+                      // onClick={() => deleteProduct(product.productId)}
                     >
-                      Delete
+                      <MdEdit />
+                    </button>
+                  </td>
+                  <td className=" text-xl px-2 py-1 border border-gray-200">
+                    <button
+                      className="text-red-600 "
+                      // onClick={() => deleteProduct(product.productId)}
+                    >
+                      <MdDelete />
                     </button>
                   </td>
                 </tr>

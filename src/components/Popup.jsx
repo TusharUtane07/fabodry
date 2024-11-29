@@ -1,4 +1,5 @@
-import { useState } from "react";
+import {useState } from "react";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const Popup = ({isOpen, setIsOpen}) => {
   const togglePopup = () => {
@@ -17,6 +18,47 @@ const Popup = ({isOpen, setIsOpen}) => {
     }
   };
 
+  const listOfAddedItems = [
+    {
+      name: "Shirt",
+      quantity: 3,
+      comments: "BLM"
+    },
+    {
+      name: "Pant",
+      quantity: 2,
+    },
+    {
+      name: "Trousers",
+      quantity: 1,
+      comments: "BLM"
+    },
+    {
+      name: "Jacket",
+      quantity: 1,
+    },
+    {
+      name: "Blazer",
+      quantity: 3,
+      comments: "BLM"
+    },
+    {
+      name: "Blazer",
+      quantity: 3,
+      comments: "BLM"
+    },
+    {
+      name: "Blazer",
+      quantity: 3,
+      comments: "BLM"
+    },
+    {
+      name: "Blazer",
+      quantity: 3,
+      comments: "BLM"
+    },
+  ]
+
   const [isPremium, setIsPremium] = useState(false);
 
   const handleToggle = () => {
@@ -27,10 +69,52 @@ const Popup = ({isOpen, setIsOpen}) => {
     <div className="flex justify-center items-center">
       {isOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-5 pb-10">
-          <div className="bg-white rounded-lg p-6">
+          <div className="bg-white rounded-lg p-6 w-[60vw] h-[90vh] mx-auto">
             <h2 className="text-xl text-[#00414e] mb-4">
               Sherwani Service Form
             </h2>
+            <div className="space-y-2 mt-5 mx-8">
+  <p className="text-gray-600">Added Garments</p>
+  <div className="flex items-center gap-3 rounded-xl border border-[#88A5BF] px-5 py-1.5">
+    <button 
+      className="p-1 rounded-full bg-gray-200 hover:bg-gray-300" 
+      onClick={() => {
+        document.getElementById("scroll-container").scrollBy({ left: -100, behavior: "smooth" });
+      }}
+    >
+      <FaChevronLeft />
+    </button>
+    <div 
+      id="scroll-container"
+      style={{
+        scrollbarWidth: "none" }}
+      className="flex flex-nowrap overflow-x-scroll gap-3 px-5 py-1.5"
+    >
+      {listOfAddedItems.map((item, index) => (
+        <div 
+          key={index} 
+          className="bg-gray-300 text-gray-500 text-sm px-5 py-1.5 rounded-lg flex-shrink-0"
+        >
+          <p>
+            {item.name} X {item.quantity}{" "}
+            {item.comments && `[comments: ${item.comments}]`}
+          </p>
+        </div>
+      ))}
+    </div>
+
+    {/* Right Scroll Button */}
+    <button 
+      className="p-1 rounded-full bg-gray-200 hover:bg-gray-300" 
+      onClick={() => {
+        document.getElementById("scroll-container").scrollBy({ left: 100, behavior: "smooth" });
+      }}
+    >
+      <FaChevronRight />
+    </button>
+  </div>
+</div>
+
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Select Sherwani Type</p>
               <div className="flex justify-start gap-3">

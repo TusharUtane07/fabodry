@@ -5,6 +5,7 @@ import Ironing from "../tabsDetails/IroningTab";
 import Starching from "../tabsDetails/StarchingTab";
 import Cleaning from "../tabsDetails/Cleaning";
 import BillingSection from "./BillingSection";
+import { Switch } from "antd";
 
 const MainSection = () => {
   const [selectedTab, setSelectedTab] = useState("Laundry");
@@ -17,13 +18,22 @@ const MainSection = () => {
     Cleaning: <Cleaning />,
   };
 
+  const onChange = (checked) => {
+    console.log(`switch to ${checked}`);
+  };
+
   return (
-    <div className=" flex  w-full gap-10 text-[#00414e]">
-      <div className="flex-1">
+    <div className=" flex ml-[240px] gap-10 text-[#00414e]">
+      <div className="flex-1 lg:w-[580px] xl:w-[800px]">
         <div className="border-2 border-[#eef0f2] rounded-xl m-5 w-full mt-8">
           <div className="p-5">
+          <div className="flex justify-between gap-3 w-40 bg-[#00414E] text-gray-200 p-2 rounded-lg">
+            <span>B2C</span>
+          <Switch defaultChecked onChange={onChange} />
+            <span>B2B</span>
+          </div>
             <label
-              className="block mb-2 text-sm font-medium"
+              className="block mb-2 text-sm font-medium mt-3"
             >
               New Walk In
             </label>

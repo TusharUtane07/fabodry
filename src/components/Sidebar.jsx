@@ -1,6 +1,11 @@
+import { IoCart } from "react-icons/io5";
+
 const Sidebar = () => {
   return (
-    <section className="lg:w-2/12 xl:w-2/12 w-[300px] grid-cols-1 bg-[#d5e7ec] min-h-[calc(100vh-70px)] ">
+    <section
+  className="w-[240px] grid-cols-1 bg-[#d5e7ec] min-h-screen h-full fixed left-0 overflow-y-scroll"
+  style={{ scrollbarWidth: "none" }}
+>
       <div className="flex items-center justify-center pt-8">
         <svg
           width="157"
@@ -24,7 +29,7 @@ const Sidebar = () => {
           />
         </svg>
       </div>
-      <div className="flex items-center pl-8 text-sm  mt-8 bg-[#004d57] h-12 rounded-t-xl rounded-l-xl mx-5 mr-8">
+      <div className="flex items-center pl-8 text-sm  mt-7 bg-[#004d57] h-10 rounded-lg mx-5 mr-8">
         <button className="flex gap-6 items-center">
           <svg
             width="24"
@@ -41,43 +46,165 @@ const Sidebar = () => {
           <p className="uppercase text-[#ffffff]">POS</p>
         </button>
       </div>
-        <div className="bg-[#004d57] text-sm rounded-l-xl rounded-b-xl flex flex-col text-white ml-8 mr-8 pl-8 pt-4 pb-4  gt gap-3">
-          <button className="flex items-center gap-2  rounded-l-xl  bg-[#01616e] p-3">
-            <svg
-              width="27"
-              height="27"
-              viewBox="0 0 27 27"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M24.3 0H2.7C1.215 0 0 1.215 0 2.7V27L5.4 21.6H24.3C25.785 21.6 27 20.385 27 18.9V2.7C27 1.215 25.785 0 24.3 0ZM24.3 18.9H4.32L2.7 20.52V2.7H24.3V18.9ZM20.25 12.15H17.55V9.45H20.25V12.15ZM14.85 12.15H12.15V9.45H14.85V12.15ZM9.45 12.15H6.75V9.45H9.45"
-                fill="white"
-              />
-            </svg>
-            <p>New Walk in</p>
-          </button>
-        </div>
-        <div className="bg-[#004d57] text-sm mt-4 rounded-xl flex flex-col text-white ml-8 mr-8 pt-3 pb-3  gt gap-3">
-        <button className="flex items-center justify-center gap-2 p-3 ">
-            <svg
-              width="25"
-              height="25"
-              viewBox="0 0 25 25"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1 1H3.55556L4.06667 3.55556M6.11111 13.7778H18.8889L24 3.55556H4.06667M6.11111 13.7778L4.06667 3.55556M6.11111 13.7778L3.1813 16.7076C2.37635 17.5125 2.94645 18.8889 4.08483 18.8889H18.8889M18.8889 18.8889C17.4775 18.8889 16.3333 20.0331 16.3333 21.4444C16.3333 22.8558 17.4775 24 18.8889 24C20.3003 24 21.4444 22.8558 21.4444 21.4444C21.4444 20.0331 20.3003 18.8889 18.8889 18.8889ZM8.66667 21.4444C8.66667 22.8558 7.52251 24 6.11111 24C4.69972 24 3.55556 22.8558 3.55556 21.4444C3.55556 20.0331 4.69972 18.8889 6.11111 18.8889C7.52251 18.8889 8.66667 20.0331 8.66667 21.4444Z"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <p>Order</p>
-          </button>
-        </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <IoCart className="text-gray-500 text-3xl"/>
+          <p className="capitalize text-gray-500">Order</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 1</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 2</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 3</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 4</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 5</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 6</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 7</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 8</p>
+        </button>
+      </div>
+      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
+        <button className="flex gap-6 items-center">
+          <svg
+            width="24"
+            height="26"
+            viewBox="0 0 24 26"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
+              fill="gray"
+            />
+          </svg>
+          <p className="capitalize text-gray-500">Item 9</p>
+        </button>
+      </div>
     </section>
   );
 };
