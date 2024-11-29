@@ -28,7 +28,7 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
                   <input
                     id="fullAddress"
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm"
                     placeholder="Enter your full address"
                   />
                 </div>
@@ -42,7 +42,7 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
                   <input
                     type="text"
                     id="selected-address"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm "
+                    className="w-full px-3 py-2 border border-gray-300  focus:outline-none rounded-md shadow-sm "
                     placeholder="Enter your selected address"
                   />
                 </div>
@@ -56,7 +56,7 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
                   <input
                     type="text"
                     id="plot-number"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm "
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm "
                     placeholder="Enter your plot number"
                   />
                 </div>
@@ -70,7 +70,7 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
                   <input
                     type="text"
                     id="landmark"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm "
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm "
                     placeholder="Enter your landmark"
                   />
                 </div>

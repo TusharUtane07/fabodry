@@ -118,20 +118,21 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
                   <td className="border border-gray-300 px-4 py-2">
                     {product.type}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 text-center px-4 py-2">
                     {product.price}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    <div className="border border-gray-300 rounded-lg my-2 p-1 flex items-center">
+                    <div className=" rounded-lg my-2 p-1 flex items-center">
                       <button
-                        className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"
+                                                className="bg-[#006370] text-white rounded-full p-0.5 px-2"
+
                         onClick={() => handleIncrement(index)}
                       >
                         +
                       </button>
-                      <span className="text-gray-500 px-5">{quantities[index]}</span>
+                      <span className="text-gray-500 px-5 border border-gray-300 mx-1 rounded-full">{quantities[index]}</span>
                       <button
-                        className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"
+                        className="bg-[#006370] text-white rounded-full p-0.5 px-2"
                         onClick={() => handleDecrement(index)}
                       >
                         -
