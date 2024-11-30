@@ -1,6 +1,6 @@
 import { useState } from "react";
 import productGif from "../assets/product.gif";
-import AlphabetsComponent from "./alphabetsComponent";
+import AlphabetsComponent from "../components/alphabetsComponent";
 import shirt from "../assets/shirt.png";
 import Popup from "../components/Popup";
 import SidebarPopup from "../components/SidebarPopup";
@@ -172,7 +172,6 @@ const Laundry = () => {
               <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
             </div>
             <div className="grid grid-cols-5 gap-4 my-4">
-              {/* Change the color of selected item when added */}
               {filteredProducts.map((item, index) => (
                <div
                key={index}

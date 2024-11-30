@@ -1,4 +1,4 @@
-import AlphabetsComponent from "./alphabetsComponent";
+import AlphabetsComponent from "../components/alphabetsComponent";
 import sofa from "../assets/sofa.png";
 import toilet from "../assets/toilet.png";
 import kitchen from "../assets/kitchen.png";

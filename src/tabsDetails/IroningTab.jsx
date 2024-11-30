@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AlphabetsComponent from "./alphabetsComponent";
+import AlphabetsComponent from "../components/alphabetsComponent";
 import shirt from "../assets/shirt.png";
 import Popup from "../components/Popup";
 import SidebarPopup from "../components/SidebarPopup";
