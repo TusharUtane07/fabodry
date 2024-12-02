@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Laundry from "../tabsDetails/LaundryTab";
 import DryCleaning from "../tabsDetails/DryCleaning";
 import Ironing from "../tabsDetails/IroningTab";
@@ -6,10 +6,28 @@ import Starching from "../tabsDetails/StarchingTab";
 import Cleaning from "../tabsDetails/Cleaning";
 import BillingSection from "./BillingSection";
 import { Switch } from "antd";
+import useFetch from "../hooks/useFetch";
 
 const MainSection = () => {
   const [selectedTab, setSelectedTab] = useState("Laundry");
   const [mode, setMode] = useState("B2B");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [userName, setUserName] = useState("");
+
+  // Fetch customer data based on mobileNumber
+  const { data } = useFetch(
+    mobileNumber ? `http://localhost:8888/api/v1/customers/search?mobile=${mobileNumber}` : null,
+    {},
+    [mobileNumber]
+  );
+
+  useEffect(() => {
+    if (data?.data?.customer?.name) {
+      setUserName(data.data.customer.name); // Update the username if a customer name is found
+    } else if (mobileNumber) {
+      setUserName(""); // Clear the username if no customer name is found
+    }
+  }, [data, mobileNumber]);
 
   const componentsMap = {
     Laundry: <Laundry mode={mode} />,
@@ -44,15 +62,17 @@ const MainSection = () => {
             <div className="flex gap-4">
               <input
                 type="text"
-                className="border border-gray-300 text-sm rounded-lg block w-full p-2.5"
+                className="border border-gray-300 text-sm rounded-lg block w-full p-2.5 active:outline-none focus:outline-none"
                 placeholder="Enter Mobile Number"
-                required
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
               />
               <input
                 type="text"
                 className="border border-gray-300 text-sm rounded-lg block w-full p-2.5"
                 placeholder="Enter New User"
-                required
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
               />
             </div>
           </div>
