@@ -1,19 +1,14 @@
 import AlphabetsComponent from "../components/alphabetsComponent";
 import sofa from "../assets/sofa.png";
-import toilet from "../assets/toilet.png";
-import kitchen from "../assets/kitchen.png";
 import { useState } from "react";
-import Popup from "../components/Popup";
 import SidebarPopup from "../components/SidebarPopup";
+import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
+import { useCart } from "../context/CartContenxt";
+import axios from "axios";
 
-const Cleaning = () => {
-  const cleaningProduct = [
-    { type: "Sofa", price: "$ 10.00/Pc", img: sofa, category: "sofa" },
-    { type: "Toilet", price: "$ 10.00/Pc", img: toilet, category: "toilet" },
-    { type: "Kitchen", price: "$ 10.00/Pc", img: kitchen, category: "kitchen" },
-    { type: "Sofa", price: "$ 10.00/Pc", img: sofa, category: "sofa" },
-    { type: "Kitchen", price: "$ 10.00/Pc", img: kitchen, category: "kitchen" },
-  ];
+const Cleaning = ({filteredCleaningProducts}) => {
+
+  const {cartItems, refreshCart} = useCart();
 
   const sofaTypes = [
     { type: "2 Seater", price: "$ 200.00/Pc", img: sofa, category: "sofa" },
@@ -26,29 +21,53 @@ const Cleaning = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAlphabet, setSelectedAlphabet] = useState("");
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
+  const dryCleaningProduct = [
+    {
+      type: "Shirt",
+      price: "$ 10.00/Pc",
+      // img: shirt,
+    },
+    {
+      type: "Pant",
+      price: "$ 12.00/Pc",
+      // img: shirt,
+    },
+    {
+      type: "T-Shirt",
+      price: "$ 8.00/Pc",
+      // img: shirt,
+    },
+    {
+      type: "Jacket",
+      price: "$ 15.00/Pc",
+      // img: shirt,
+    },
+    {
+      type: "Shirt",
+      price: "$ 10.00/Pc",
+      // img: shirt,
+    },
+    {
+      type: "Shirt",
+      price: "$ 10.00/Pc",
+      // img: shirt,
+    },
+  ];
 
-
-  const handleProductClick = (item) => {
-    if (item.category === "sofa") {
-      setSelectedItem("sofa");
-    } else {
-      setSelectedItem(item);
-    }
-  };
-
-  const handleBackToGrid = () => {
-    setSelectedItem(null);
-  };
+  const [quantities, setQuantities] = useState(
+    dryCleaningProduct?.map(() => 1)
+  );
+  const [productDetails, setProductDetails] = useState(null);
 
   const handleAlphabetClick = (alphabet) => {
     setSelectedAlphabet(alphabet);
     setSearchTerm(""); 
   };
 
-  const filteredProducts = cleaningProduct.filter((item) => {
-    const matchesSearchTerm = item.type.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredProducts = filteredCleaningProducts?.filter((item) => {
+    const matchesSearchTerm = item?.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesAlphabet = selectedAlphabet
-      ? item.type.toLowerCase().startsWith(selectedAlphabet.toLowerCase())
+      ? item.name.toLowerCase().startsWith(selectedAlphabet.toLowerCase())
       : true;
 
     return matchesSearchTerm && matchesAlphabet;
@@ -58,61 +77,59 @@ const Cleaning = () => {
     setIsPreviewPopupOpen(true);
   };
 
+  const handleIncrement = async(index, productId, serviceName, productName) => {
+    setProductDetails( {
+      productId,
+      serviceName,
+      productName
+    })
+    const token = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userId");
+
+    try {
+        const response = await axios.post(
+            "http://localhost:8888/api/v1/carts/add",
+            {
+                customerId: userId,
+                productId: [productDetails?.productId],
+                serviceId: productDetails?.serviceName,
+                quantity: 1,
+                garmentType: productName,
+                additionalServices: ["Cleaning"],
+                onHangerPrice:0,
+                requirements: "",
+                comments: [""],
+                press: "",
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        await refreshCart();
+    } catch (error) {
+        console.error("Error updating cart:", error);
+    }
+  }
+
+  const handleDecrement = (index) => {
+    const updatedQuantities = [...quantities];
+    if (updatedQuantities[index] > 1) {
+      updatedQuantities[index] -= 1;
+      setQuantities(updatedQuantities);
+    }
+  };
+
   return (
     <div>
-      {selectedItem ? (
-        selectedItem === "sofa" ? (
-          <div className="p-4">
-            <div className="rounded-lg flex flex-col justify-start">
-              <p className="text-lg capitalize text-start self-start">Select Sofa Type</p>
-              <div className="grid grid-cols-3 gap-4 my-4">
-                {sofaTypes.map((item, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleProductClick(item)}
-                    className="border cursor-pointer border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
-                  >
-                    <img src={item.img} alt={item.type} className="w-16 h-16 mx-auto" />
-                    <p className="text-2xl">{item.type}</p>
-                    <p className="text-gray-400 text-xs my-2">Starting from</p>
-                    <p className="text-xl text-[#006370]">{item.price}</p>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={handleBackToGrid}
-                className="bg-[#006370] mx-auto text-white py-2 px-4 w-60 rounded mt-5"
-              >
-                Back to Items
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="p-4">
-            <div className="rounded-lg p-5 flex flex-col items-center">
-              <img
-                src={selectedItem.img}
-                alt={selectedItem.type}
-                className="w-20 h-20 mx-auto mb-4"
-              />
-              <p className="text-2xl">{selectedItem.type}</p>
-              <p className="text-xl text-[#006370] mt-2">{selectedItem.price}</p>
-              <button
-                onClick={handleBackToGrid}
-                className="bg-[#006370] mx-auto text-white py-2 px-4 w-60 rounded mt-5"
-              >
-                Back to Items
-              </button>
-            </div>
-          </div>
-        )
-      ) : (
+ 
         <>
           <div className="flex justify-between items-center">
       <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
         <input
           type="text"
-          className="py-2 pl-3 focus:outline-none"
+          className="py-1.5 text-xs pl-3 focus:outline-none w-full"
           placeholder="Search Product"
           value={searchTerm}
           onChange={(e) => {
@@ -138,12 +155,12 @@ const Cleaning = () => {
         </button>
       </div>
       <div className="flex gap-1 items-center">
-            <div className="text-sm rounded-lg px-8 py-2  text-gray-500">
-                Total Count: 14
+            <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
+                Total Count: {cartItems?.length}
             </div>
               <button 
                 onClick={handlePreviewClick}
-                className="bg-[#004D57] text-white rounded-lg px-8 py-2"
+               className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5"
               >
                 Preview
               </button>
@@ -153,29 +170,38 @@ const Cleaning = () => {
             <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
           </div>
           <div className="grid lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
-            {filteredProducts.map((item, index) => (
+            {filteredProducts?.map((item, index) => (
               <div
                 key={index}
                 className="border border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
               >
-                <img src={item.img} alt={item.type} className="w-16 h-16 mx-auto" />
-                <p className="text-lg">{item.type}</p>
+                <img src={item.image} alt={item.name} className="w-12 h-12 mx-auto" />
+                <p className="text-sm capitalize">{item.name}</p>
                 <p className="text-gray-400 text-xs my-2">Starting from</p>
-                <p className="text-sm text-[#006370]">{item.price}</p>
-                <button
-                  onClick={() => handleProductClick(item)}
-                  className="bg-[#004D57] text-white lg:text-xs lg:px-2 xl:text-sm w-full gap-2 mt-3 py-3 rounded-lg"
-                >
-                  Add Product
-                </button>
+                <p className="text-xs text-[#006370]">₹ {item.price}/-</p>
+                <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
+              <button
+                className="bg-[#006370] text-white rounded-sm px-1"
+                onClick={() => handleIncrement(index, item.id, item.serviceName, item.name)}
+              >
+                +
+              </button>
+              <span className="text-gray-500 px-3">{quantities[index]}</span>
+              <button
+                className="bg-[#006370] text-white rounded-sm   px-1"
+                onClick={() => handleDecrement(index)}
+              >
+                -
+              </button>
+            </div>
               </div>
             ))}
           </div>
         </>
-      )}
+      
 
-      <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
-      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} />
+      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} cartItems={cartItems} />
+      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} cartItems={cartItems}/>
 
     </div>
   );

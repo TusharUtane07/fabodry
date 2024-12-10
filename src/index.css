@@ -7,7 +7,15 @@
     font-family: 'Poppins', serif;
 }
 
+body::-webkit-scrollbar{
+    display: none;
+}
+
 .ant-switch-checked {
     background-color: green !important; 
-  }
+}
+
+
+
+
   

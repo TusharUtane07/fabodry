@@ -1,15 +1,125 @@
+import { BsGraphUp } from "react-icons/bs";
+import { FaRegHandshake } from "react-icons/fa";
+import { FaPeopleGroup } from "react-icons/fa6";
+import { GiExpense } from "react-icons/gi";
+import { GrCatalog, GrUserManager } from "react-icons/gr";
 import { IoCart } from "react-icons/io5";
+import {
+  MdOutlineBusinessCenter,
+  MdOutlineDirectionsBike,
+  MdOutlineFactory,
+  MdOutlineInventory,
+  MdOutlinePayments,
+  MdOutlineSupportAgent,
+} from "react-icons/md";
+import { PiSuitcaseSimpleDuotone } from "react-icons/pi";
+import { RiAdminLine, RiCustomerService2Line } from "react-icons/ri";
+import { SiGoogleads, SiGoogleanalytics } from "react-icons/si";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const tabs = [
+    { label: "POS", link: "/", icon: <BsGraphUp className="text-lg" /> },
+    { label: "Order", link: "/orders", icon: <IoCart className="text-lg" /> },
+    {
+      label: "B2C Orders",
+      link: "/b2c-orders",
+      icon: <MdOutlineBusinessCenter className="text-lg" />,
+    },
+    {
+      label: "Pick up & Drop",
+      link: "/pickup-drop",
+      icon: <MdOutlineDirectionsBike className="text-lg" />,
+    },
+    {
+      label: "Leads & Enquires",
+      link: "/leads-and-enquires",
+      icon: <SiGoogleads className="text-lg" />,
+    },
+    {
+      label: "Customer Management",
+      link: "/customer-management",
+      icon: <RiCustomerService2Line className="text-lg" />,
+    },
+    {
+      label: "B2B Orders",
+      link: "/b2b-orders",
+      icon: <MdOutlineBusinessCenter className="text-lg" />,
+    },
+    {
+      label: "Settlements",
+      link: "/settlements",
+      icon: <FaRegHandshake className="text-lg" />,
+    },
+    {
+      label: "Catalogs & Products",
+      link: "/catalogs-and-products",
+      icon: <GrCatalog className="text-lg" />,
+    },
+    {
+      label: "Expense Management",
+      link: "/expense-management",
+      icon: <GiExpense className="text-lg" />,
+    },
+    {
+      label: "Inventory Management",
+      link: "/inventory-management",
+      icon: <MdOutlineInventory className="text-lg" />,
+    },
+    {
+      label: "Analytics & Reporting",
+      link: "/analytics-and-reporting",
+      icon: <SiGoogleanalytics className="text-lg" />,
+    },
+    {
+      label: "HR & Staff Management",
+      link: "/hr-and-staff-management",
+      icon: <FaPeopleGroup className="text-lg" />,
+    },
+    {
+      label: "Factory panel",
+      link: "/factory-panel",
+      icon: <MdOutlineFactory className="text-lg" />,
+    },
+    {
+      label: "Role Management",
+      link: "/role-management",
+      icon: <GrUserManager className="text-lg" />,
+    },
+    {
+      label: "Franchise Management",
+      link: "/franchise-management",
+      icon: <PiSuitcaseSimpleDuotone className="text-lg" />,
+    },
+    {
+      label: "Help & Support",
+      link: "/help-and-support",
+      icon: <MdOutlineSupportAgent className="text-lg" />,
+    },
+    {
+      label: "Admin & System",
+      link: "/admin-and-system",
+      icon: <RiAdminLine className="text-lg" />,
+    },
+    {
+      label: "Payments Tracking",
+      link: "/payments-tracking",
+      icon: <MdOutlinePayments className="text-lg" />,
+    },
+  ];
+
   return (
     <section
-  className="w-[240px] grid-cols-1 bg-[#d5e7ec] min-h-screen h-full fixed left-0 overflow-y-scroll"
-  style={{ scrollbarWidth: "none" }}
->
-      <div className="flex items-center justify-center pt-8">
+      className="w-[240px] grid-cols-1 bg-[#d5e7ec] min-h-screen h-full fixed left-0 overflow-y-scroll"
+      style={{ scrollbarWidth: "none" }}
+    >
+      <div className="flex items-center justify-center pt-24 pb-4">
         <svg
-          width="157"
-          height="27"
+          width="130"
+          height="25"
           viewBox="0 0 157 27"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -29,182 +139,26 @@ const Sidebar = () => {
           />
         </svg>
       </div>
-      <div className="flex items-center pl-8 text-sm  mt-7 bg-[#004d57] h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+      {tabs.map((item, index) => {
+        return (
+          <div
+            key={index}
+            className="flex items-center  text-[10px] h-10 rounded-lg  mx-3"
           >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="white"
-            />
-          </svg>
-          <p className="uppercase text-[#ffffff]">POS</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <IoCart className="text-gray-500 text-3xl"/>
-          <p className="capitalize text-gray-500">Order</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 1</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 2</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 3</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 4</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 5</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 6</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 7</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 8</p>
-        </button>
-      </div>
-      <div className="flex items-center pl-8 text-sm  mt-3  h-10 rounded-lg mx-5 mr-8">
-        <button className="flex gap-6 items-center">
-          <svg
-            width="24"
-            height="26"
-            viewBox="0 0 24 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0 13.5H2.66667V25.5H0V13.5ZM21.3333 8.16663H24V25.5H21.3333V8.16663ZM10.6667 0.166626H13.3333V25.5H10.6667V0.166626Z"
-              fill="gray"
-            />
-          </svg>
-          <p className="capitalize text-gray-500">Item 9</p>
-        </button>
-      </div>
+            <button
+              onClick={() => navigate(item.link)}
+              className={`flex items-center  py-2 gap-6 rounded-md text-[10px] ${
+                location.pathname === `${item.link}`
+                  ? "bg-[#004d57] text-white w-full px-6  " // Active tab style
+                  : "text-gray-600 text-center w-full px-6" 
+              }`}
+            >
+              {item.icon}
+              <p className="uppercase ">{item.label}</p>
+            </button>
+          </div>
+        );
+      })}
     </section>
   );
 };

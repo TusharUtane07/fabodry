@@ -1,35 +1,47 @@
-import { useState } from "react";
-import productGif from "../assets/product.gif";
+import { useEffect, useState } from "react";
 import AlphabetsComponent from "../components/alphabetsComponent";
 import shirt from "../assets/shirt.png";
-import Popup from "../components/Popup";
-import SidebarPopup from "../components/SidebarPopup";
+import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
+import useFetch from "../hooks/useFetch";
+import productGif from '../assets/product.gif'
+import LaundryPreviewTab from "../components/LaundryPreviewTab";
+import { useCart } from "../context/CartContenxt";
 
-const Laundry = () => {
+const Laundry = ({ filteredLaundryProducts }) => {
+  const { cartItems } = useCart();
   const [selectedItem, setSelectedItem] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
 
-  const laundryProducts = [
-    {
-      name: "Wash & Fold",
-      description: "lorem ipsumelorem ipsumelorem ipsumelorem",
-      price: "$ 50.00/Kg",
-      img: productGif,
-    },
+  const { data } = useFetch("http://localhost:8888/api/v1/services");
+
+  const laundryServices = [
     {
       name: "Wash & Iron",
-      description: "lorem ipsumelorem ipsumelorem ipsumelorem",
-      price: "$ 50.00/Kg",
-      img: productGif,
+      price: 12,
+      description: "Updated description for Laundry Services",
+      image: productGif,
+    },
+    {
+      name: "Wash & Fold",
+      price: 12,
+      description: "Updated description for Laundry Services",
+      image: productGif,
     },
     {
       name: "Premium Laundry",
-      description: "lorem ipsumelorem ipsumelorem ipsumelorem",
-      price: "$ 50.00/Kg",
-      img: productGif,
+      price: 12,
+      description: "Updated description for Laundry Services",
+      image: productGif,
     },
   ];
+
+  const [weights, setWeights] = useState(() =>
+    laundryServices.reduce((acc, _, index) => {
+      acc[index] = 1;
+      return acc;
+    }, {})
+  );
 
   const dryCleaningProduct = [
     { type: "Shirt", price: "$ 10.00/Pc", img: shirt },
@@ -41,10 +53,26 @@ const Laundry = () => {
 
   const [quantities, setQuantities] = useState(dryCleaningProduct.map(() => 1));
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState(dryCleaningProduct);
+  const [filteredProducts, setFilteredProducts] = useState(filteredLaundryProducts);
 
-  const handleIncrement = () => {
+  useEffect(() => {
+    // Initialize filteredProducts when filteredLaundryProducts changes
+    setFilteredProducts(filteredLaundryProducts);
+  }, [filteredLaundryProducts]);
+
+  const handleWeightChange = (index, value) => {
+    const weightValue = Math.max(Number(value), 1);
+    setWeights((prevWeights) => ({
+      ...prevWeights,
+      [index]: weightValue,
+    }));
+  };
+
+  const handleIncrement = (index) => {
     setIsPopupOpen(true);
+    const updatedQuantities = [...quantities];
+    updatedQuantities[index] += 1;
+    setQuantities(updatedQuantities);
   };
 
   const handleDecrement = (index) => {
@@ -62,14 +90,14 @@ const Laundry = () => {
   };
 
   const handleAlphabetClick = (letter) => {
-    setSearchQuery(letter.toLowerCase());
-    filterProducts(letter.toLowerCase());
-    setSearchQuery("");
+    const query = letter.toLowerCase();
+    setSearchQuery(query);
+    filterProducts(query);
   };
 
   const filterProducts = (query) => {
-    const filtered = dryCleaningProduct.filter((product) =>
-      product.type.toLowerCase().startsWith(query)
+    const filtered = filteredLaundryProducts.filter((product) =>
+      product.name.toLowerCase().startsWith(query)
     );
     setFilteredProducts(filtered);
   };
@@ -78,140 +106,155 @@ const Laundry = () => {
     setIsPreviewPopupOpen(true);
   };
 
+  const handleServiceSelection = (itemName) => {
+    setSelectedItem(itemName);
+    // Reset products whenever a service is selected
+    setFilteredProducts(filteredLaundryProducts);
+    setSearchQuery("");
+  };
+
   return (
     <>
-      <div className=" text-center gap-5">
+      <div className="w-full text-center">
         {selectedItem === null ? (
-          <div className="grid grid-cols-3 items-center justify-between gap-3">
-          {laundryProducts.map((item, index) => (
-            <div
-              key={index}
-              className="group flex flex-col h-full justify-between rounded-xl border p-5 border-[#eef0f2] hover:bg-[#004D57] hover:text-white transition-colors"
-            >
-              <img
-                src={item.img}
-                alt=""
-                className="xl:w-20 xl:h-20 lg:w-16  mx-auto rounded-full"
-              />
-              <h3 className="text-[#006370] lg:text-sm xl:text-xl group-hover:text-white">
-                {item.name}
-              </h3>
-              <p className="lg:text-[10px] xl:text-sm  mt-3 text-gray-400 group-hover:text-white">
-                {item.description}
-              </p>
-              <p className="mt-3 text-[#006370] group-hover:text-white lg:text-sm xl:text-xl">
-                {item.price}
-              </p>
-              <div className="flex items-center w-full justify-center  mt-3 gap-3">
-                <label
-                  htmlFor="totalWeight"
-                  className="lg:text-sm text-[10px] text-gray-400 group-hover:text-white"
+          <>
+            <div className="grid grid-cols-3 w-full items-center gap-3">
+              {laundryServices.map((item, index) => (
+                <div
+                  key={index}
+                  className="group flex flex-col h-full justify-between w-full rounded-xl border p-5 border-[#eef0f2] hover:bg-[#004D57] hover:text-white transition-colors"
                 >
-                  Total Weight
-                </label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  className="border border-gray-300 py-1 outline-none pl-3 lg:w-20 xl:w-32 rounded-xl group-hover:bg-[#004d57] pr-2"
-                />
-              </div>
-              <button
-                onClick={() => setSelectedItem(item.name)}
-                className="bg-[#004D57] text-white group-hover:bg-white group-hover:text-[#004d57] text-sm w-full gap-2 mt-3 py-3 rounded-lg"
-              >
-                Add Product
-              </button>
+                  <img
+                    src={item.image}
+                    alt=""
+                    className="xl:w-14 xl:h-14 lg:w-12 w-12 h-12 mx-auto rounded-full"
+                  />
+                  <h3 className="text-[#006370] capitalize lg:text-[10px] xl:text-sm mt-1 group-hover:text-white">
+                    {item.name}
+                  </h3>
+                  <p className="lg:text-[8px] xl:text-[10px] mt-1.5 text-gray-400 group-hover:text-white">
+                    {item.description}
+                  </p>
+                  <p className="mt-1.5 text-[#006370] group-hover:text-white lg:text-[10px] xl:text-xs">
+                    ₹ {item.price * weights[index]}/Kg
+                  </p>
+                  <div className="flex items-center w-full justify-center mt-3 gap-3">
+                    <label
+                      htmlFor="totalWeight"
+                      className="text-[10px] text-gray-400 group-hover:text-white"
+                    >
+                      Total Weight
+                    </label>
+                    <input
+                      id="totalWeight"
+                      type="number"
+                      value={weights[index]}
+                      onChange={(e) =>
+                        handleWeightChange(index, e.target.value)
+                      }
+                      className="border border-gray-300 py-0.5 text-[14px] outline-none pl-3 lg:w-20 xl:w-20 rounded-md group-hover:bg-[#004d57] pr-2"
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleServiceSelection(item.name)}
+                    className="bg-[#004D57] text-white group-hover:bg-white group-hover:text-[#004d57] text-xs w-full gap-2 mt-2 py-2 rounded-lg"
+                  >
+                    Add Product
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-          </div>
+              <div className="w-full invisible">
+              <AlphabetsComponent/>
+              </div>
+          </>
         ) : (
-          <div className="text-center w-full">
-            <h2 className="text-lg bg-[#004D57] text-white w-full py-2.5 rounded-lg ">
+          <div>
+            {/* Product listing */}
+            <h2 className="text-sm font-semibold capitalize">
               {selectedItem}
             </h2>
-
-            <div className="flex justify-between items-center">
-            <div className="border rounded-lg border-gray-300 w-72 ml-4 mt-5 flex items-center justify-between">
-              <input
-                type="text"
-                className="py-2 pl-3 focus:outline-none w-full"
-                placeholder="Search Product"
-                value={searchQuery}
-                onChange={handleSearch}
-              />
-              <button
-                className="p-1 focus:outline-none items-end-end focus:shadow-outline"
-              >
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  className="w-4 h-4"
-                >
-                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-              </button>
-            </div>
-            <div className="flex gap-1 items-center">
-            <div className="text-sm rounded-lg px-8 py-2 mt-4 text-gray-500">
-                Total Count: 14
+            <div className="flex justify-between items-center mt-3">
+      <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
+        <input
+          type="text"
+          className="py-1.5 text-xs pl-3 focus:outline-none w-full"
+          placeholder="Search Product"
+          value={searchQuery}
+          onChange={handleSearch}
+        />
+        <button
+          type="submit"
+          className="p-1 focus:outline-none items-end-end focus:shadow-outline"
+        >
+          <svg
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            className="w-4 h-4"
+          >
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
+      </div>
+      <div className="flex gap-1 items-center">
+            <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
+            Total Count: {cartItems?.length}
             </div>
               <button 
                 onClick={handlePreviewClick}
-                className="bg-[#004D57] text-white rounded-lg px-8 py-2 mt-4"
+                className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5"
               >
                 Preview
               </button>
             </div>
-            </div>
+      </div>
 
-            <div className="mt-3">
-              <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
-            </div>
-            <div className="grid grid-cols-5 gap-4 my-4">
-              {filteredProducts.map((item, index) => (
-               <div
-               key={index}
-               className="group border cursor-pointer border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center hover:bg-[#004D57] hover:text-white"
-             >
-               <img
-                 src={shirt}
-                 alt=""
-                 className="w-16 h-16 mx-auto group-hover:opacity-75"
-               />
-               <p className="text-2xl group-hover:text-white">{item.type}</p>
-               <p className="text-xl text-[#006370] group-hover:text-gray-400">
-                 {item.price}
-               </p>
-               <div className="border border-gray-300 rounded-lg my-2 p-1 flex items-center group-hover:border-white">
-                 <button
-                   className="bg-[#006370] text-white rounded-full p-0.5 px-2.5 group-hover:bg-white group-hover:text-[#004D57]"
-                   onClick={() => handleIncrement(index)}
-                 >
-                   +
-                 </button>
-                 <span className="text-gray-500 px-5 group-hover:text-white">
-                   {quantities[index]}
-                 </span>
-                 <button
-                   className="bg-[#006370] text-white rounded-full p-0.5 px-2.5 group-hover:bg-white group-hover:text-[#004D57]"
-                   onClick={() => handleDecrement(index)}
-                 >
-                   -
-                 </button>
-               </div>
-             </div>
-             
+      <div className="mt-3">
+        <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
+      </div>
+            <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4  my-4">
+              {filteredProducts?.map((item, index) => (
+                <div
+                  key={index}
+                  className="border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center"
+                >
+                  <img src={item.image} alt="" className="w-12 h-12 mx-auto" />
+                  <p className="text-xs pt-2 capitalize">{item.name}</p>
+                  <p className="text-xs py-1 text-[#006370]">₹ {item.price}/-</p>
+                  <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
+                    <button
+                      className="bg-[#006370] text-white rounded-sm px-1"
+                      onClick={() => handleIncrement(index)}
+                    >
+                      +
+                    </button>
+                    <span className="text-gray-500 px-3">
+                      {quantities[index]}
+                    </span>
+                    <button
+                      className="bg-[#006370] text-white rounded-sm px-1"
+                      onClick={() => handleDecrement(index)}
+                    >
+                      -
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         )}
       </div>
-      <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
-      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} />
+      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
+      <LaundryPreviewTab
+        cartItems={cartItems}
+        selectedItem={selectedItem}
+        isOpen={isPreviewPopupOpen}
+        setIsOpen={setIsPreviewPopupOpen}
+      />
     </>
   );
 };

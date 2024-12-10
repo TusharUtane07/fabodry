@@ -1,10 +1,15 @@
 import { useState } from "react";
 import AlphabetsComponent from "../components/alphabetsComponent";
 import shirt from "../assets/shirt.png";
-import Popup from "../components/Popup";
 import SidebarPopup from "../components/SidebarPopup";
+import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
+import axios from "axios";
+import { useCart } from "../context/CartContenxt";
 
-const DryCleaning = () => {
+const DryCleaning = ({filteredDcProducts}) => {
+
+  const {cartItems} = useCart();
+  
   const dryCleaningProduct = [
     {
       type: "Shirt",
@@ -39,13 +44,19 @@ const DryCleaning = () => {
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState(dryCleaningProduct);
+  const [filteredProducts, setFilteredProducts] = useState(filteredDcProducts);
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
+  const [productDetails, setProductDetails] = useState(null);
 
 
-  const handleIncrement = () => {
-    setIsPopupOpen(true);
-  };
+  const handleIncrement = (index, productId, serviceName, productName) => {
+    setProductDetails( {
+      productId,
+      serviceName,
+      productName
+    })
+    setIsPopupOpen(true)
+  }
 
   const handleDecrement = (index) => {
     const updatedQuantities = [...quantities];
@@ -68,8 +79,8 @@ const DryCleaning = () => {
   };
 
   const filterProducts = (query) => {
-    const filtered = dryCleaningProduct.filter((product) =>
-      product.type.toLowerCase().startsWith(query)
+    const filtered = filteredDcProducts?.filter((product) =>
+      product.name.toLowerCase().startsWith(query)
     );
     setFilteredProducts(filtered);
   };
@@ -78,13 +89,15 @@ const DryCleaning = () => {
     setIsPreviewPopupOpen(true);
   };
 
+  
+console.log(filteredProducts);
   return (
     <div>
       <div className="flex justify-between items-center">
       <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
         <input
           type="text"
-          className="py-2 pl-3 focus:outline-none"
+          className="py-1.5 text-xs pl-3 focus:outline-none w-full"
           placeholder="Search Product"
           value={searchTerm}
           onChange={handleSearch}
@@ -107,12 +120,12 @@ const DryCleaning = () => {
         </button>
       </div>
       <div className="flex gap-1 items-center">
-            <div className="text-sm rounded-lg px-8 py-2 text-gray-500">
-                Total Count: 14
+            <div className="text-xs rounded-lg px-8 text-gray-500">
+            Total Count: {cartItems?.length}
             </div>
               <button 
                 onClick={handlePreviewClick}
-                className="bg-[#004D57] text-white rounded-lg px-8 py-2"
+                className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5 "
               >
                 Preview
               </button>
@@ -121,25 +134,25 @@ const DryCleaning = () => {
       <div className="mt-3">
         <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
       </div>
-      <div className="grid lg:grid-cols-4 xl:grid-cols-5 gap-4 my-4">
+      <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4">
         {filteredProducts.map((item, index) => (
           <div
             key={index}
-            className="border cursor-pointer border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
+            className="border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center"
           >
-            <img src={shirt} alt="" className="w-16 h-16 mx-auto " />
-            <p className="text-2xl">{item.type}</p>
-            <p className="text-xl text-[#006370]">{item.price}</p>
-            <div className="border border-gray-300 rounded-lg my-2 p-1 flex items-center">
+            <img src={item.image} alt="" className="w-12 h-12 mx-auto " />
+            <p className="text-sm pt-2 capitalize">{item.name}</p>
+            <p className="text-xs py-1 text-[#006370]">₹ {item.price}/-</p>
+            <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
               <button
-                className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"
-                onClick={() => handleIncrement(index)}
+                className="bg-[#006370] text-white rounded-sm px-1"
+                onClick={() => handleIncrement(index, item.id, item.serviceName, item.name)}
               >
                 +
               </button>
-              <span className="text-gray-500 px-5">{quantities[index]}</span>
+              <span className="text-gray-500 px-3">{quantities[index]}</span>
               <button
-                className="bg-[#006370] text-white rounded-full p-0.5 px-2.5"
+                className="bg-[#006370] text-white rounded-sm   px-1"
                 onClick={() => handleDecrement(index)}
               >
                 -
@@ -148,8 +161,8 @@ const DryCleaning = () => {
           </div>
         ))}
       </div>
-      <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
-      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} />
+      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} cartItems={cartItems} productDetails={productDetails}/>
+      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen}  cartItems={cartItems}  productDetails={productDetails}/>
 
     </div>
   );

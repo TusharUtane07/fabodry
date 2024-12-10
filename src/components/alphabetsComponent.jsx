@@ -4,12 +4,12 @@ const AlphabetsComponent = ({ onAlphabetClick }) => {
   ); 
   
   return (
-    <div className="w-full flex items-center justify-evenly">
+    <div className="w-full  flex items-center justify-evenly">
       {alphabets.map((letter) => (
         <button
           key={letter}
           onClick={() => onAlphabetClick(letter)} 
-          className="bg-[#d5e7ec] text-[#00414E] hover:bg-[#004D57] hover:text-white w-5 h-5 text-sm rounded-md"
+          className="bg-[#d5e7ec] text-[#00414E] hover:bg-[#004D57] hover:text-white w-5 h-5 text-xs rounded-md"
           style={{ margin: "5px" }}
         >
           {letter}

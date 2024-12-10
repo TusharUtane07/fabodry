@@ -2,10 +2,11 @@ import axios from "axios";
 import { useState } from "react";
 import { useCart } from "../context/CartContenxt";
 
-const Popup = ({ isOpen, setIsOpen, productDetails }) => {
+const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
   const togglePopup = () => setIsOpen(!isOpen);
 
   const { refreshCart } = useCart();
+  console.log(cartId, "1");
 
   const [selectedDetails, setSelectedDetails] = useState({
     type: null, 
@@ -49,13 +50,13 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
     }));
   };
 
-  const addToCart = async () => {
+  const updateCart = async () => {
     const token = localStorage.getItem("authToken");
     const userId = localStorage.getItem("userId");
 
     try {
-        const response = await axios.post(
-            "http://localhost:8888/api/v1/carts/add",
+        const response = await axios.put(
+            `http://localhost:8888/api/v1/carts/${cartId}`,
             {
                 customerId: userId,
                 productId: [productDetails?.productId],
@@ -75,6 +76,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
             }
         );
         await refreshCart();
+        setIsOpen(false)
     } catch (error) {
         console.error("Error updating cart:", error);
     }
@@ -87,7 +89,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-5 pb-10 text-sm">
           <div className="bg-white rounded-lg p-6 w-[60vw] h-[80vh] mx-auto">
             <h2 className="text-lg text-[#00414e] mb-4">
-              {productDetails?.productName}
+             Edit {productDetails?.productName} 
             </h2>
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Select {productDetails?.productName} Type</p>
@@ -198,7 +200,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
             </div>
             <div className="mt-4 mx-8">
               <button
-                onClick={addToCart}
+                onClick={() => updateCart()}
                 className="text-[10px] bg-[#006370] text-white px-20 py-2 rounded-lg"
               >
                 Add
@@ -217,4 +219,4 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
   );
 };
 
-export default Popup;
+export default OrderEditPopup;

@@ -1,10 +1,21 @@
+import { useEffect, useState } from "react";
+import useFetch from "../hooks/useFetch";
+
 const CouponPopup = ({ isOpen, setIsOpen, onCouponSelect }) => {
-    const coupons = [
-      { code: "Fabodry30", description: "Flat 30% Off" },
-      { code: "Fabodry50", description: "Flat 50% Off" },
-      { code: "Fabodry30", description: "Flat 30% Off" },
-      { code: "Fabodry50", description: "Flat 50% Off" },
-    ];
+
+  const [couponCodes, setCouponCodes]  = useState(null);
+      const token = localStorage.getItem("authToken");
+        const { data, loading, error } = useFetch("http://localhost:8888/api/v1/coupons/all", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      useEffect(() => {
+      if (data?.data) {
+        setCouponCodes(data.data);
+      }
+    }, [data]);
   
     return (
       <div className="relative">
@@ -15,11 +26,11 @@ const CouponPopup = ({ isOpen, setIsOpen, onCouponSelect }) => {
           ></div>
         )}
         <div
-          className={`fixed inset-y-0 left-0 bg-white w-[550px] h-full shadow-lg z-50 transform transition-transform duration-300 ${
+          className={`fixed inset-y-0 left-0 bg-white w-[450px] h-full shadow-lg z-50 transform transition-transform duration-300 ${
             isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex justify-between items-center p-4 border-b">
+          <div className="flex justify-between items-center p-2 border-b">
             <h2 className="text-lg font-bold">Offers</h2>
             <button
               className="text-gray-500 hover:text-gray-700"
@@ -29,17 +40,17 @@ const CouponPopup = ({ isOpen, setIsOpen, onCouponSelect }) => {
             </button>
           </div>
           <div className="mt-8 overflow-scroll h-full mb-8" style={{scrollbarWidth: "none"}}>
-            {coupons.map((coupon, index) => (
+            {couponCodes?.map((coupon, index) => (
               <div 
                 key={index} 
-                className="border border-gray-400 my-2 mx-5 rounded-lg p-4 flex justify-between "
+                className="border border-gray-400 my-2 mx-5 rounded-lg p-2.5 flex justify-between "
               >
                 <div>
-                  <p className="uppercase">{coupon.code}</p>
-                  <p className="text-xs text-gray-500">{coupon.description}</p>
+                  <p className="uppercase text-[10px]">{coupon.code}</p>
+                  <p className="text-[8px] text-gray-500">Discount: {coupon.discountValue}% off</p>
                 </div>
                 <button 
-                  className="bg-[#00414e] text-gray-200 px-4 rounded-lg text-sm"
+                  className="bg-[#00414e] text-gray-200 px-3 rounded-lg text-[10px]"
                   onClick={() => onCouponSelect(coupon)}
                 >
                   Apply

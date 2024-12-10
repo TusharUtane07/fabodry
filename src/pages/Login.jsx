@@ -1,9 +1,52 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useFetch from "../hooks/useFetch";
 
 const 
 Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginTrigger, setLoginTrigger] = useState(false);
 
   const navigate = useNavigate();
+
+  const { data, loading, error } = useFetch(
+    loginTrigger ? "http://localhost:8888/api/v1/franchise-admin/login" : null,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify({ email, password }),
+    },
+    [loginTrigger]
+  );
+
+  const handleLogin = () => {
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
+    setLoginTrigger((prev) => !prev); 
+  };
+  
+  
+  useEffect(() => {
+    if (data && data.isSuccess) {
+      localStorage.setItem("adminName", data?.data?.name)
+      localStorage.setItem("authToken", data?.data?.token);
+      localStorage.setItem("mobileNumber", "")
+      localStorage.setItem("userName", "")
+      navigate("/");
+    }
+  }, [data, navigate]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   return (
     <div className="flex min-h-full flex-col justify-center px-6 py-40 lg:px-8 ">
@@ -119,7 +162,12 @@ Login = () => {
         </h2>
       </div>
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={
+          (e) => {
+            e.preventDefault();
+            handleLogin();
+          }
+        }>
           <div>
             <label
               htmlFor="email"
@@ -133,6 +181,8 @@ Login = () => {
                 name="email"
                 type="email"
                 autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="block w-full rounded-md border-0 py-2 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset  sm:text-sm/6"
               />
@@ -160,18 +210,21 @@ Login = () => {
                 name="password"
                 type="password"
                 autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="block w-full rounded-md border-0 py-2 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset  sm:text-sm/6"
               />
             </div>
           </div>
+          {error && <p style={{ color: "red" }}>Error: {error?.response?.data?.message?.message}</p>}
           <div>
             <button
-              onClick={() => navigate("/home")}
               type="submit"
+              disabled={loading}
               className="flex w-full justify-center rounded-md bg-[#004D57] px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 "
             >
-              Sign in
+              {loading ? "Logging in..." : "Login"}
             </button>
           </div>
         </form>

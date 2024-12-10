@@ -4,12 +4,12 @@ import Sidebar from './Sidebar';
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/';
+  const isLoginPage = location.pathname === '/login';
 
   return (
     <>
       {!isLoginPage && <Navbar />}
-      <div className={isLoginPage ? '' : 'h-[calc(100vh-70px)] w-screen flex'}>
+      <div className={isLoginPage ? '' : ' w-screen flex'}>
         {!isLoginPage && <Sidebar />}
         <div className={isLoginPage ? '' : 'flex-1 overflow-y-auto'}>{children}</div>
       </div>

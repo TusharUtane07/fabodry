@@ -2,14 +2,14 @@ import { useState } from "react";
 import shirt from "../assets/shirt.png";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { useCart } from "../context/CartContenxt";
-import axios from "axios";
 import OrderEditPopup from "./OrderEditPopup";
 
-const SidebarPopup = ({ isOpen, setIsOpen }) => {
+const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen }) => {
 
-  const {cartItems, refreshCart} = useCart();
-  const [pCartId, setPCartId] = useState(null);
+  const { cartItems, refreshCart } = useCart();
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const [productDetails, setProductDetails] = useState(null);
+  const [pCartId, setPCartId] = useState(null)
 
   const products = [
     {
@@ -55,7 +55,6 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
   ];
 
   const [productList, setProductList] = useState(products);
-  const [productDetails, setProductDetails] = useState(null);
   const [quantities, setQuantities] = useState(
     productList.map(() => 1)
   );
@@ -88,21 +87,6 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
     }
   };
 
-  const deleteCartProduct = async (id) => {
-    const token = localStorage.getItem("authToken");
-    try {
-      const response = await axios.delete(`http://localhost:8888/api/v1/carts/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log("Delete response: ", response);
-      await refreshCart();
-    } catch (error) {
-      console.log("Error deleting product: ", error, error.message);
-    }
-  };
-
   return (
     <div className="relative">
       {isOpen && (
@@ -117,7 +101,7 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
         }`}
       >
         <div className="flex justify-between items-center p-3 border-b">
-          <h2 className="text-xs font-bold">Added Garments</h2>
+          <h2 className="text-lg capitalize font-semibold">{selectedItem}</h2>
           <button
             className="text-gray-500 hover:text-gray-700"
             onClick={() => setIsOpen(false)}
@@ -127,10 +111,28 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
         </div>
 
         <div className="p-4 space-y-6">
-          <table className="table-auto w-full border-collapse ">
-            {cartItems?.length > 0 ? (<tbody className="text-[8px]">
+            <div className="border border-gray-300 p-3 rounded-md">
+                <p className="capitalize text-sm pb-2">{selectedItem} Addons</p>
+                <hr />
+                <div  className="flex  items-center mt-3  gap-3">
+                    <input type="checkbox" id="item1"/>
+                   <div>
+                    <p className="text-xs">Antiviral Cleaning | ₹ 5/kg</p>
+                    <span className="text-[10px]">Removes 99.9% Germs</span>
+                   </div>
+                </div>
+                <div className="flex mt-2 items-center gap-3">
+                    <input type="checkbox" id="item1"/>
+                   <div>
+                    <p className="text-xs">Fabirc Softener | ₹ 5/kg</p>
+                    <span className="text-[10px]">Unbeatable shine & fragrance</span>
+                   </div>
+                </div>
+            </div>
+          <table className="table-auto w-full border-collapse border border-gray-200">
+            { cartItems?.length> 0 ?( <tbody className="text-[8px]">
               {cartItems?.map((product, index) => (
-                <tr key={product?.productId}>
+                <tr key={index}>
                   <td className=" px-2 border border-gray-200">
                     {product?.productId[0]?.name}
                   </td>
@@ -147,7 +149,7 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
                  <div className=" rounded-lg my-2 p-1 flex items-center">
                       <button
                         className="bg-[#006370] text-white rounded-sm p-0.5 px-2"
-                        onClick={() => handleIncrement(index, product?.id, product?.serviceName, product?.name)}
+                        onClick={() => handleIncrement(index)}
                       >
                         +
                       </button>
@@ -155,7 +157,7 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
                         {quantities[index]}
                       </span>
                       <button
-                        className="bg-[#006370] text-white rounded-sm p-0.5 px-2"
+                        className="bg-[#abbbbd] text-white rounded-sm p-0.5 px-2"
                         onClick={() => handleDecrement(index)}
                       >
                         -
@@ -167,20 +169,21 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
                       className="text-green-600 "
                       onClick={() => {handleIncrement(index, product.productId[0]?.id, product.productId[0]?.serviceName,  product.productId[0]?.name, product?._id)}
                     }>
+                    
                       <MdEdit />
                     </button>
                   </td>
                   <td className=" text-sm px-2 border border-gray-200">
                     <button
                       className="text-red-600 "
-                      onClick={() => deleteCartProduct(product?._id)}
+                      // onClick={() => deleteProduct(product.productId)}
                     >
                       <MdDelete />
                     </button>
                   </td>
                 </tr>
               ))}
-            </tbody>): (<p>No Garments Added</p>)}
+            </tbody>) : (<p>No Garments Added</p>)}
           </table>
         </div>
       </div>
@@ -189,4 +192,4 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
   );
 };
 
-export default SidebarPopup;
+export default LaundryPreviewTab;

@@ -1,6 +1,17 @@
 const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
   const togglePopup = () => setIsOpen(!isOpen);
 
+  // http://localhost:8888/api/v1/customers/6728575f39d5a548bdfe3525/address
+//   {
+//     "label": "Home",
+//   "addressLine1": "123 Main St",
+//   "addressLine2": "Apt 4B",
+//   "city": "New York",
+//   "state": "NY",
+//   "postalCode": "10001",
+//   "country": "USA"
+// }
+
   return (
     <>
       {isOpen && (
