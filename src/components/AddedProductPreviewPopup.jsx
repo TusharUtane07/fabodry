@@ -48,7 +48,7 @@ const AddedProductPreviewPopup = ({ isOpen, setIsOpen, productDetails }) => {
     <div className="flex justify-center items-center">
       {isOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-5 pb-10">
-          <div className="bg-white rounded-lg p-6 w-[40vw] h-[70vh] mx-auto overflow-hidden">
+          <div className="bg-white rounded-lg p-6 w-[40vw] mx-auto overflow-hidden">
             <h2 className="text-xl text-[#00414e] mb-4">Added Garments</h2>
             <div
               id="scroll-container"

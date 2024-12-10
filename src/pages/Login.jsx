@@ -37,6 +37,7 @@ Login = () => {
       localStorage.setItem("authToken", data?.data?.token);
       localStorage.setItem("mobileNumber", "")
       localStorage.setItem("userName", "")
+      localStorage.setItem("userId", "")
       navigate("/");
     }
   }, [data, navigate]);

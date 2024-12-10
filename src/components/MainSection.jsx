@@ -34,6 +34,7 @@ const MainSection = ({ products }) => {
 
   useEffect(() => {
     if (data?.data?.customer?.name) {
+      localStorage.setItem("userId", data?.data?.customer?._id);
       refreshCart();
       setUserName(data.data.customer.name);
       setCustomerAddress(data.data.customer.addresses);

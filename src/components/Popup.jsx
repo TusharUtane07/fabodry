@@ -85,7 +85,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
     <div className="flex justify-center items-center">
       {isOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-5 pb-10 text-sm">
-          <div className="bg-white rounded-lg p-6 w-[60vw] h-[80vh] mx-auto">
+          <div className="bg-white rounded-lg p-6 w-[60vw] mx-auto">
             <h2 className="text-lg text-[#00414e] mb-4">
               {productDetails?.productName}
             </h2>
