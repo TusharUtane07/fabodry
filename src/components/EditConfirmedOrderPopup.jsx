@@ -19,13 +19,25 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
       hour12: true
     });
 
+    function formatDate(isoDate) {
+      const date = new Date(isoDate);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0'); 
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+  }
+
+  console.log(order);
+  const deliveryDate = formatDate(order.deliveryDate)
     const labelData = order.productNames.map((product, index) => ({
       orderId: order._id,
       customerName: order.customerName,
       garment: product,
       serviceName: order.serviceNames[index], 
       count: `${index + 1}/${order.productNames.length}`,
+      // comment: order.comments[index],
       date: formattedDate,
+      dd: deliveryDate,
       time: formattedTime,
     }));
     
@@ -151,10 +163,11 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
                 <p style={{ margin: '1mm 0' }}>{label.customerName}</p>
                 <p style={{ margin: '1mm 0', fontWeight: "bold", fontSize: "10px" }}>Order ID: {label.orderId}</p>
                 <p style={{ margin: '1mm 0' }}>{label.garment}</p>
+                {/* <p style={{ margin: '1mm 0' }}>{label.comment}</p> */}
                 <p style={{ margin: '1mm 0', border: "2px solid black", padding: "2px" }}>{label.serviceName}</p>
                 <p style={{ margin: '1mm 0', fontWeight: 'bold', display:'flex' }}>
-                  <span>https://fabodry.in</span>
-                  <span>{label.count}</span>
+                  <span>DD: {label.dd}</span>{" - "}
+                  <span>{`[${label.count}]`}</span>
                   </p>
               </div>
             ))}

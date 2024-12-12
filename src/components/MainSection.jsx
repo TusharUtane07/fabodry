@@ -173,7 +173,7 @@ const MainSection = ({ products }) => {
         <div className="border-2 border-[#eef0f2] rounded-xl m-5 w-full mt-8">
           <div className="p-5">
             <div className="w-full flex justify-between ">
-              <div className="flex justify-between items-center gap-3 w-40 bg-[#00414E] text-gray-200 py-1 px-2 text-xs rounded-lg">
+              <div className={`flex justify-between items-center gap-3 w-40 py-1 px-2 text-xs rounded-lg ${mode === "B2B"? "bg-[#66BDC5] text-white" :  "bg-[#00414E] text-gray-200"}`}>
                 <span>B2B</span>
                 <Switch defaultChecked onChange={onChange} />
                 <span>B2C</span>
@@ -182,31 +182,34 @@ const MainSection = ({ products }) => {
                 Current Mode: <span className="text-[#00414e]">{mode}</span>
               </h3>
             </div>
-            <div className="flex justify-between">
+            <div className="flex gap-4 items-center">
+
+              <div className="w-full">
 
             <label className="block mb-2 text-xs font-medium mt-3">
               New Walk In
             </label>
-              <p className="text-[10px] bg-[#00414e] text-white py-0.5 h-5 px-3 rounded-md items-end justify-self-end">{customerNewOld}</p>
-
-            </div>
-            <div className="flex gap-4">
               <input
                 type="text"
-                className="border border-gray-300 text-xs rounded-lg block w-full p-2 active:outline-none focus:outline-none"
+                className="border border-gray-300 text-xs rounded-md  block w-full p-2 h-10 active:outline-none focus:outline-none"
                 placeholder="Enter Mobile Number"
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
-              />
+                />
+                </div>
               
+              <div className="w-full mt-3">
+              <p className={`text-[10px] p-1 rounded-bl-3xl rounded-tr-3xl py-1.5 px-4 mb-[-1px] items-end justify-self-end  ${mode === "B2B"? "bg-[#66BDC5] text-white" :  "bg-[#00414E] text-gray-200"}`}>{customerNewOld}</p>
+
               <input
                 type="text"
-                className="border border-gray-300 text-xs rounded-lg block w-full p-2"
+                className="border border-gray-300 text-xs rounded-md block w-full p-2 h-10"
                 placeholder="Enter New User"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 />
 
+                </div>
             </div>
           </div>
         </div>

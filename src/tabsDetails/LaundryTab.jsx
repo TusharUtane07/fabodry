@@ -72,6 +72,7 @@ const Laundry = ({ filteredLaundryProducts }) => {
   const handleIncrement = (index, productId, serviceName, productName, quantity) => {
     setProductDetails( {
       productId,
+      selectedItem,
       serviceName,
       productName,
       quantity

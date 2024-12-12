@@ -74,6 +74,7 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
     setPCartId(pId)
     setProductDetails( {
       productId,
+      selectedItem: serviceName,
       serviceName,
       productName,
       quantity

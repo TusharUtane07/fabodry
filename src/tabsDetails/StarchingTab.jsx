@@ -60,6 +60,7 @@ const StarchingTab = ({filteredStarchingProducts}) => {
   const handleIncrement = (index, productId, serviceName, productName, quantity) => {
     setProductDetails( {
       productId,
+      selectedItem: serviceName,
       serviceName,
       productName,
       quantity

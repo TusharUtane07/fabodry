@@ -102,7 +102,7 @@ const BillingSection = ({ customerAddress }) => {
     const productName = [];
     const serviceName = [];
     cartItems?.map((item) => productName.push(item?.productId[0]?.name));
-    cartItems?.map((item) => serviceName.push(item?.productId[0]?.serviceName));
+    cartItems?.map((item) => serviceName.push(item?.serviceId));
     const token = localStorage.getItem("authToken");
     const userName = localStorage.getItem("userName");
     const mobileNumber = localStorage.getItem("mobileNumber");
@@ -133,7 +133,7 @@ const BillingSection = ({ customerAddress }) => {
           },
         }
       );
-      navigate("/orders");
+      navigate("/orders/all");
     } catch (error) {
       console.error("Error creating order:", error);
     }
@@ -204,8 +204,8 @@ const BillingSection = ({ customerAddress }) => {
             </label>
           </div>
         </div>
-        <div className="relative overflow-x-auto  border-[#eef0f2] rounded-xl mt-3 p-2 border">
-          <table className="w-full text-left ">
+        <div className="relative overflow-x-auto  border-[#eef0f2] rounded-xl mt-3 p-2  border">
+          <table className="w-full text-left  ">
             <thead className=" text-[11px]  "></thead>
             {cartItems?.length > 0 ? (
               <tbody className="text-[10px]">
@@ -235,6 +235,7 @@ const BillingSection = ({ customerAddress }) => {
                             setCartPId(product?._id);
                             setProductDetails({
                               productId: product.productId[0]?._id,
+      selectedItem: product?.productid[0]?.serviceName,
                               serviceName: product.productId[0]?.serviceName,
                               productName: product.productId[0]?.name,
                               quantity: product.productId[0]?.quantity
@@ -289,13 +290,14 @@ const BillingSection = ({ customerAddress }) => {
             </div>
           </div>
         ) : (
-          <div className="text-center mt-4">
+          <div className="text-center mt-4">{
+            cartItems?.length >= 1 ?
             <button
               onClick={() => setIsDrawerOpen(true)}
               className="px-3 py-2 text-xs bg-gray-500 text-gray-200 rounded-lg w-full"
             >
               Add Coupon
-            </button>
+            </button> : " "}
           </div>
         )}
       </div>
@@ -346,7 +348,7 @@ const BillingSection = ({ customerAddress }) => {
               />
             </Space>
           </div>
-          <div className="w-full mt-1.5">
+          {/* <div className="w-full mt-1.5">
             <Select
               showSearch
               className="border w-full border-[#eef0f2] rounded-md px-2"
@@ -394,7 +396,7 @@ const BillingSection = ({ customerAddress }) => {
                 },
               ]}
             />
-          </div>
+          </div> */}
         </div>
         <div className={`flex items-center justify-start gap-2 mt-3 mb-4`}>
           <label className="inline-flex items-center cursor-pointer">

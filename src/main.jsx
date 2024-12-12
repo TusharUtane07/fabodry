@@ -38,6 +38,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<Home />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/orders/all" element={<Orders />} />
           <Route path="/b2c-orders" element={<B2Corders />} />
           <Route path="/pickup-drop" element={<PickupAndDrop />} />
           <Route path="/leads-and-enquires" element={<LeadsAndEnquiries />} />

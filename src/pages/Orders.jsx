@@ -52,6 +52,18 @@ const Orders = () => {
     getCustomerOrders();
   }, []);
 
+
+
+  function formatDate(isoDate) {
+    const date = new Date(isoDate);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+
+
   return (
     <div className="overflow-x-auto mt-20 ml-[260px] rounded-lg border-2 border-gray-300  mr-3">
       <table className="min-w-full text-xs text-left text-gray-500">
@@ -82,7 +94,7 @@ const Orders = () => {
               <td className="px-4 py-2">{item.customerName}</td>
               <td className="px-4 py-2">{item.address}</td>
               <td className="px-4 py-2">{item.phoneNumber}</td>
-              <td className="px-4 py-2">{item.deliveryDate}</td>
+              <td className="px-4 py-2">{formatDate(item.deliveryDate)}</td>
               <td className="px-4 py-2">{item.timeSlot}</td>
               <td className="px-4 py-2">{item.orderType}</td>
               <td className="px-4 py-2">{item.deliveryMethod}</td>

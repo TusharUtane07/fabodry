@@ -73,6 +73,7 @@ const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen }) => {
     setPCartId(pId)
     setProductDetails( {
       productId,
+      selectedItem: serviceName,
       serviceName,
       productName,
       quantity

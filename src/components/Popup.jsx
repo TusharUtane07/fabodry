@@ -71,7 +71,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
             {
                 customerId: userId,
                 productId: [productDetails?.productId],
-                serviceId: productDetails?.serviceName,
+                serviceId: productDetails?.selectedItem,
                 quantity: quantity,
                 garmentType: selectedDetails.type,
                 additionalServices: selectedDetails.services,
