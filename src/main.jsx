@@ -25,6 +25,7 @@ import Settlements from './pages/Settlements.jsx';
 import Layout from './components/Layout.jsx';
 import Home from './pages/Home.jsx';
 import { CartProvider } from './context/CartContenxt.jsx';
+import Dashboard from './pages/Dashboard.jsx';
 
 
 createRoot(document.getElementById('root')).render(
@@ -34,6 +35,7 @@ createRoot(document.getElementById('root')).render(
       <Layout>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<Home />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/b2c-orders" element={<B2Corders />} />

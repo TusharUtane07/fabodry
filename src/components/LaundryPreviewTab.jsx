@@ -68,13 +68,14 @@ const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen }) => {
     setQuantities(updatedProducts.map(() => 1));
   };
 
-  const handleIncrement = (index, productId, serviceName, productName, pId) => {
+  const handleIncrement = (index, productId, serviceName, productName, pId, quantity) => {
     console.log("handleIncrement: ", productId, serviceName);
     setPCartId(pId)
     setProductDetails( {
       productId,
       serviceName,
-      productName
+      productName,
+      quantity
     })
     setIsEditPopupOpen(true)
   };
@@ -167,7 +168,7 @@ const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen }) => {
                   <td className="px-2 text-sm border border-gray-200">
                     <button
                       className="text-green-600 "
-                      onClick={() => {handleIncrement(index, product.productId[0]?.id, product.productId[0]?.serviceName,  product.productId[0]?.name, product?._id)}
+                      onClick={() => {handleIncrement(index, product.productId[0]?.id, product.productId[0]?.serviceName,  product.productId[0]?.name, product?._id, product.productId[0]?.quantity)}
                     }>
                     
                       <MdEdit />

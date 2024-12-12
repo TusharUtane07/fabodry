@@ -9,10 +9,11 @@ import { Switch } from "antd";
 import useFetch from "../hooks/useFetch";
 import debounce from "lodash.debounce";
 import { useCart } from "../context/CartContenxt";
+import axios from "axios";
 
 const MainSection = ({ products }) => {
   const [selectedTab, setSelectedTab] = useState("Laundry");
-  const [mode, setMode] = useState("B2B");
+  const [mode, setMode] = useState("B2C");
   const [mobileNumber, setMobileNumber] = useState(
     localStorage.getItem("mobileNumber") || ""
   );
@@ -21,8 +22,8 @@ const MainSection = ({ products }) => {
   );
   const [customerAddress, setCustomerAddress] = useState(null);
   const [debouncedUserName, setDebouncedUserName] = useState("");
-  const {cartItems, refreshCart} = useCart();
-
+  const { cartItems, refreshCart } = useCart();
+  const [customerNewOld, setCustomerNewOld] = useState("New Customer")
 
   const { data } = useFetch(
     mobileNumber
@@ -36,14 +37,18 @@ const MainSection = ({ products }) => {
     if (data?.data?.customer?.name) {
       localStorage.setItem("userId", data?.data?.customer?._id);
       refreshCart();
-      setUserName(data.data.customer.name);
-      setCustomerAddress(data.data.customer.addresses);
-
+      setUserName(data?.data?.customer?.name);
+      setCustomerAddress(data?.data?.customer?.addresses);
+      if(data?.data?.customer?.addresses.length >= 1){
+        setCustomerNewOld("Old Customer")
+      }else{
+        setCustomerNewOld("New Customer")
+      }
     } else if (mobileNumber) {
       setUserName("");
     }
     createCustomer();
-  }, [data, mobileNumber, debouncedUserName]);
+  }, [data, mobileNumber, debouncedUserName, customerNewOld]);
 
   useEffect(() => {
     const debounced = debounce(() => {
@@ -85,10 +90,7 @@ const MainSection = ({ products }) => {
     products?.data,
     "Ironing"
   );
-  const filteredDcProducts = filterProductsByServiceName(
-    products?.data,
-    "dc"
-  );
+  const filteredDcProducts = filterProductsByServiceName(products?.data, "dc");
   const filteredCleaningProducts = filterProductsByServiceName(
     products?.data,
     "cleaning"
@@ -96,22 +98,13 @@ const MainSection = ({ products }) => {
 
   const componentsMap = {
     Laundry: (
-      <Laundry
-        mode={mode}
-        filteredLaundryProducts={filteredLaundryProducts}
-      />
+      <Laundry mode={mode} filteredLaundryProducts={filteredLaundryProducts} />
     ),
     "Dry Cleaning": (
-      <DryCleaning
-        mode={mode}
-        filteredDcProducts={filteredDcProducts}
-      />
+      <DryCleaning mode={mode} filteredDcProducts={filteredDcProducts} />
     ),
     Ironing: (
-      <Ironing
-        mode={mode}
-        filteredIroningProducts={filteredIroningProducts}
-      />
+      <Ironing mode={mode} filteredIroningProducts={filteredIroningProducts} />
     ),
     Starching: (
       <Starching
@@ -128,7 +121,7 @@ const MainSection = ({ products }) => {
   };
 
   const onChange = (checked) => {
-    setMode(checked ? "B2B" : "B2C");
+    setMode(checked ? "B2C" : "B2B");
   };
 
   const createCustomer = async () => {
@@ -155,6 +148,13 @@ const MainSection = ({ products }) => {
           }
         );
         refreshCart();
+        const responseSearching = await axios.get(
+          `http://localhost:8888/api/v1/customers/search?mobile=${mobileNumber}`
+        );
+        setUserName(data?.data?.customer?.name)
+        if(data.data.data.customer.addresses.length >= 1){
+          setCustomerNewOld("Old Customer")
+        }
 
         if (response.ok) {
           console.log("New user created successfully");
@@ -174,17 +174,22 @@ const MainSection = ({ products }) => {
           <div className="p-5">
             <div className="w-full flex justify-between ">
               <div className="flex justify-between items-center gap-3 w-40 bg-[#00414E] text-gray-200 py-1 px-2 text-xs rounded-lg">
-                <span>B2C</span>
-                <Switch defaultChecked onChange={onChange} />
                 <span>B2B</span>
+                <Switch defaultChecked onChange={onChange} />
+                <span>B2C</span>
               </div>
               <h3 className="text-[10px] text-gray-600 text-center">
                 Current Mode: <span className="text-[#00414e]">{mode}</span>
               </h3>
             </div>
+            <div className="flex justify-between">
+
             <label className="block mb-2 text-xs font-medium mt-3">
               New Walk In
             </label>
+              <p className="text-[10px] bg-[#00414e] text-white py-0.5 h-5 px-3 rounded-md items-end justify-self-end">{customerNewOld}</p>
+
+            </div>
             <div className="flex gap-4">
               <input
                 type="text"
@@ -193,13 +198,15 @@ const MainSection = ({ products }) => {
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
               />
+              
               <input
                 type="text"
                 className="border border-gray-300 text-xs rounded-lg block w-full p-2"
                 placeholder="Enter New User"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-              />
+                />
+
             </div>
           </div>
         </div>
@@ -217,8 +224,8 @@ const MainSection = ({ products }) => {
                 className={`lg:px-3.5 xl:px-6 py-3 rounded-lg ${
                   selectedTab === tab
                     ? mode === "B2B"
-                      ? "bg-[#004D57] text-white"
-                      : "bg-blue-600 text-white"
+                      ? "bg-[#66BDC5] text-white"
+                      : "bg-[#004D57] text-white"
                     : mode === "B2C"
                     ? "bg-blue-100 text-gray-600" // Inactive button in B2C
                     : "bg-[#d5e7ec] text-[#00414e]" // Inactive button in B2B

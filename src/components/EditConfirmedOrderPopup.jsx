@@ -79,7 +79,7 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
             className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-5 pb-10 text-sm"
           >
             <div
-              className="bg-white rounded-lg p-6 w-[45vw] h-[40vh] mx-auto"
+              className="bg-white rounded-lg p-6 w-[45vw] mx-auto"
             >
               <div className='flex items-center justify-between gap-5'>
               <h2 className="text-lg text-[#00414e] mb-4 ml-5">

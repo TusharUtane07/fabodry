@@ -4,6 +4,7 @@ import { useCart } from "../context/CartContenxt";
 
 const Popup = ({ isOpen, setIsOpen, productDetails }) => {
   const togglePopup = () => setIsOpen(!isOpen);
+  const [quantity, setQuantity] = useState(1);
 
   const { refreshCart } = useCart();
 
@@ -48,7 +49,18 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
       press: prev.press === "Steam Press" ? "Premium Steam Press" : "Steam Press",
     }));
   };
-
+  
+  
+  const handleIncrement = () => {
+    setQuantity(quantity + 1);
+  }
+  const handleDecrement = () => {
+    if(quantity === 1) {
+      return
+    }else {
+      setQuantity(quantity - 1);
+    }
+  }
   const addToCart = async () => {
     const token = localStorage.getItem("authToken");
     const userId = localStorage.getItem("userId");
@@ -60,7 +72,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
                 customerId: userId,
                 productId: [productDetails?.productId],
                 serviceId: productDetails?.serviceName,
-                quantity: 1,
+                quantity: quantity,
                 garmentType: selectedDetails.type,
                 additionalServices: selectedDetails.services,
                 onHangerPrice: selectedDetails.requirement === "On Hanger" ? 20 : 12,
@@ -75,11 +87,11 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
             }
         );
         await refreshCart();
+        togglePopup();
     } catch (error) {
         console.error("Error updating cart:", error);
     }
 };
-
 
   return (
     <div className="flex justify-center items-center">
@@ -173,8 +185,28 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
                 ))}
               </div>
             </div>
+            <div className="mx-8 flex items-center gap-3">
+              <p>Quantity: </p>
+            <div className="border border-gray-300 w-20 text-center justify-center my-3 rounded-lg p-1 text-sm flex items-center">
+                    <button
+                      className="bg-[#006370] text-white rounded-sm px-1"
+                      onClick={handleIncrement}
+                    >
+                      +
+                    </button>
+                    <span className="text-gray-500 px-3">
+                      {quantity}
+                    </span>
+                    <button
+                      className="bg-[#006370] text-white rounded-sm px-1"
+                      onClick={handleDecrement}
+                    >
+                      -
+                    </button>
+                  </div>
+            </div>
             <div
-              className={`flex mt-5 mx-8 items-center justify-between w-72 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
+              className={`flex mt-1 mx-8 items-center justify-between w-72 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
               onClick={togglePress}
             >
               <div

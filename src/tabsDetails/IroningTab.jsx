@@ -54,11 +54,12 @@ const Ironing = ({filteredIroningProducts}) => {
   const [productDetails, setProductDetails] = useState(null);
 
 
-  const handleIncrement = (index, productId, serviceName, productName) => {
+  const handleIncrement = (index, productId, serviceName, productName, quantity) => {
     setProductDetails( {
       productId,
       serviceName,
-      productName
+      productName,
+      quantity
     })
     setIsPopupOpen(true)
   }
@@ -171,11 +172,11 @@ const Ironing = ({filteredIroningProducts}) => {
             <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
               <button
                 className="bg-[#006370] text-white rounded-sm px-1"
-                onClick={() => handleIncrement(index, item.id, item.serviceName, item.name)}
+                onClick={() => handleIncrement(index, item.id, item.serviceName, item.name, item.quantity)}
               >
                 +
               </button>
-              <span className="text-gray-500 px-3">{quantities[index]}</span>
+              <span className="text-gray-500 px-3">{item.quantity === 0 ? 1 : item.quantity}</span>
               <button
                 className="bg-[#006370] text-white rounded-sm   px-1"
                 onClick={() => handleDecrement(index)}

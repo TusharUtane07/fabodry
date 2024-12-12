@@ -26,7 +26,7 @@ const CouponPopup = ({ isOpen, setIsOpen, onCouponSelect }) => {
           ></div>
         )}
         <div
-          className={`fixed inset-y-0 left-0 bg-white w-[450px] h-full shadow-lg z-50 transform transition-transform duration-300 ${
+          className={`fixed inset-y-0 left-0 bg-white w-[250px] h-full shadow-lg z-50 transform transition-transform duration-300 ${
             isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >

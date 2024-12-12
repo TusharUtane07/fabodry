@@ -69,13 +69,14 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
     setQuantities(updatedProducts.map(() => 1));
   };
 
-  const handleIncrement = (index, productId, serviceName, productName, pId) => {
+  const handleIncrement = (index, productId, serviceName, productName, pId, quantity) => {
     console.log("handleIncrement: ", productId, serviceName);
     setPCartId(pId)
     setProductDetails( {
       productId,
       serviceName,
-      productName
+      productName,
+      quantity
     })
     setIsEditPopupOpen(true)
   };
@@ -141,34 +142,18 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
                     Services: {product?.additionalServices}
                   </td>
                   <td className=" px-2 border border-gray-200">
-                  Comments: {product?.comments}
-                  </td>
-                  <td className=" px-2 border border-gray-200">
-                 <div className=" rounded-lg my-2 p-1 flex items-center">
-                      <button
-                        className="bg-[#006370] text-white rounded-sm p-0.5 px-2"
-                        onClick={() => handleIncrement(index, product?.id, product?.serviceName, product?.name)}
-                      >
-                        +
-                      </button>
-                      <span className="text-gray-500 px-1.5  mx-1 rounded-sm">
-                        {quantities[index]}
-                      </span>
-                      <button
-                        className="bg-[#006370] text-white rounded-sm p-0.5 px-2"
-                        onClick={() => handleDecrement(index)}
-                      >
-                        -
-                      </button>
-                    </div> 
+                  Comments: {product.productId[0]?.serviceName === "Cleaning" ? "No Comments here" : product?.comments }
                   </td>
                   <td className="px-2 text-sm border border-gray-200">
-                    <button
+                    { product.productId[0]?.serviceName === "Cleaning" ? " " : 
+
+                      <button
                       className="text-green-600 "
-                      onClick={() => {handleIncrement(index, product.productId[0]?.id, product.productId[0]?.serviceName,  product.productId[0]?.name, product?._id)}
+                      onClick={() => {handleIncrement(index, product.productId[0]?.id, product.productId[0]?.serviceName,  product.productId[0]?.name, product?._id, product.productId[0]?.quantity)}
                     }>
                       <MdEdit />
                     </button>
+                  }
                   </td>
                   <td className=" text-sm px-2 border border-gray-200">
                     <button

@@ -19,9 +19,8 @@ const BillingSection = ({ customerAddress }) => {
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
   const [cartPId, setCartPId] = useState(null);
-  const [selectedAddress , setSelectedAddress] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-
 
   const [expressDeliverValue, setExpressDeliveryValue] = useState(25);
 
@@ -32,10 +31,11 @@ const BillingSection = ({ customerAddress }) => {
   };
 
   const handleChangeForExpressDelivery = (value) => {
-  setExpressDeliveryValue(value)
+    const expressValueInRupees = (value * grossTotal) / 100;
+    setExpressDeliveryValue(expressValueInRupees);
   };
   const handleChangeForDeliveryAddress = (value) => {
-  setSelectedAddress(value)
+    setSelectedAddress(value);
   };
 
   const handleCouponSelect = (coupon) => {
@@ -84,58 +84,60 @@ const BillingSection = ({ customerAddress }) => {
   };
 
   const calculateTotalAmount = () => {
-    const grossTotal = calculateGrossTotal(); 
-    const discountValue = selectedCoupon?.discountValue || 0; 
-    const expressChargePercentage = isExpressDelivery ? expressDeliverValue || 0 : 0; 
-  
+    const grossTotal = calculateGrossTotal();
+    const discountValue = selectedCoupon?.discountValue || 0;
+    const expressChargePercentage = isExpressDelivery
+      ? expressDeliverValue || 0
+      : 0;
+
     const discount = (grossTotal * discountValue) / 100;
     const expressCharge = (grossTotal * expressChargePercentage) / 100;
     const totalAmount = grossTotal - discount + expressCharge;
-  
-    return totalAmount.toFixed(2); 
+
+    return totalAmount.toFixed(2);
   };
 
   const navigate = useNavigate();
   const createOrder = async () => {
     const productName = [];
     const serviceName = [];
-    cartItems?.map((item) => productName.push(item?.productId[0]?.name))
-    cartItems?.map((item) => serviceName.push(item?.productId[0]?.serviceName))
+    cartItems?.map((item) => productName.push(item?.productId[0]?.name));
+    cartItems?.map((item) => serviceName.push(item?.productId[0]?.serviceName));
     const token = localStorage.getItem("authToken");
     const userName = localStorage.getItem("userName");
     const mobileNumber = localStorage.getItem("mobileNumber");
     const totalAmount = calculateTotalAmount();
     const totalCount = cartItems?.length;
 
-    try { 
-        const response = await axios.post(
-            "http://localhost:8888/api/v1/admin/orders/create",
-            {
-              "productNames": productName,
-              "serviceNames": serviceName,
-              "totalCount": totalCount,
-              "price": 0,
-              "totalPrice": Number(totalAmount),
-              "customerName": userName,
-              "address": selectedAddress,
-              "phoneNumber": mobileNumber,
-              "deliveryDate": selectedDate,
-              "timeSlot": selectedLabel,
-              "orderType": "B2B",
-              "deliveryMethod": "HOME",
-              "paymentMethod": "CARD"
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
-        navigate('/orders')
+    try {
+      const response = await axios.post(
+        "http://localhost:8888/api/v1/admin/orders/create",
+        {
+          productNames: productName,
+          serviceNames: serviceName,
+          totalCount: totalCount,
+          price: 0,
+          totalPrice: Number(totalAmount),
+          customerName: userName,
+          address: selectedAddress,
+          phoneNumber: mobileNumber,
+          deliveryDate: selectedDate,
+          timeSlot: selectedLabel,
+          orderType: "B2B",
+          deliveryMethod: "HOME",
+          paymentMethod: "CARD",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      navigate("/orders");
     } catch (error) {
-        console.error("Error creating order:", error);
+      console.error("Error creating order:", error);
     }
-};
+  };
 
   return (
     <div
@@ -211,13 +213,22 @@ const BillingSection = ({ customerAddress }) => {
                   <div key={index}>
                     <div className="flex justify-between gap-2 mx-1">
                       <div>
-                        <p>
-                          {product?.productId[0]?.name} X {product.quantity} / ₹
+                        <p className="text-xs capitalize mt-1">
+                          {index + 1}.{" "}
+                          {product.productId[0]?.serviceName == "laundry"
+                            ? product.productId[0]?.serviceName
+                            : product?.productId[0]?.name}{" "}
+                          X {product.quantity} / ₹
                           {product?.productId[0]?.price * product.quantity}
-                          {product.comments.length >= 1 ?`- ${[product.comments]} `: " "}
+                        </p>
+                        <p className="text-[10px] ml-2.5 text-gray-500">
+                          {product.comments.length > 1
+                            ? `( ${product.comments} )`
+                            : " "}
                         </p>
                       </div>
                       <div className="flex gap-1">
+                        { product.productId[0]?.serviceName === "Cleaning" ? " " :
                         <button
                           onClick={() => {
                             setIsEditPopupOpen(true);
@@ -226,12 +237,13 @@ const BillingSection = ({ customerAddress }) => {
                               productId: product.productId[0]?._id,
                               serviceName: product.productId[0]?.serviceName,
                               productName: product.productId[0]?.name,
+                              quantity: product.productId[0]?.quantity
                             });
                           }}
                           className="text-sm text-green-400 "
                         >
                           <MdEdit />
-                        </button>
+                        </button>}
                         <button
                           onClick={() => deleteCartProduct(product?._id)}
                           className="text-sm text-red-400"
@@ -287,15 +299,15 @@ const BillingSection = ({ customerAddress }) => {
           </div>
         )}
       </div>
-      <div className="w-full px-5 mt-3 text-[8px]">
+      <div className="w-full px-5 mt-3 text-[12px]">
         <div className="text-gray-400">
           <div className="flex justify-between mt-1">
             <p>Gross Total:</p>
-            <span>{grossTotal ? grossTotal.toFixed(2) : 0}</span>
+            <span>₹ {grossTotal ? grossTotal.toFixed(2) : 0}</span>
           </div>
 
           <div className="flex justify-between mt-1">
-            <p>Discount Amount:</p>
+            <p>Discount:</p>
             <span>
               {" "}
               {selectedCoupon
@@ -307,7 +319,7 @@ const BillingSection = ({ customerAddress }) => {
           {isExpressDelivery && (
             <div className="flex justify-between mt-1">
               <p>Express Amount:</p>
-              <span>{expressDeliverValue}%</span>
+              <span>₹ {expressDeliverValue}</span>
             </div>
           )}
 
@@ -413,13 +425,12 @@ const BillingSection = ({ customerAddress }) => {
                   className="w-full text-[10px] border border-gray-300 rounded-lg"
                   defaultValue="Saved Address"
                   onChange={handleChangeForDeliveryAddress}
-                  options={[
-                    {
-                      value: customerAddress[0]?.addressLine1 +", "+  customerAddress[0]?.city,
-                      label: customerAddress[0]?.addressLine1 + ", "+  customerAddress[0]?.city,
-                    },
-                  ]}
+                  options={customerAddress?.map((address) => ({
+                    value: `(${address.label}) ${address?.addressLine1}, ${address?.city}`,
+                    label: `(${address.label}) ${address?.addressLine1}, ${address?.city}`,
+                  }))}
                 />
+
                 <div className="">
                   <button
                     onClick={() => setIsHomeDeliveryPopupOpen(true)}
@@ -440,7 +451,7 @@ const BillingSection = ({ customerAddress }) => {
           </div>
         )}
 
-        <div className="flex items-center justify-start gap-2 mt-3 mb-4">
+        <div className="flex items-center justify-start gap-2 mt-3 mb-16">
           <label className="inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -460,7 +471,7 @@ const BillingSection = ({ customerAddress }) => {
             Express Delivery
           </label>
           {isExpressDelivery ? (
-            <div className="border border-gray-300 rounded-lg">
+            <div className="border border-gray-300 rounded-lg ">
               <Select
                 bordered={false}
                 className="outline-none border-none focus:border-none focus:outline-none"
@@ -479,9 +490,18 @@ const BillingSection = ({ customerAddress }) => {
             <div></div>
           )}
         </div>
-        <div className=" fixed bottom-2">
-          <button onClick={() => createOrder()} className="px-3 py-2.5 w-60  bg-[#00414e] text-xs text-gray-200 rounded-lg">
+        <div className=" fixed bottom-2 w-full flex items-center gap-2 ">
+          <button
+            onClick={() => createOrder()}
+            className="px-5 py-2.5   bg-[#00414e] text-xs text-gray-200 rounded-lg"
+          >
             Create Order
+          </button>
+          <button
+            onClick={() => createOrder()}
+            className="px-5 py-2.5  bg-[#00414e] text-xs text-gray-200 rounded-lg"
+          >
+            Cancel Order
           </button>
         </div>
       </div>

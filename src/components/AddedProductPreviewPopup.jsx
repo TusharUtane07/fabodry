@@ -10,24 +10,11 @@ const AddedProductPreviewPopup = ({ isOpen, setIsOpen, productDetails }) => {
   const { cartItems, refreshCart } = useCart();
   const [pCartId, setPCartId] = useState(null);
 
-
   const togglePopup = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleIncrement = (index) => {
-    const updatedItems = [...cartItems];
-    updatedItems[index].quantity += 1;
-    // setCartItems(updatedItems);
-  };
-
-  const handleDecrement = (index) => {
-    const updatedItems = [...cartItems];
-    if (updatedItems[index].quantity > 1) {
-      updatedItems[index].quantity -= 1;
-      // setCartItems(updatedItems);
-    }
-  };
+ 
 
   const deleteCartProduct = async (id) => {
     const token = localStorage.getItem("authToken");
@@ -71,39 +58,17 @@ const AddedProductPreviewPopup = ({ isOpen, setIsOpen, productDetails }) => {
                         {item?.quantity}
                       </td>
                       <td className="border border-gray-300 px-2">
-                        {item?.comments || "-"}
-                      </td>
-                      <td className="border border-gray-300 px-2">
-                        <div className="space-y-2">
-                          <div className="flex justify-center gap-3">
-                            <div className="p-1 flex items-center">
-                              <button
-                                className="bg-[#006370] text-white rounded-md py-0.5 px-1.5"
-                                onClick={() => handleIncrement(index)}
-                              >
-                                +
-                              </button>
-                              <span className="text-gray-500 px-5">
-                                {item.quantity}
-                              </span>
-                              <button
-                                className="bg-[#006370] text-white rounded-md py-0.5 px-1.5"
-                                onClick={() => handleDecrement(index)}
-                              >
-                                -
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+                      
+                        {item.productId[0]?.serviceName === "Cleaning" ? "No Comments here" : item?.comments} 
                       </td>
                       <td className="border border-gray-300">
                         <div className="flex justify-start gap-3 mx-3">
-                
+                {item.productId[0]?.serviceName === "Cleaning" ? " " : 
                 <button onClick={() =>{ setIsEditPopupOpen(true)
                   setPCartId(item?._id)
                  }} className="text-lg text-green-400 ">
                             <MdEdit />
-                          </button>
+                          </button>}
                           <button
                             onClick={() => deleteCartProduct(item?._id)}
                             className="text-lg text-red-400"

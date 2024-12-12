@@ -53,7 +53,7 @@ const Orders = () => {
   }, []);
 
   return (
-    <div className="overflow-x-auto mt-20 ml-[250px] rounded-lg border-2 border-gray-300  mr-5">
+    <div className="overflow-x-auto mt-20 ml-[260px] rounded-lg border-2 border-gray-300  mr-3">
       <table className="min-w-full text-xs text-left text-gray-500">
         <thead className="text-xs text-gray-700 bg-gray-100">
           <tr>

@@ -1,20 +1,43 @@
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import profile from '../assets/profile.png'
+import profile from '../assets/profile.png';
 
 const Navbar = () => {
-
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
    
-  const getName = localStorage.getItem("adminName")
+  const getName = localStorage.getItem("adminName");
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
-    navigate("/login")
+    localStorage.removeItem('adminName');
+    navigate("/login");
   }
+
+  const handleProfileNavigate = () => {
+    navigate("/profile");
+    setIsDropdownOpen(false);
+  }
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  }
+
+  const handleClickOutside = (e) => {
+    if (e.target.closest('.user-dropdown-container')) return;
+    setIsDropdownOpen(false);
+  }
+
+  React.useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="h-[60px] w-full fixed z-10 top-0 bg-white shadow-md">
-        <div className="flex justify-between px-14 py-1">
+      <div className="flex justify-between px-14 py-1">
       <div>
         <svg
           width="140"
@@ -120,11 +143,11 @@ const Navbar = () => {
           />
         </svg>
       </div>
-      <div className="flex items-center text-[#68686C]">
-        <div className='text-sm'>
-          <p>Hey <span className="text-black capitalize" >{getName}</span> 👋🏻, Welcome Back !</p>
-        </div>
-        <div className="px-4">
+        <div className="flex items-center text-[#68686C]">
+          <div className='text-sm'>
+            <p>Hey <span className="text-black capitalize">{getName}</span> 👋🏻, Welcome Back !</p>
+          </div>
+          <div className="px-4">
           <svg
             width="23"
             height="23"
@@ -153,17 +176,70 @@ const Navbar = () => {
             </defs>
           </svg>
         </div>
-        <div onClick={handleLogout} className="bg-[#e10000] cursor-pointer h-7 w-7 rounded-md flex items-center justify-center p-1"> 
-        <svg width="16" height="16" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fillRule="evenodd" clipRule="evenodd" d="M14.6432 15.0229L18.7065 10.2818C18.9006 10.0605 18.9999 9.78101 19 9.50009C19.0001 9.30788 18.9538 9.11498 18.8597 8.93954C18.8178 8.86135 18.7667 8.78707 18.7065 8.71838L14.6432 3.97726C14.2164 3.47928 13.4667 3.42158 12.9687 3.84836C12.4708 4.27515 12.4131 5.02481 12.8398 5.52279L15.2308 8.31252L6.03402 8.31252C5.37818 8.31252 4.84652 8.84418 4.84652 9.50002C4.84652 10.1559 5.37818 10.6875 6.03402 10.6875L15.2309 10.6875L12.8398 13.4774C12.4131 13.9754 12.4708 14.725 12.9687 15.1518C13.4667 15.5786 14.2164 15.5209 14.6432 15.0229ZM7.125 2.375C7.78084 2.375 8.3125 2.90666 8.3125 3.5625L8.3125 5.34375C8.3125 5.99959 8.84416 6.53125 9.5 6.53125C10.1558 6.53125 10.6875 5.99959 10.6875 5.34375L10.6875 3.5625C10.6875 1.59499 9.09251 -4.3307e-07 7.125 -5.19073e-07L3.5625 -6.74795e-07C1.59499 -7.60797e-07 -6.9719e-08 1.59499 -1.55722e-07 3.5625L-6.74795e-07 15.4375C-7.60797e-07 17.405 1.59499 19 3.5625 19L7.125 19C9.09251 19 10.6875 17.405 10.6875 15.4375L10.6875 13.6562C10.6875 13.0004 10.1558 12.4687 9.5 12.4687C8.84416 12.4687 8.3125 13.0004 8.3125 13.6562L8.3125 15.4375C8.3125 16.0933 7.78084 16.625 7.125 16.625L3.5625 16.625C2.90666 16.625 2.375 16.0933 2.375 15.4375L2.375 3.5625C2.375 2.90666 2.90666 2.375 3.5625 2.375L7.125 2.375Z" fill="white"/>
-</svg>
+          <div className="pl-10 relative user-dropdown-container">
+            <div 
+              onClick={toggleDropdown} 
+              className="flex gap-2 items-center cursor-pointer"
+            >
+              <img 
+                src={profile} 
+                alt="profile-image" 
+                className='w-8 h-8 object-contain rounded-full p-0.5' 
+              />
+              <p className='text-sm capitalize'>{getName}</p>
+            </div>
 
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg">
+                <ul className="py-1">
+                  <li 
+                    onClick={handleProfileNavigate}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="mr-2"
+                    >
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Settings
+                  </li>
+                  <li 
+                    onClick={handleLogout}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="mr-2"
+                    >
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Logout
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="pl-10 flex gap-2 items-center">
-            <img src={profile} alt="profile-image" className='w-8 h-8 object-contain flex rounded-full p-0.5' />
-          <p className='text-sm capitalize'>{getName}</p>
-        </div>
-      </div>
       </div>
     </header>
   );

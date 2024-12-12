@@ -78,11 +78,6 @@ const Cleaning = ({filteredCleaningProducts}) => {
   };
 
   const handleIncrement = async(index, productId, serviceName, productName) => {
-    setProductDetails( {
-      productId,
-      serviceName,
-      productName
-    })
     const token = localStorage.getItem("authToken");
     const userId = localStorage.getItem("userId");
 
@@ -91,8 +86,8 @@ const Cleaning = ({filteredCleaningProducts}) => {
             "http://localhost:8888/api/v1/carts/add",
             {
                 customerId: userId,
-                productId: [productDetails?.productId],
-                serviceId: productDetails?.serviceName,
+                productId: [productId],
+                serviceId: serviceName,
                 quantity: 1,
                 garmentType: productName,
                 additionalServices: ["Cleaning"],
@@ -179,21 +174,11 @@ const Cleaning = ({filteredCleaningProducts}) => {
                 <p className="text-sm capitalize">{item.name}</p>
                 <p className="text-gray-400 text-xs my-2">Starting from</p>
                 <p className="text-xs text-[#006370]">₹ {item.price}/-</p>
-                <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
-              <button
-                className="bg-[#006370] text-white rounded-sm px-1"
-                onClick={() => handleIncrement(index, item.id, item.serviceName, item.name)}
-              >
-                +
-              </button>
-              <span className="text-gray-500 px-3">{quantities[index]}</span>
-              <button
-                className="bg-[#006370] text-white rounded-sm   px-1"
-                onClick={() => handleDecrement(index)}
-              >
-                -
-              </button>
-            </div>
+
+            <button className="text-xs bg-[#006370] text-white px-3 py-1.5 rounded-md mt-2" onClick={() => handleIncrement(index, item.id, item.serviceName, item.name, item.quantity)}>
+              Add 
+            </button>
+
               </div>
             ))}
           </div>

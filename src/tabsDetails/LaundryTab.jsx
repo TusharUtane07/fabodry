@@ -56,7 +56,6 @@ const Laundry = ({ filteredLaundryProducts }) => {
   const [filteredProducts, setFilteredProducts] = useState(filteredLaundryProducts);
 
   useEffect(() => {
-    // Initialize filteredProducts when filteredLaundryProducts changes
     setFilteredProducts(filteredLaundryProducts);
   }, [filteredLaundryProducts]);
 
@@ -68,7 +67,15 @@ const Laundry = ({ filteredLaundryProducts }) => {
     }));
   };
 
-  const handleIncrement = (index) => {
+  const [productDetails, setProductDetails] = useState(null);
+
+  const handleIncrement = (index, productId, serviceName, productName, quantity) => {
+    setProductDetails( {
+      productId,
+      serviceName,
+      productName,
+      quantity
+    })
     setIsPopupOpen(true);
     const updatedQuantities = [...quantities];
     updatedQuantities[index] += 1;
@@ -129,13 +136,13 @@ const Laundry = ({ filteredLaundryProducts }) => {
                     alt=""
                     className="xl:w-14 xl:h-14 lg:w-12 w-12 h-12 mx-auto rounded-full"
                   />
-                  <h3 className="text-[#006370] capitalize lg:text-[10px] xl:text-sm mt-1 group-hover:text-white">
+                  <h3 className="text-[#006370] capitalize lg:text-[10px] xl:text-lg mt-1 group-hover:text-white">
                     {item.name}
                   </h3>
-                  <p className="lg:text-[8px] xl:text-[10px] mt-1.5 text-gray-400 group-hover:text-white">
+                  <p className="lg:text-[8px] xl:text-[12px] mt-1.5 text-gray-700 group-hover:text-white">
                     {item.description}
                   </p>
-                  <p className="mt-1.5 text-[#006370] group-hover:text-white lg:text-[10px] xl:text-xs">
+                  <p className="mt-1.5 text-[#006370] group-hover:text-white lg:text-[10px] xl:text-lg">
                     ₹ {item.price * weights[index]}/Kg
                   </p>
                   <div className="flex items-center w-full justify-center mt-3 gap-3">
@@ -152,7 +159,7 @@ const Laundry = ({ filteredLaundryProducts }) => {
                       onChange={(e) =>
                         handleWeightChange(index, e.target.value)
                       }
-                      className="border border-gray-300 py-0.5 text-[14px] outline-none pl-3 lg:w-20 xl:w-20 rounded-md group-hover:bg-[#004d57] pr-2"
+                      className="border border-gray-300 py-0.5 text-[12px] outline-none pl-3 lg:w-20 xl:w-14 rounded-md group-hover:bg-[#004d57] pr-2"
                     />
                   </div>
                   <button
@@ -228,12 +235,12 @@ const Laundry = ({ filteredLaundryProducts }) => {
                   <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
                     <button
                       className="bg-[#006370] text-white rounded-sm px-1"
-                      onClick={() => handleIncrement(index)}
+                      onClick={() => handleIncrement(index, item.id, item.serviceName, item.name, item.quantity)}
                     >
                       +
                     </button>
                     <span className="text-gray-500 px-3">
-                      {quantities[index]}
+                    {item.quantity === 0 ? 1 : item.quantity}
                     </span>
                     <button
                       className="bg-[#006370] text-white rounded-sm px-1"
@@ -248,7 +255,7 @@ const Laundry = ({ filteredLaundryProducts }) => {
           </div>
         )}
       </div>
-      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} />
+      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} productDetails={productDetails}/>
       <LaundryPreviewTab
         cartItems={cartItems}
         selectedItem={selectedItem}

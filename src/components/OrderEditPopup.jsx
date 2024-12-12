@@ -1,12 +1,13 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContenxt";
 
 const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
-  const togglePopup = () => setIsOpen(!isOpen);
+  const togglePopup = () => setIsOpen(!isOpen); 
+  const [quantity, setQuantity] = useState(null);
 
-  const { refreshCart } = useCart();
-  console.log(cartId, "1");
+
+  const { cartItems, refreshCart } = useCart();
 
   const [selectedDetails, setSelectedDetails] = useState({
     type: null, 
@@ -41,7 +42,8 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
       return { ...prev, comments: newComments };
     });
   };
-  console.log(productDetails, "pd");
+
+
 
   const togglePress = () => {
     setSelectedDetails((prev) => ({
@@ -61,7 +63,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
                 customerId: userId,
                 productId: [productDetails?.productId],
                 serviceId: productDetails?.serviceName,
-                quantity: 1,
+                quantity: quantity,
                 garmentType: selectedDetails.type,
                 additionalServices: selectedDetails.services,
                 onHangerPrice: selectedDetails.requirement === "On Hanger" ? 20 : 12,
@@ -82,11 +84,31 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
     }
 };
 
+useEffect(() => {
+  cartItems?.map((item) => {
+    if(item.productId[0]?._id === productDetails?.productId){
+      setQuantity(item.quantity);
+    }
+  })
+}, [productDetails])
+
+const handleIncrement = () => {
+  setQuantity(quantity + 1);
+}
+const handleDecrement = () => {
+  if(quantity === 1) {
+    return
+  }else {
+    setQuantity(quantity - 1);
+  }
+}
+
+
 
   return (
     <div className="flex justify-center items-center">
       {isOpen && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-5 pb-10 text-sm">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-6 pb-10 text-xs">
           <div className="bg-white rounded-lg p-6 w-[60vw] h-[80vh] mx-auto">
             <h2 className="text-lg text-[#00414e] mb-4">
              Edit {productDetails?.productName} 
@@ -175,8 +197,28 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
                 ))}
               </div>
             </div>
+            <div className="mx-8 flex items-center gap-3">
+              <p>Quantity: </p>
+            <div className="border border-gray-300 w-20 text-center justify-center my-3 rounded-lg p-1 text-sm flex items-center">
+                    <button
+                      className="bg-[#006370] text-white rounded-sm px-1"
+                      onClick={handleIncrement}
+                    >
+                      +
+                    </button>
+                    <span className="text-gray-500 px-3">
+                      {quantity}
+                    </span>
+                    <button
+                      className="bg-[#006370] text-white rounded-sm px-1"
+                      onClick={handleDecrement}
+                    >
+                      -
+                    </button>
+                  </div>
+            </div>
             <div
-              className={`flex mt-5 mx-8 items-center justify-between w-72 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
+              className={`flex mt-2 mx-8 items-center justify-between w-72 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
               onClick={togglePress}
             >
               <div
