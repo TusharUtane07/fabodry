@@ -3,7 +3,7 @@ import AlphabetsComponent from "../components/alphabetsComponent";
 import shirt from "../assets/shirt.png";
 import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
 import useFetch from "../hooks/useFetch";
-import productGif from '../assets/product.gif'
+import productGif from "../assets/product.gif";
 import LaundryPreviewTab from "../components/LaundryPreviewTab";
 import { useCart } from "../context/CartContenxt";
 
@@ -53,7 +53,9 @@ const Laundry = ({ filteredLaundryProducts }) => {
 
   const [quantities, setQuantities] = useState(dryCleaningProduct.map(() => 1));
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState(filteredLaundryProducts);
+  const [filteredProducts, setFilteredProducts] = useState(
+    filteredLaundryProducts
+  );
 
   useEffect(() => {
     setFilteredProducts(filteredLaundryProducts);
@@ -69,14 +71,20 @@ const Laundry = ({ filteredLaundryProducts }) => {
 
   const [productDetails, setProductDetails] = useState(null);
 
-  const handleIncrement = (index, productId, serviceName, productName, quantity) => {
-    setProductDetails( {
+  const handleIncrement = (
+    index,
+    productId,
+    serviceName,
+    productName,
+    quantity
+  ) => {
+    setProductDetails({
       productId,
       selectedItem,
       serviceName,
       productName,
-      quantity
-    })
+      quantity,
+    });
     setIsPopupOpen(true);
     const updatedQuantities = [...quantities];
     updatedQuantities[index] += 1;
@@ -172,91 +180,116 @@ const Laundry = ({ filteredLaundryProducts }) => {
                 </div>
               ))}
             </div>
-              <div className="w-full invisible">
-              <AlphabetsComponent/>
-              </div>
+            <div className="w-full invisible">
+              <AlphabetsComponent />
+            </div>
           </>
         ) : (
           <div>
             {/* Product listing */}
-            <h2 className="text-sm font-semibold capitalize">
-              {selectedItem}
-            </h2>
+            <h2 className="text-sm font-semibold capitalize">{selectedItem}</h2>
             <div className="flex justify-between items-center mt-3">
-      <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
-        <input
-          type="text"
-          className="py-1.5 text-xs pl-3 focus:outline-none w-full"
-          placeholder="Search Product"
-          value={searchQuery}
-          onChange={handleSearch}
-        />
-        <button
-          type="submit"
-          className="p-1 focus:outline-none items-end-end focus:shadow-outline"
-        >
-          <svg
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            className="w-4 h-4"
-          >
-            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
-      </div>
-      <div className="flex gap-1 items-center">
-            <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
-            Total Count: {cartItems?.length}
-            </div>
-              <button 
-                onClick={handlePreviewClick}
-                className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5"
-              >
-                Preview
-              </button>
-            </div>
-      </div>
-
-      <div className="mt-3">
-        <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
-      </div>
-            <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4  my-4">
-              {filteredProducts?.map((item, index) => (
-                <div
-                  key={index}
-                  className="border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center"
+              <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
+                <input
+                  type="text"
+                  className="py-1.5 text-xs pl-3 focus:outline-none w-full"
+                  placeholder="Search Product"
+                  value={searchQuery}
+                  onChange={handleSearch}
+                />
+                <button
+                  type="submit"
+                  className="p-1 focus:outline-none items-end-end focus:shadow-outline"
                 >
-                  <img src={item.image} alt="" className="w-12 h-12 mx-auto" />
-                  <p className="text-xs pt-2 capitalize">{item.name}</p>
-                  <p className="text-xs py-1 text-[#006370]">₹ {item.price}/-</p>
-                  <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
-                    <button
-                      className="bg-[#006370] text-white rounded-sm px-1"
-                      onClick={() => handleIncrement(index, item.id, item.serviceName, item.name, item.quantity)}
-                    >
-                      +
-                    </button>
-                    <span className="text-gray-500 px-3">
-                    {item.quantity === 0 ? 1 : item.quantity}
-                    </span>
-                    <button
-                      className="bg-[#006370] text-white rounded-sm px-1"
-                      onClick={() => handleDecrement(index)}
-                    >
-                      -
-                    </button>
-                  </div>
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    className="w-4 h-4"
+                  >
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </button>
+              </div>
+              <div className="flex gap-1 items-center">
+                <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
+                  Total Count: {cartItems?.length}
                 </div>
-              ))}
+                <button
+                  onClick={handlePreviewClick}
+                  className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5"
+                >
+                  Preview
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3">
+              <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
+            </div>
+            <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4  my-4">
+              {filteredProducts?.map((item, index) => {
+                const isInCart = cartItems?.some(
+                  (cartItem) =>
+                    cartItem.productId[0]?.id === item.id &&
+                    cartItem.serviceId === selectedItem
+                );
+
+                return (
+                  <div
+                    key={index}
+                    className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center 
+          ${isInCart ? "bg-[#006370] text-white" : ""}`}
+                  >
+                    <img
+                      src={item.image}
+                      alt=""
+                      className="w-12 h-12 mx-auto"
+                    />
+                    <p className="text-xs pt-2 capitalize">{item.name}</p>
+                    <p className="text-xs py-1 ">
+                      ₹ {item.price}/-
+                    </p>
+                    <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
+                      <button
+                        className="bg-[#006370] text-white rounded-sm px-1"
+                        onClick={() =>
+                          handleIncrement(
+                            index,
+                            item.id,
+                            item.serviceName,
+                            item.name,
+                            item.quantity
+                          )
+                        }
+                      >
+                        +
+                      </button>
+                      <span className=" px-3">
+                        {item.quantity === 0 ? 1 : item.quantity}
+                      </span>
+                      <button
+                        className="bg-[#006370] text-white rounded-sm px-1"
+                        onClick={() => handleDecrement(index)}
+                      >
+                        -
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
       </div>
-      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} productDetails={productDetails}/>
+      <AddedProductPreviewPopup
+        isOpen={isPopupOpen}
+        setIsOpen={setIsPopupOpen}
+        productDetails={productDetails}
+      />
       <LaundryPreviewTab
         cartItems={cartItems}
         selectedItem={selectedItem}

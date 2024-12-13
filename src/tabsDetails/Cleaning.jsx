@@ -1,74 +1,81 @@
 import AlphabetsComponent from "../components/alphabetsComponent";
 import sofa from "../assets/sofa.png";
-import { useState } from "react";
+import kitchen from '../assets/kitchen.png';
+import toilet from '../assets/toilet.png';
+import { useEffect, useState } from "react";
 import SidebarPopup from "../components/SidebarPopup";
 import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
 import { useCart } from "../context/CartContenxt";
 import axios from "axios";
+import useFetch from "../hooks/useFetch";
 
-const Cleaning = ({ filteredCleaningProducts }) => {
+const Cleaning = () => {
   const { cartItems, refreshCart } = useCart();
 
-  const sofaTypes = [
-    { type: "2 Seater", price: "$ 200.00/Pc", img: sofa, category: "sofa" },
+  const categories = [
     {
-      type: "Single Seater",
-      price: "$ 100.00/Pc",
-      img: sofa,
-      category: "sofa",
+      image: sofa,
+      name: "sofa",
+      price: 120,
     },
-    { type: "3 Seater", price: "$ 300.00/Pc", img: sofa, category: "sofa" },
-  ];
+    {
+      image: kitchen,
+      name: "kitchen",
+      price: 120,
+    },
+    {
+      image: toilet,
+      name: "toilet",
+      price: 120,
+    },
+    {
+      image: sofa,
+      name: "car",
+      price: 120,
+    },
+  ]
 
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAlphabet, setSelectedAlphabet] = useState("");
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
-  const dryCleaningProduct = [
-    {
-      type: "Shirt",
-      price: "$ 10.00/Pc",
-      // img: shirt,
-    },
-    {
-      type: "Pant",
-      price: "$ 12.00/Pc",
-      // img: shirt,
-    },
-    {
-      type: "T-Shirt",
-      price: "$ 8.00/Pc",
-      // img: shirt,
-    },
-    {
-      type: "Jacket",
-      price: "$ 15.00/Pc",
-      // img: shirt,
-    },
-    {
-      type: "Shirt",
-      price: "$ 10.00/Pc",
-      // img: shirt,
-    },
-    {
-      type: "Shirt",
-      price: "$ 10.00/Pc",
-      // img: shirt,
-    },
-  ];
+  const [sofaProducts, setSofaProducts] = useState([]);
+  const [carProducts, setCarProducts] = useState([]);
+  const [toiletProducts, setToiletProducts] = useState([]);
+  const [kitchenProducts, setKitchenProducts] = useState([]);
 
-  const [quantities, setQuantities] = useState(
-    dryCleaningProduct?.map(() => 1)
-  );
-  const [productDetails, setProductDetails] = useState(null);
+  const { data } = useFetch("http://localhost:8888/api/v1/products");
+
+  // Mapping of category names to their respective product states and setters
+  const categoryProductsMap = {
+    sofa: { products: sofaProducts, setter: setSofaProducts },
+    kitchen: { products: kitchenProducts, setter: setKitchenProducts },
+    toilet: { products: toiletProducts, setter: setToiletProducts },
+    car: { products: carProducts, setter: setCarProducts }
+  };
+
+  useEffect(() => {
+    if (data?.data) {
+      const products = data.data;
+
+      // Dynamically set products for each category
+      Object.keys(categoryProductsMap).forEach(category => {
+        const categoryProducts = products.filter(product => 
+          product?.serviceName === category
+        );
+        categoryProductsMap[category].setter(categoryProducts);
+      });
+    }
+  }, [data]);
 
   const handleAlphabetClick = (alphabet) => {
     setSelectedAlphabet(alphabet);
     setSearchTerm("");
   };
 
-  const filteredProducts = filteredCleaningProducts?.filter((item) => {
+  const filteredProducts = categories?.filter((item) => {
     const matchesSearchTerm = item?.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
@@ -83,8 +90,7 @@ const Cleaning = ({ filteredCleaningProducts }) => {
     setIsPreviewPopupOpen(true);
   };
 
-  const handleIncrement = async (
-    index,
+  const addToCart = async (
     productId,
     serviceName,
     productName
@@ -119,11 +125,19 @@ const Cleaning = ({ filteredCleaningProducts }) => {
     }
   };
 
-  const handleDecrement = (index) => {
-    const updatedQuantities = [...quantities];
-    if (updatedQuantities[index] > 1) {
-      updatedQuantities[index] -= 1;
-      setQuantities(updatedQuantities);
+  console.log(sofaProducts);
+  const getCategoryProducts = () => {
+    switch(selectedItem) {
+      case 'sofa':
+        return sofaProducts;
+      case 'kitchen':
+        return kitchenProducts;
+      case 'toilet':
+        return toiletProducts;
+      case 'car':
+        return carProducts;
+      default:
+        return [];
     }
   };
 
@@ -131,22 +145,39 @@ const Cleaning = ({ filteredCleaningProducts }) => {
     <div>
       {selectedItem ? (
         <div>
-          
           <p>Select {selectedItem} type: </p>
           <div className="grid grid-cols-3 text-center mx-auto justify-center mt-2 gap-3">
-          {sofaTypes.map((item, index) => (
-                  <div
-                    key={index}
-                    className="border cursor-pointer border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
-                  >
-                    <img src={item.img} alt={item.type} className="w-16 h-16 mx-auto" />
-                    <p className="text-sm mt-2">{item.type}</p>
-                    <p className="text-gray-400 text-xs my-2">Starting from</p>
-                    <p className="text-sm text-[#006370]">{item.price}</p>
-                  </div>
-                ))}
+            {getCategoryProducts()?.map((item, index) => {
+              console.log(item);
+              return (
+              <div
+                key={index}
+                className="border cursor-pointer border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
+              >
+                <img 
+                  src={sofa} 
+                  alt={item.name} 
+                  className="w-16 h-16 mx-auto" 
+                />
+                <p className="text-sm mt-2">{item.name}</p>
+                <p className="text-gray-400 text-xs my-2">Starting from</p>
+                <p className="text-sm text-[#006370]">₹ {item.price}/-</p>
+                <button 
+                  onClick={() => addToCart(item?._id, item.serviceName, item.name)} 
+                  className="mt-2 bg-[#006370] text-white px-4 w-full py-1.5 rounded-md"
+                >
+                  Add
+                </button>
+              </div>
+            )})}
           </div>
-          <button onClick={() => setSelectedItem(null)} className="text-center mx-auto mt-4 bg-[#006370] text-white px-3 py-1 rounded-full">
+          <button 
+            onClick={() => {
+              setSelectedItem(null);
+              setSelectedCategory(null);
+            }} 
+            className="text-center mx-auto mt-4 bg-[#006370] text-white px-3 py-1 rounded-full"
+          >
             back to items
           </button>
         </div>

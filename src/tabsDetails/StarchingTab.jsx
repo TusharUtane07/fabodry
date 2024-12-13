@@ -6,74 +6,39 @@ import SidebarPopup from "../components/SidebarPopup";
 import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
 import { useCart } from "../context/CartContenxt";
 
-const StarchingTab = ({filteredStarchingProducts}) => {
+const StarchingTab = ({ filteredStarchingProducts }) => {
+  const { cartItems, refreshCart } = useCart();
 
-  const {cartItems, refreshCart} = useCart();
-
-  const dryCleaningProduct = [
-    {
-      type: "Shirt",
-      price: "$ 10.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "Pant",
-      price: "$ 12.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "T-Shirt",
-      price: "$ 8.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "Jacket",
-      price: "$ 15.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "Shirt",
-      price: "$ 10.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "Shirt",
-      price: "$ 10.00/Pc",
-      img: shirt,
-    },
-  ];
-
-
-  const [quantities, setQuantities] = useState(
-    dryCleaningProduct.map(() => 1)
-  );
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
-  const [searchQuery, setSearchQuery] = useState(""); 
-  const [filteredProducts, setFilteredProducts] = useState(filteredStarchingProducts);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState(
+    filteredStarchingProducts
+  );
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
-
-
   const [productDetails, setProductDetails] = useState(null);
 
+  // Function to check if a product is in the cart
+  const isProductInCart = (productId) => {
+    return cartItems.some((cartItem) => 
+      cartItem.productId.some((product) => product._id === productId)
+    );
+  };
 
-  const handleIncrement = (index, productId, serviceName, productName, quantity) => {
-    setProductDetails( {
+  const handleIncrement = (
+    index,
+    productId,
+    serviceName,
+    productName,
+    quantity
+  ) => {
+    setProductDetails({
       productId,
       selectedItem: serviceName,
       serviceName,
       productName,
-      quantity
-    })
-    setIsPopupOpen(true)
-  }
-
-  const handleDecrement = (index) => {
-    const updatedQuantities = [...quantities];
-    if (updatedQuantities[index] > 1) {
-      updatedQuantities[index] -= 1;
-      setQuantities(updatedQuantities);
-    }
+      quantity,
+    });
+    setIsPopupOpen(true);
   };
 
   const handleSearch = (event) => {
@@ -94,49 +59,50 @@ const StarchingTab = ({filteredStarchingProducts}) => {
     );
     setFilteredProducts(filtered);
   };
+
   const handlePreviewClick = () => {
     setIsPreviewPopupOpen(true);
   };
 
   return (
     <div>
-       <div className="flex justify-between items-center">
-      <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
-        <input
-          type="text"
-          className="py-1.5 text-xs pl-3 focus:outline-none w-full"
-          placeholder="Search Product"
-          value={searchQuery}
-          onChange={handleSearch}
-        />
-        <button
-          type="submit"
-          className="p-1 focus:outline-none items-end-end focus:shadow-outline"
-        >
-          <svg
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            className="w-4 h-4"
+      <div className="flex justify-between items-center">
+        <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
+          <input
+            type="text"
+            className="py-1.5 text-xs pl-3 focus:outline-none w-full"
+            placeholder="Search Product"
+            value={searchQuery}
+            onChange={handleSearch}
+          />
+          <button
+            type="submit"
+            className="p-1 focus:outline-none items-end-end focus:shadow-outline"
           >
-            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
-      </div>
-      <div className="flex gap-1 items-center">
-            <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
+            <svg
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              className="w-4 h-4"
+            >
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+        </div>
+        <div className="flex gap-1 items-center">
+          <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
             Total Count: {cartItems?.length}
-            </div>
-              <button 
-                onClick={handlePreviewClick}
-                className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5"
-              >
-                Preview
-              </button>
-            </div>
+          </div>
+          <button
+            onClick={handlePreviewClick}
+            className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5"
+          >
+            Preview
+          </button>
+        </div>
       </div>
 
       <div className="mt-3">
@@ -146,21 +112,33 @@ const StarchingTab = ({filteredStarchingProducts}) => {
         {filteredProducts.map((item, index) => (
           <div
             key={index}
-            className="border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center"
+            className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center ${
+              isProductInCart(item.id) ? 'bg-[#004d57] text-white' : ''
+            }`}
           >
             <img src={shirt} alt="" className="w-12 h-12 mx-auto " />
             <p className="text-sm pt-2 capitalize">{item.name}</p>
-            <p className="text-xs py-1 text-[#006370]">₹ {item.price}/-</p>
+            <p className="text-xs py-1 ">₹ {item.price}/-</p>
             <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
               <button
                 className="bg-[#006370] text-white rounded-sm px-1"
-                onClick={() => handleIncrement(index, item.id, item.serviceName, item.name, item.quantity)}
+                onClick={() =>
+                  handleIncrement(
+                    index,
+                    item.id,
+                    item.serviceName,
+                    item.name,
+                    item.quantity
+                  )
+                }
               >
                 +
               </button>
-              <span className="text-gray-500 px-3">{item.quantity === 0 ? 1 : item.quantity}</span>
+              <span className=" px-3">
+                {item.quantity === 0 ? 1 : item.quantity}
+              </span>
               <button
-                className="bg-[#006370] text-white rounded-sm   px-1"
+                className="bg-[#006370] text-white rounded-sm px-1"
                 onClick={() => handleDecrement(index)}
               >
                 -
@@ -170,9 +148,18 @@ const StarchingTab = ({filteredStarchingProducts}) => {
         ))}
       </div>
 
-      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} cartItems={cartItems} productDetails={productDetails}/>
-      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} cartItems={cartItems}  productDetails={productDetails}/>
-
+      <AddedProductPreviewPopup
+        isOpen={isPopupOpen}
+        setIsOpen={setIsPopupOpen}
+        cartItems={cartItems}
+        productDetails={productDetails}
+      />
+      <SidebarPopup
+        isOpen={isPreviewPopupOpen}
+        setIsOpen={setIsPreviewPopupOpen}
+        cartItems={cartItems}
+        productDetails={productDetails}
+      />
     </div>
   );
 };

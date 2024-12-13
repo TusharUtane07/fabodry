@@ -7,39 +7,10 @@ import axios from "axios";
 import { useCart } from "../context/CartContenxt";
 
 const DryCleaning = ({filteredDcProducts}) => {
-
   const {cartItems} = useCart();
   
-  const dryCleaningProduct = [
-    {
-      type: "Shirt",
-      price: "$ 10.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "Pant",
-      price: "$ 12.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "Coat",
-      price: "$ 20.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "Dress",
-      price: "$ 15.00/Pc",
-      img: shirt,
-    },
-    {
-      type: "Shirt",
-      price: "$ 10.00/Pc",
-      img: shirt,
-    },
-  ];
-
   const [quantities, setQuantities] = useState(
-    dryCleaningProduct.map(() => 1)
+    filteredDcProducts.map(() => 1)
   );
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -48,17 +19,23 @@ const DryCleaning = ({filteredDcProducts}) => {
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
 
+  // Function to check if a product is in the cart
+  const isProductInCart = (productId) => {
+    return cartItems.some((cartItem) => 
+      cartItem.productId.some((product) => product._id === productId)
+    );
+  };
 
   const handleIncrement = (index, productId, serviceName, productName, quantity) => {
-    setProductDetails( {
+    setProductDetails({
       productId,
       selectedItem: serviceName,
       serviceName,
       productName,
       quantity
-    })
-    setIsPopupOpen(true)
-  }
+    });
+    setIsPopupOpen(true);
+  };
 
   const handleDecrement = (index) => {
     const updatedQuantities = [...quantities];
@@ -91,47 +68,45 @@ const DryCleaning = ({filteredDcProducts}) => {
     setIsPreviewPopupOpen(true);
   };
 
-  
-console.log(filteredProducts);
   return (
     <div>
       <div className="flex justify-between items-center">
-      <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
-        <input
-          type="text"
-          className="py-1.5 text-xs pl-3 focus:outline-none w-full"
-          placeholder="Search Product"
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-        <button
-          type="submit"
-          className="p-1 focus:outline-none items-end-end focus:shadow-outline"
-        >
-          <svg
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            className="w-4 h-4"
+        <div className="border rounded-lg border-gray-300 w-72 ml-4 flex items-center justify-between">
+          <input
+            type="text"
+            className="py-1.5 text-xs pl-3 focus:outline-none w-full"
+            placeholder="Search Product"
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+          <button
+            type="submit"
+            className="p-1 focus:outline-none items-end-end focus:shadow-outline"
           >
-            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
-      </div>
-      <div className="flex gap-1 items-center">
-            <div className="text-xs rounded-lg px-8 text-gray-500">
+            <svg
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              className="w-4 h-4"
+            >
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+        </div>
+        <div className="flex gap-1 items-center">
+          <div className="text-xs rounded-lg px-8 text-gray-500">
             Total Count: {cartItems?.length}
-            </div>
-              <button 
-                onClick={handlePreviewClick}
-                className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5 "
-              >
-                Preview
-              </button>
-            </div>
+          </div>
+          <button 
+            onClick={handlePreviewClick}
+            className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5 "
+          >
+            Preview
+          </button>
+        </div>
       </div>
       <div className="mt-3">
         <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
@@ -140,11 +115,13 @@ console.log(filteredProducts);
         {filteredProducts.map((item, index) => (
           <div
             key={index}
-            className="border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center"
+            className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center ${
+              isProductInCart(item.id) ? 'bg-[#006370] text-white' : ''
+            }`}
           >
             <img src={item.image} alt="" className="w-12 h-12 mx-auto " />
             <p className="text-sm pt-2 capitalize">{item.name}</p>
-            <p className="text-xs py-1 text-[#006370]">₹ {item.price}/-</p>
+            <p className="text-xs py-1">₹ {item.price}/-</p>
             <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
               <button
                 className="bg-[#006370] text-white rounded-sm px-1"
@@ -152,9 +129,9 @@ console.log(filteredProducts);
               >
                 +
               </button>
-              <span className="text-gray-500 px-3">{item.quantity === 0 ? 1 : item.quantity}</span>
+              <span className=" px-3">{item.quantity === 0 ? 1 : item.quantity}</span>
               <button
-                className="bg-[#006370] text-white rounded-sm   px-1"
+                className="bg-[#006370] text-white rounded-sm px-1"
                 onClick={() => handleDecrement(index)}
               >
                 -
@@ -163,9 +140,18 @@ console.log(filteredProducts);
           </div>
         ))}
       </div>
-      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} cartItems={cartItems} productDetails={productDetails}/>
-      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen}  cartItems={cartItems}  productDetails={productDetails}/>
-
+      <AddedProductPreviewPopup 
+        isOpen={isPopupOpen} 
+        setIsOpen={setIsPopupOpen} 
+        cartItems={cartItems} 
+        productDetails={productDetails}
+      />
+      <SidebarPopup 
+        isOpen={isPreviewPopupOpen} 
+        setIsOpen={setIsPreviewPopupOpen}  
+        cartItems={cartItems}  
+        productDetails={productDetails}
+      />
     </div>
   );
 };

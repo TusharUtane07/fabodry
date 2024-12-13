@@ -6,64 +6,40 @@ import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
 import { useCart } from "../context/CartContenxt";
 
 const Ironing = ({filteredIroningProducts}) => {
-
   const {cartItems, refreshCart} = useCart();
 
   const normalPrice = "$ 10.00/Pc";
   const premiumPrice = "$ 20.00/Pc";
 
-  const dryCleaningProduct = [
-    {
-      type: "Shirt",
-      price: normalPrice,
-      img: shirt,
-    },
-    {
-      type: "Trousers",
-      price: normalPrice,
-      img: shirt,
-    },
-    {
-      type: "Blazer",
-      price: normalPrice,
-      img: shirt,
-    },
-    {
-      type: "Shirt",
-      price: normalPrice,
-      img: shirt,
-    },
-    {
-      type: "Curtain",
-      price: normalPrice,
-      img: shirt,
-    },
-  ];
-
-  const [quantities, setQuantities] = useState(dryCleaningProduct.map(() => 1));
+  const [quantities, setQuantities] = useState(filteredIroningProducts.map(() => 1));
   const [isPremium, setIsPremium] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); 
   const [filteredProducts, setFilteredProducts] = useState(filteredIroningProducts);
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
+  const [productDetails, setProductDetails] = useState(null);
+
+  // Function to check if a product is in the cart
+  const isProductInCart = (productId) => {
+    return cartItems.some((cartItem) => 
+      cartItem.productId.some((product) => product._id === productId)
+    );
+  };
 
   const handleToggle = () => {
     setIsPremium(!isPremium);
   };
 
-  const [productDetails, setProductDetails] = useState(null);
-
-
   const handleIncrement = (index, productId, serviceName, productName, quantity) => {
-    setProductDetails( {
+    setProductDetails({
       productId,
       selectedItem: serviceName,
       serviceName,
       productName,
       quantity
-    })
-    setIsPopupOpen(true)
-  }
+    });
+    setIsPopupOpen(true);
+  };
 
   const handleDecrement = (index) => {
     const updatedQuantities = [...quantities];
@@ -91,9 +67,11 @@ const Ironing = ({filteredIroningProducts}) => {
     );
     setFilteredProducts(filtered);
   };
+
   const handlePreviewClick = () => {
     setIsPreviewPopupOpen(true);
-  }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -118,43 +96,43 @@ const Ironing = ({filteredIroningProducts}) => {
         </div>
 
         <div className="flex justify-between items-center gap-5">
-      <div className="border rounded-lg border-gray-300 lg:w-60 xl:w-72 ml-4 flex items-center justify-between">
-        <input
-          type="text"
-          className="py-1.5 text-xs pl-3 focus:outline-none"
-          placeholder="Search Product"
-          value={searchQuery}
-          onChange={handleSearch}
-        />
-        <button
-          type="submit"
-          className="p-1 focus:outline-none items-end-end focus:shadow-outline"
-        >
-          <svg
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            className="w-4 h-4"
-          >
-            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
-      </div>
-      <div className="flex gap-1 items-center">
-            <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
-            Total Count: {cartItems?.length}
-            </div>
-              <button 
-                onClick={handlePreviewClick}
-               className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5 "
+          <div className="border rounded-lg border-gray-300 lg:w-60 xl:w-72 ml-4 flex items-center justify-between">
+            <input
+              type="text"
+              className="py-1.5 text-xs pl-3 focus:outline-none"
+              placeholder="Search Product"
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+            <button
+              type="submit"
+              className="p-1 focus:outline-none items-end-end focus:shadow-outline"
+            >
+              <svg
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                className="w-4 h-4"
               >
-                Preview
-              </button>
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </button>
+          </div>
+          <div className="flex gap-1 items-center">
+            <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
+              Total Count: {cartItems?.length}
             </div>
-      </div>
+            <button 
+              onClick={handlePreviewClick}
+              className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5 "
+            >
+              Preview
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="mt-3">
@@ -165,11 +143,13 @@ const Ironing = ({filteredIroningProducts}) => {
         {filteredProducts.map((item, index) => (
           <div
             key={index}
-            className="border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center"
+            className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center ${
+              isProductInCart(item.id) ? 'bg-[#006370] text-white' : ''
+            }`}
           >
             <img src={item.image} alt="" className="w-12 h-12 mx-auto " />
             <p className="text-sm pt-2 capitalize">{item.name}</p>
-            <p className="text-xs py-1 text-[#006370]">{isPremium ? premiumPrice : normalPrice}</p>
+            <p className="text-xs py-1 ">{isPremium ? premiumPrice : normalPrice}</p>
             <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
               <button
                 className="bg-[#006370] text-white rounded-sm px-1"
@@ -177,9 +157,9 @@ const Ironing = ({filteredIroningProducts}) => {
               >
                 +
               </button>
-              <span className="text-gray-500 px-3">{item.quantity === 0 ? 1 : item.quantity}</span>
+              <span className=" px-3">{item.quantity === 0 ? 1 : item.quantity}</span>
               <button
-                className="bg-[#006370] text-white rounded-sm   px-1"
+                className="bg-[#006370] text-white rounded-sm px-1"
                 onClick={() => handleDecrement(index)}
               >
                 -
@@ -188,9 +168,18 @@ const Ironing = ({filteredIroningProducts}) => {
           </div>
         ))}
       </div>
-      <AddedProductPreviewPopup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} cartItems={cartItems}  productDetails={productDetails}/>
-      <SidebarPopup isOpen={isPreviewPopupOpen} setIsOpen={setIsPreviewPopupOpen} cartItems={cartItems}  productDetails={productDetails}/>
-
+      <AddedProductPreviewPopup 
+        isOpen={isPopupOpen} 
+        setIsOpen={setIsPopupOpen} 
+        cartItems={cartItems}  
+        productDetails={productDetails}
+      />
+      <SidebarPopup 
+        isOpen={isPreviewPopupOpen} 
+        setIsOpen={setIsPreviewPopupOpen} 
+        cartItems={cartItems}  
+        productDetails={productDetails}
+      />
     </div>
   );
 };
