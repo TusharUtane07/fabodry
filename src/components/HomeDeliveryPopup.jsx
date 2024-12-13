@@ -16,7 +16,7 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
     const userId = localStorage.getItem("userId");
     try {
       const response = await axios.post(
-        `http://51.21.62.30/api/v1/customers/${userId}/address`,
+        `https://api.fabodry.in/api/v1/customers/${userId}/address`,
         {
           label: label,
           addressLine1: fullAddress,

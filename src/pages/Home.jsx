@@ -6,7 +6,7 @@ import useFetch from "../hooks/useFetch";
 const Home = () => {
   const [products, setProducts] = useState(null);
   const navigate = useNavigate();
-  const { data } = useFetch("http://51.21.62.30/api/v1/products");
+  const { data } = useFetch("https://api.fabodry.in/api/v1/products");
   useEffect(() => {
     if (data) {
       setProducts(data);

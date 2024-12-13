@@ -58,7 +58,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
 
     try {
         const response = await axios.put(
-            `http://51.21.62.30/api/v1/carts/${cartId}`,
+            `https://api.fabodry.in/api/v1/carts/${cartId}`,
             {
                 customerId: userId,
                 productId: [productDetails?.productId],

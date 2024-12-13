@@ -46,7 +46,7 @@ const Cleaning = () => {
   const [toiletProducts, setToiletProducts] = useState([]);
   const [kitchenProducts, setKitchenProducts] = useState([]);
 
-  const { data } = useFetch("http://51.21.62.30/api/v1/products");
+  const { data } = useFetch("https://api.fabodry.in/api/v1/products");
 
   // Mapping of category names to their respective product states and setters
   const categoryProductsMap = {
@@ -100,7 +100,7 @@ const Cleaning = () => {
 
     try {
       const response = await axios.post(
-        "http://51.21.62.30/api/v1/carts/add",
+        "https://api.fabodry.in/api/v1/carts/add",
         {
           customerId: userId,
           productId: [productId],

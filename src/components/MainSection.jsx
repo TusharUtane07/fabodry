@@ -27,7 +27,7 @@ const MainSection = ({ products }) => {
 
   const { data } = useFetch(
     mobileNumber
-      ? `http://51.21.62.30/api/v1/customers/search?mobile=${mobileNumber}`
+      ? `https://api.fabodry.in/api/v1/customers/search?mobile=${mobileNumber}`
       : null,
     {},
     [mobileNumber]
@@ -134,7 +134,7 @@ const MainSection = ({ products }) => {
       try {
         const token = localStorage.getItem("authToken");
         const response = await fetch(
-          "http://51.21.62.30/api/v1/admin/customers/create",
+          "https://api.fabodry.in/api/v1/admin/customers/create",
           {
             method: "POST",
             headers: {
@@ -149,7 +149,7 @@ const MainSection = ({ products }) => {
         );
         refreshCart();
         const responseSearching = await axios.get(
-          `http://51.21.62.30/api/v1/customers/search?mobile=${mobileNumber}`
+          `https://api.fabodry.in/api/v1/customers/search?mobile=${mobileNumber}`
         );
         setUserName(data?.data?.customer?.name)
         if(data.data.data.customer.addresses.length >= 1){

@@ -69,7 +69,7 @@ const BillingSection = ({ customerAddress }) => {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.delete(
-        `http://51.21.62.30/api/v1/carts/${id}`,
+        `https://api.fabodry.in/api/v1/carts/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ const BillingSection = ({ customerAddress }) => {
     const totalCount = cartItems?.length;
     try {
       const response = await axios.post(
-        "http://51.21.62.30/api/v1/admin/orders/create",
+        "https://api.fabodry.in/api/v1/admin/orders/create",
         {
           productNames: productName,
           serviceNames: serviceName,
@@ -143,7 +143,7 @@ const BillingSection = ({ customerAddress }) => {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.delete(
-        `http://51.21.62.30/api/v1/carts/customer/${customerId}`,
+        `https://api.fabodry.in/api/v1/carts/customer/${customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

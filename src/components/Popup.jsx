@@ -67,7 +67,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
 
     try {
         const response = await axios.post(
-            "http://51.21.62.30/api/v1/carts/add",
+            "https://api.fabodry.in/api/v1/carts/add",
             {
                 customerId: userId,
                 productId: [productDetails?.productId],
