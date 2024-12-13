@@ -13,7 +13,7 @@ const Laundry = ({ filteredLaundryProducts }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
 
-  const { data } = useFetch("http://localhost:8888/api/v1/services");
+  const { data } = useFetch("http://51.21.62.30/api/v1/services");
 
   const laundryServices = [
     {

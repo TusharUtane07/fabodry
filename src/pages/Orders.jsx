@@ -18,7 +18,7 @@ const Orders = () => {
 
     try {
       const response = await axios.get(
-        "http://localhost:8888/api/v1/admin/orders/all",
+        "http://51.21.62.30/api/v1/admin/orders/all",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -32,7 +32,7 @@ const Orders = () => {
   const handleDelete = async (id) => {
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.delete(`http://localhost:8888/api/v1/admin/orders/delete/${id}`, {
+      const response = await axios.delete(`http://51.21.62.30/api/v1/admin/orders/delete/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

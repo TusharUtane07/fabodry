@@ -5,7 +5,7 @@ const CouponPopup = ({ isOpen, setIsOpen, onCouponSelect }) => {
 
   const [couponCodes, setCouponCodes]  = useState(null);
       const token = localStorage.getItem("authToken");
-        const { data, loading, error } = useFetch("http://localhost:8888/api/v1/coupons/all", {
+        const { data, loading, error } = useFetch("http://51.21.62.30/api/v1/coupons/all", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

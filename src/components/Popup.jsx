@@ -67,7 +67,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
 
     try {
         const response = await axios.post(
-            "http://localhost:8888/api/v1/carts/add",
+            "http://51.21.62.30/api/v1/carts/add",
             {
                 customerId: userId,
                 productId: [productDetails?.productId],

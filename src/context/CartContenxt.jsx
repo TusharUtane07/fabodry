@@ -15,7 +15,7 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      const response = await axios.get(`http://localhost:8888/api/v1/customers/search?mobile=${mobileNumber}`, {
+      const response = await axios.get(`http://51.21.62.30/api/v1/customers/search?mobile=${mobileNumber}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCartItems(response.data.data.customer.cart); 

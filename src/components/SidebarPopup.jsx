@@ -93,7 +93,7 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
   const deleteCartProduct = async (id) => {
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.delete(`http://localhost:8888/api/v1/carts/${id}`, {
+      const response = await axios.delete(`http://51.21.62.30/api/v1/carts/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

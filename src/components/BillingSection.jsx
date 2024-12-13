@@ -69,7 +69,7 @@ const BillingSection = ({ customerAddress }) => {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.delete(
-        `http://localhost:8888/api/v1/carts/${id}`,
+        `http://51.21.62.30/api/v1/carts/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ const BillingSection = ({ customerAddress }) => {
     const totalCount = cartItems?.length;
     try {
       const response = await axios.post(
-        "http://localhost:8888/api/v1/admin/orders/create",
+        "http://51.21.62.30/api/v1/admin/orders/create",
         {
           productNames: productName,
           serviceNames: serviceName,
@@ -143,7 +143,7 @@ const BillingSection = ({ customerAddress }) => {
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.delete(
-        `http://localhost:8888/api/v1/carts/customer/${customerId}`,
+        `http://51.21.62.30/api/v1/carts/customer/${customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -16,7 +16,7 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
     const userId = localStorage.getItem("userId");
     try {
       const response = await axios.post(
-        `http://localhost:8888/api/v1/customers/${userId}/address`,
+        `http://51.21.62.30/api/v1/customers/${userId}/address`,
         {
           label: label,
           addressLine1: fullAddress,

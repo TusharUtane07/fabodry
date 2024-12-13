@@ -11,7 +11,7 @@ Login = () => {
   const navigate = useNavigate();
 
   const { data, loading, error } = useFetch(
-    loginTrigger ? "http://localhost:8888/api/v1/franchise-admin/login" : null,
+    loginTrigger ? "http://51.21.62.30/api/v1/franchise-admin/login" : null,
     {
       method: "POST",
       headers: {

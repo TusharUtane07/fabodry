@@ -58,7 +58,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
 
     try {
         const response = await axios.put(
-            `http://localhost:8888/api/v1/carts/${cartId}`,
+            `http://51.21.62.30/api/v1/carts/${cartId}`,
             {
                 customerId: userId,
                 productId: [productDetails?.productId],
