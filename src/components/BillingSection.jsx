@@ -48,9 +48,9 @@ const BillingSection = ({ customerAddress }) => {
   };
   const [selectedLabel, setSelectedLabel] = useState("04:00PM-05:00PM");
 
-  const handleTimeChange = (value, option) => {
-    setSelectedLabel(option.label);
-  };
+  // const handleTimeChange = (value, option) => {
+  //   setSelectedLabel(option.label);
+  // };
 
   const disabledDate = (current) => {
     return current && current < dayjs().startOf("day");
@@ -108,7 +108,6 @@ const BillingSection = ({ customerAddress }) => {
     const mobileNumber = localStorage.getItem("mobileNumber");
     const totalAmount = calculateTotalAmount();
     const totalCount = cartItems?.length;
-
     try {
       const response = await axios.post(
         "http://localhost:8888/api/v1/admin/orders/create",
@@ -136,6 +135,24 @@ const BillingSection = ({ customerAddress }) => {
       navigate("/orders/all");
     } catch (error) {
       console.error("Error creating order:", error);
+    }
+  };
+
+  const deleteAllCartItems = async () => {
+    const customerId = localStorage.getItem("userId");
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.delete(
+        `http://localhost:8888/api/v1/carts/customer/${customerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      refreshCart();
+    } catch (error) {
+      console.error("Error Deleting All Cart Items: ", error.message, error);
     }
   };
 
@@ -228,23 +245,27 @@ const BillingSection = ({ customerAddress }) => {
                         </p>
                       </div>
                       <div className="flex gap-1">
-                        { product.productId[0]?.serviceName === "Cleaning" ? " " :
-                        <button
-                          onClick={() => {
-                            setIsEditPopupOpen(true);
-                            setCartPId(product?._id);
-                            setProductDetails({
-                              productId: product.productId[0]?._id,
-      selectedItem: product?.productid[0]?.serviceName,
-                              serviceName: product.productId[0]?.serviceName,
-                              productName: product.productId[0]?.name,
-                              quantity: product.productId[0]?.quantity
-                            });
-                          }}
-                          className="text-sm text-green-400 "
-                        >
-                          <MdEdit />
-                        </button>}
+                        {product.productId[0]?.serviceName === "Cleaning" ? (
+                          " "
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setIsEditPopupOpen(true);
+                              setCartPId(product?._id);
+                              setProductDetails({
+                                productId: product.productId[0]?._id,
+                                selectedItem:
+                                  product?.productid[0]?.serviceName,
+                                serviceName: product.productId[0]?.serviceName,
+                                productName: product.productId[0]?.name,
+                                quantity: product.productId[0]?.quantity,
+                              });
+                            }}
+                            className="text-sm text-green-400 "
+                          >
+                            <MdEdit />
+                          </button>
+                        )}
                         <button
                           onClick={() => deleteCartProduct(product?._id)}
                           className="text-sm text-red-400"
@@ -290,14 +311,17 @@ const BillingSection = ({ customerAddress }) => {
             </div>
           </div>
         ) : (
-          <div className="text-center mt-4">{
-            cartItems?.length >= 1 ?
-            <button
-              onClick={() => setIsDrawerOpen(true)}
-              className="px-3 py-2 text-xs bg-gray-500 text-gray-200 rounded-lg w-full"
-            >
-              Add Coupon
-            </button> : " "}
+          <div className="text-center mt-4">
+            {cartItems?.length >= 1 ? (
+              <button
+                onClick={() => setIsDrawerOpen(true)}
+                className="px-3 py-2 text-xs bg-gray-500 text-gray-200 rounded-lg w-full"
+              >
+                Add Coupon
+              </button>
+            ) : (
+              " "
+            )}
           </div>
         )}
       </div>
@@ -500,7 +524,7 @@ const BillingSection = ({ customerAddress }) => {
             Create Order
           </button>
           <button
-            onClick={() => createOrder()}
+            onClick={() => deleteAllCartItems()}
             className="px-5 py-2.5  bg-[#00414e] text-xs text-gray-200 rounded-lg"
           >
             Cancel Order

@@ -53,7 +53,7 @@ const MainSection = ({ products }) => {
   useEffect(() => {
     const debounced = debounce(() => {
       setDebouncedUserName(userName);
-    }, 1000);
+    }, 2000);
 
     debounced();
     return () => debounced.cancel();
