@@ -27,7 +27,6 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
       return `${year}-${month}-${day}`;
   }
 
-  console.log(order);
   const deliveryDate = formatDate(order.deliveryDate)
     const labelData = order.productNames.map((product, index) => ({
       orderId: order._id,

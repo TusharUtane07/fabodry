@@ -125,7 +125,6 @@ const Cleaning = () => {
     }
   };
 
-  console.log(sofaProducts);
   const getCategoryProducts = () => {
     switch(selectedItem) {
       case 'sofa':
@@ -148,7 +147,6 @@ const Cleaning = () => {
           <p>Select {selectedItem} type: </p>
           <div className="grid grid-cols-3 text-center mx-auto justify-center mt-2 gap-3">
             {getCategoryProducts()?.map((item, index) => {
-              console.log(item);
               return (
               <div
                 key={index}

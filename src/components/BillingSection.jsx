@@ -76,7 +76,6 @@ const BillingSection = ({ customerAddress }) => {
           },
         }
       );
-      console.log("Delete response: ", response);
       await refreshCart();
     } catch (error) {
       console.log("Error deleting product: ", error, error.message);

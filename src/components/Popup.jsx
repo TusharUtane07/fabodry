@@ -41,7 +41,6 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
       return { ...prev, comments: newComments };
     });
   };
-  console.log(productDetails, "pd");
 
   const togglePress = () => {
     setSelectedDetails((prev) => ({

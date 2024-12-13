@@ -70,7 +70,6 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
   };
 
   const handleIncrement = (index, productId, serviceName, productName, pId, quantity) => {
-    console.log("handleIncrement: ", productId, serviceName);
     setPCartId(pId)
     setProductDetails( {
       productId,

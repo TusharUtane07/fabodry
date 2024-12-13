@@ -24,7 +24,6 @@ const AddedProductPreviewPopup = ({ isOpen, setIsOpen, productDetails }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("Delete response: ", response);
       await refreshCart();
     } catch (error) {
       console.log("Error deleting product: ", error, error.message);
