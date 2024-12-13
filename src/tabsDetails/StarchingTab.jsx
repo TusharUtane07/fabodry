@@ -19,8 +19,8 @@ const StarchingTab = ({ filteredStarchingProducts }) => {
 
   // Function to check if a product is in the cart
   const isProductInCart = (productId) => {
-    return cartItems.some((cartItem) => 
-      cartItem.productId.some((product) => product._id === productId)
+    return cartItems?.some((cartItem) => 
+      cartItem.productId?.some((product) => product._id === productId)
     );
   };
 
