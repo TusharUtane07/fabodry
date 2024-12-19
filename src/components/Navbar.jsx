@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import profile from '../assets/profile.png';
+import { useCart } from '../context/CartContenxt';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const {refreshCart} = useCart();
    
   const getName = localStorage.getItem("adminName");
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('adminName');
+    refreshCart();
     navigate("/login");
   }
 

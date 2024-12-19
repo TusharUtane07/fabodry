@@ -16,6 +16,28 @@ body::-webkit-scrollbar{
 }
 
 
+.custom-select-dropdown {
+    min-width: 300px !important;
+    width: auto !important;
+  }
 
+
+  .custom-scrollbar {
+    scrollbar-width: thin; /* Firefox support */
+    scrollbar-color: rgba(0,0,0,0.2) transparent; /* Firefox support */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px; /* Narrow scrollbar width for WebKit browsers */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2); /* Subtle scrollbar color */
+    border-radius: 2px;
+  }
 
   

@@ -1,88 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { IoPrint, IoReceipt } from 'react-icons/io5';
+import { MdBorderColor, MdOutlinePayments } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
 
 const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
+  const navigate = useNavigate();
   if (!isOpen || !order) return null;
 
-  const [labels, setLabels] = useState([]);
-  const [printMode, setPrintMode] = useState(false);
-
   const handlePrintLabels = () => {
-    const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
+    const orderData = JSON.stringify(order);
+    navigate('/print-labels', { 
+      state: { order: orderData } 
     });
-    const formattedTime = currentDate.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-
-    function formatDate(isoDate) {
-      const date = new Date(isoDate);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0'); 
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-  }
-
-  const deliveryDate = formatDate(order.deliveryDate)
-    const labelData = order.productNames.map((product, index) => ({
-      orderId: order._id,
-      customerName: order.customerName,
-      garment: product,
-      serviceName: order.serviceNames[index], 
-      count: `${index + 1}/${order.productNames.length}`,
-      // comment: order.comments[index],
-      date: formattedDate,
-      dd: deliveryDate,
-      time: formattedTime,
-    }));
-    
-    
-    setLabels(labelData);
-    setPrintMode(true);
   };
-
-  useEffect(() => {
-    if (printMode && labels.length > 0) {
-      const timer = setTimeout(() => {
-        window.print();
-        setPrintMode(false);
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-  }, [printMode, labels]);
-
-  const printStyles = `
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #print-section, #print-section * {
-        visibility: visible;
-      }
-      #print-section {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        display: block;
-        page-break-inside: avoid;
-      }
-      @page {
-        size: A4;
-        margin: 10mm;
-      }
-    }
-  `;
+  const handlePrintReceipts = () => {
+    const orderData = JSON.stringify(order);
+    navigate('/print-receipt', { 
+      state: { order: orderData } 
+    });
+  };
 
   return (
     <>
-      <style>{printStyles}</style>
-      
       <div className="flex justify-center text-center items-center">
         {isOpen && (
           <div
@@ -96,80 +34,38 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
               <h2 className="text-lg text-[#00414e] mb-4 ml-5">
                 Order Created successfully
               </h2>
-              <button onClick={() => setIsOpen(false)} className='mb-4 bg-gray-500 p-2 rounded-full px-3.5 text-white'>X</button>
+              <button onClick={() => setIsOpen(false)} className='mb-2 bg-gray-200 p-2  rounded-full px-3.5 text-gray-600 font-semibold'>X</button>
               </div>
-              <p>Order Id: {order?._id}</p>
-              <div className="mt-5 p-5">
+              <p className='text-xl'>Order Id: {order?.orderId}</p>
+              <div className="mt-4 p-4 flex items-center">
                 <button
-                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2"
+                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2 flex items-center justify-center gap-2"
                   onClick={handlePrintLabels}
                 >
-                  Print Label
+                  <IoPrint />
+                 <p> Print Label</p>
                 </button>
                 <button
-                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2"
+                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2 flex items-center justify-center gap-2"
+                  onClick={handlePrintReceipts}
                 >
-                  Print Receipt
+                  <IoReceipt />
+                  <p>Print Receipt</p>
                 </button>
                 <button
-                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2"
+                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2 flex items-center justify-center gap-2"
                 >
+                  <MdBorderColor />
                   Edit Order
                 </button>
                 <button
-                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2"
+                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2 flex items-center justify-center gap-2"
                 >
+                  <MdOutlinePayments />
                   Collect Payments
                 </button>
               </div>
             </div>
-          </div>
-        )}
-
-        {printMode && (
-          <div 
-            id="print-section" 
-            className="hidden print:block"
-            style={{
-              width: '210mm', // A4 width
-              height: '297mm', // A4 height
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns
-              gridTemplateRows: 'repeat(4, 1fr)', // 4 rows
-              gap: '5mm', // space between labels
-              padding: '10mm',
-              boxSizing: 'border-box',
-              fontFamily: 'Arial, sans-serif'
-            }}
-          >
-            {labels.map((label, index) => (
-              <div 
-                key={index} 
-                style={{
-                  border: '1px solid black',
-                  padding: '5mm',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  textAlign: 'center'
-                }}
-              >
-                <div style={{display: "flex", alignItems: "center", gap: "3px"}}>
-                <p style={{ margin: '1mm 0' }}> {label.date},</p>
-                <p style={{ margin: '1mm 0' }}> {label.time}</p>
-                </div>
-                <p style={{ margin: '1mm 0' }}>{label.customerName}</p>
-                <p style={{ margin: '1mm 0', fontWeight: "bold", fontSize: "10px" }}>Order ID: {label.orderId}</p>
-                <p style={{ margin: '1mm 0' }}>{label.garment}</p>
-                {/* <p style={{ margin: '1mm 0' }}>{label.comment}</p> */}
-                <p style={{ margin: '1mm 0', border: "2px solid black", padding: "2px" }}>{label.serviceName}</p>
-                <p style={{ margin: '1mm 0', fontWeight: 'bold', display:'flex' }}>
-                  <span>DD: {label.dd}</span>{" - "}
-                  <span>{`[${label.count}]`}</span>
-                  </p>
-              </div>
-            ))}
           </div>
         )}
       </div>

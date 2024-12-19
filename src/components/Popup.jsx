@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import { useCart } from "../context/CartContenxt";
+import toast from "react-hot-toast";
 
 const Popup = ({ isOpen, setIsOpen, productDetails }) => {
   const togglePopup = () => setIsOpen(!isOpen);
@@ -61,12 +62,17 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
     }
   }
   const addToCart = async () => {
-    const token = localStorage.getItem("authToken");
+    const mobileNumber = localStorage.getItem("mobileNumber");
     const userId = localStorage.getItem("userId");
+    if(mobileNumber === "" && userId){
+      toast.error("Please enter mobile number before adding");
+      return
+    }
+    const token = localStorage.getItem("authToken");
 
     try {
         const response = await axios.post(
-            "https://api.fabodry.in/api/v1/carts/add",
+            `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/add`,
             {
                 customerId: userId,
                 productId: [productDetails?.productId],
@@ -88,6 +94,9 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
         await refreshCart();
         togglePopup();
     } catch (error) {
+      toast.error(
+        "Please enter mobile number"
+      )
         console.error("Error updating cart:", error);
     }
 };
@@ -96,7 +105,7 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
     <div className="flex justify-center items-center">
       {isOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50 p-5 pb-10 text-sm">
-          <div className="bg-white rounded-lg p-6 w-[60vw] mx-auto">
+          <div className="bg-white rounded-lg p-6 w-[55vw] mx-auto">
             <h2 className="text-lg text-[#00414e] mb-4">
               {productDetails?.productName}
             </h2>

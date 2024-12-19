@@ -2,7 +2,7 @@ import React from 'react'
 
 const AnalyticsAndReporting = () => {
   return (
-    <div className="mt-10 ml-[240px]">AnalyticsAndReporting</div>
+    <div className="pt-10  ml-[240px]">AnalyticsAndReporting</div>
   )
 }
 

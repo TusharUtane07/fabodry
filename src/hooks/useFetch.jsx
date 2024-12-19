@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useCart } from "../context/CartContenxt";
 
 const useFetch = (url, options = {}, dependencies = []) => {
   const [data, setData] = useState(null);
@@ -16,6 +17,7 @@ const useFetch = (url, options = {}, dependencies = []) => {
           ...options,
         });
         setData(response.data);
+
       } catch (err) {
         setError(err);
       } finally {

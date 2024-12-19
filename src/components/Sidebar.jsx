@@ -37,27 +37,21 @@ const Sidebar = () => {
       link: "/dashboard",
       icon: <RiPieChart2Fill className="text-lg" />,
     },
-    { label: "POS", link: "/", icon: <BsGraphUp className="text-lg" /> },
+    { label: "POS", link: "/pos", icon: <BsGraphUp className="text-lg" /> },
     {
-      label: "Order",
-      link: "/orders",
+      label: "B2C Orders",
+      link: "/orders/all",
       icon: <IoCart className="text-lg" />,
       submenus: [
         { label: "All", link: "/orders/all" },
         { label: "Pending", link: "/orders/pending" },
-        { label: "Confirmed", link: "/orders/confirmed" },
-        { label: "Packaging", link: "/orders/packaging" },
-        { label: "Out For Delivery", link: "/orders/out-for-delivery" },
         { label: "Delivered", link: "/orders/delivered" },
-        { label: "Returned", link: "/orders/returned" },
-        { label: "Failed", link: "/orders/failed" },
-        { label: "Canceled", link: "/orders/canceled" },
+        { label: "Cancelled", link: "/orders/cancelled" },
+        { label: "S.Processing", link: "/orders/s-processing" },
+        { label: "F.Processing", link: "/orders/f-processing" },
+        { label: "S.Mark Ready", link: "/orders/s-mark-ready" },
+        { label: "F.Mark Ready", link: "/orders/f-mark-ready" },
       ],
-    },
-    {
-      label: "B2C Orders",
-      link: "/b2c-orders",
-      icon: <MdOutlineBusinessCenter className="text-lg" />,
     },
     {
       label: "Pick up & Drop",
@@ -76,8 +70,18 @@ const Sidebar = () => {
     },
     {
       label: "B2B Orders",
-      link: "/b2b-orders",
+      link: "/b2b-orders/all",
       icon: <MdOutlineBusinessCenter className="text-lg" />,
+      submenus: [
+        { label: "All", link: "/b2b-orders/all" },
+        { label: "Pending", link: "/b2b-orders/pending" },
+        { label: "Delivered", link: "/b2b-orders/delivered" },
+        { label: "Cancelled", link: "/b2b-orders/cancelled" },
+        { label: "S.Processing", link: "/b2b-orders/s-processing" },
+        { label: "F.Processing", link: "/b2b-orders/f-processing" },
+        { label: "S.Mark Ready", link: "/b2b-orders/s-mark-ready" },
+        { label: "F.Mark Ready", link: "/b2b-orders/f-mark-ready" },
+      ],
     },
     {
       label: "Settlements",
@@ -143,7 +147,7 @@ const Sidebar = () => {
 
   return (
     <section
-      className="w-[250px] grid-cols-1 pt-24 bg-[#d5e7ec] min-h-screen h-full fixed left-0 overflow-y-scroll"
+      className="w-[250px] grid-cols-1 pt-20 bg-[#d5e7ec] min-h-screen h-full fixed left-0 overflow-y-scroll"
       style={{ scrollbarWidth: "none" }}
     >
       {tabs.map((item, index) => {
@@ -151,21 +155,21 @@ const Sidebar = () => {
           return (
             <div
               key={index}
-              className="flex flex-col items-center text-[10px] mx-1"
+              className="flex flex-col items-center mx-1"
             >
               <button
                 onClick={() => toggleSubmenu(item.label)}
-                className={`flex items-center justify-between w-full gap-3 py-2 rounded-md text-[12px] px-4 mx-2 ${
+                className={`flex items-center justify-between w-full gap-6 py-2 rounded-md text-[12px] px-4 mx-2 ${
                   location.pathname === item.link
-                    ? "bg-[#004d57] text-white"
-                    : "text-gray-600"
+                    ? "bg-[#004d57] text-white font-semibold"
+                    : "text-black font-semibold"
                 }`}
               >
                 {item.icon}
                 <p className="uppercase">{item.label}</p>
                 <span
-                  className={`ml-auto transform transition-transform duration-300 ${
-                    openSubmenus[item.label] ? "rotate-180" : "rotate-0"
+                  className={`ml-auto transform rotate-90 transition-transform duration-300 ${
+                    openSubmenus[item.label] ? "rotate-[180deg]" : "rotate-[90deg]"
                   }`}
                 >
                   <FaAngleUp size={15} />
@@ -173,12 +177,12 @@ const Sidebar = () => {
               </button>
 
               {openSubmenus[item.label] && (
-                <div className="flex flex-col w-full px-8 mt-2 mx-2">
+                <div className="flex flex-col w-full px-8 mx-2">
                   {item.submenus.map((submenu, subIndex) => (
                     <button
                       key={subIndex}
                       onClick={() => navigate(submenu.link)}
-                      className={`text-left flex items-center gap-1 text-gray-600 py-2 text-[12px] hover:text-[#004d57] ${
+                      className={`text-left flex items-center gap-1 text-black font-semibold py-1.5 text-[12px] hover:text-[#004d57] ${
                         location.pathname === submenu.link
                           ? "text-[#004d57] font-semibold"
                           : ""
@@ -197,14 +201,14 @@ const Sidebar = () => {
         return (
           <div
             key={index}
-            className="flex items-center text-[10px] h-10 rounded-lg"
+            className="flex items-center text-[10px] h-[38px] rounded-lg"
           >
             <button
               onClick={() => navigate(item.link)}
               className={`flex items-center py-2 gap-6 rounded-md text-[12px] w-full px-4 mx-1 ${
                 location.pathname === item.link
-                  ? "bg-[#004d57] text-white"
-                  : "text-gray-600"
+                  ? "bg-[#004d57] text-white font-semibold"
+                  : "text-black font-semibold"
               }`}
             >
               {item.icon}

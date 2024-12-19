@@ -1,18 +1,22 @@
 import { useState } from "react";
 import AlphabetsComponent from "../components/alphabetsComponent";
-import shirt from "../assets/shirt.png";
 import SidebarPopup from "../components/SidebarPopup";
 import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
 import { useCart } from "../context/CartContenxt";
+import { MdDelete, MdEdit } from "react-icons/md";
+import Popup from "../components/Popup";
+import toast from "react-hot-toast";
+import axios from "axios";
 
-const Ironing = ({filteredIroningProducts}) => {
+const Ironing = ({mode, filteredIroningProducts}) => {
   const {cartItems, refreshCart} = useCart();
 
-  const normalPrice = "$ 10.00/Pc";
-  const premiumPrice = "$ 20.00/Pc";
+  const normalPrice = "10";
+  const premiumPrice = "20";
 
-  const [quantities, setQuantities] = useState(filteredIroningProducts.map(() => 1));
+  const [quantities, setQuantities] = useState(filteredIroningProducts?.map(() => 1));
   const [isPremium, setIsPremium] = useState(false);
+  const [isAddedPopupOpen, setIsAddedPopupOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); 
   const [filteredProducts, setFilteredProducts] = useState(filteredIroningProducts);
@@ -38,14 +42,27 @@ const Ironing = ({filteredIroningProducts}) => {
       productName,
       quantity
     });
-    setIsPopupOpen(true);
+    if(!cartItems || cartItems.length === 0){
+      setIsPopupOpen(true);
+    }else{
+      setIsAddedPopupOpen(true)
+    }
   };
 
-  const handleDecrement = (index) => {
-    const updatedQuantities = [...quantities];
-    if (updatedQuantities[index] > 1) {
-      updatedQuantities[index] -= 1;
-      setQuantities(updatedQuantities);
+  const deleteCartProduct = async (id) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Delete response: ", response);
+      toast.success("Deleted Successfully")
+      await refreshCart();
+    } catch (error) {
+      toast.error("Error Deleting")
+      console.log("Error deleting product: ", error, error.message);
     }
   };
 
@@ -99,7 +116,7 @@ const Ironing = ({filteredIroningProducts}) => {
           <div className="border rounded-lg border-gray-300 lg:w-60 xl:w-72 ml-4 flex items-center justify-between">
             <input
               type="text"
-              className="py-1.5 text-xs pl-3 focus:outline-none"
+              className="py-1.5 text-xs pl-3 rounded-xl focus:outline-none"
               placeholder="Search Product"
               value={searchQuery}
               onChange={handleSearch}
@@ -123,11 +140,16 @@ const Ironing = ({filteredIroningProducts}) => {
           </div>
           <div className="flex gap-1 items-center">
             <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
-              Total Count: {cartItems?.length}
+              Total Count: {!cartItems || cartItems.length === 0 
+  ? "0" 
+  : cartItems.length}
+
             </div>
             <button 
               onClick={handlePreviewClick}
-              className="bg-[#004D57] text-white text-xs rounded-md px-4 py-1.5 "
+              className={`text-xs rounded-md px-4 py-1.5 ${
+                mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"
+              }`}
             >
               Preview
             </button>
@@ -140,38 +162,62 @@ const Ironing = ({filteredIroningProducts}) => {
       </div>
 
       <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4">
-        {filteredProducts.map((item, index) => (
+        {filteredProducts.map((item, index) => {
+          const correspondingCartItem = cartItems?.find(
+            (cartItem) =>
+              cartItem.productId[0]?.id === item.id 
+          );
+          return(
           <div
             key={index}
-            className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center ${
+            className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center relative ${
               isProductInCart(item.id) ? 'bg-[#006370] text-white' : ''
             }`}
           >
             <img src={item.image} alt="" className="w-12 h-12 mx-auto " />
             <p className="text-sm pt-2 capitalize">{item.name}</p>
-            <p className="text-xs py-1 ">{isPremium ? premiumPrice : normalPrice}</p>
+            <p className="text-xs py-1 ">₹ { mode === "B2B" ? (isPremium ? premiumPrice * 2 : normalPrice * 2) : (isPremium ? premiumPrice : normalPrice)}/pc
+            </p>
             <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
               <button
-                className="bg-[#006370] text-white rounded-sm px-1"
+                className={`rounded-sm px-1 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
                 onClick={() => handleIncrement(index, item.id, item.serviceName, item.name, item.quantity)}
               >
                 +
               </button>
               <span className=" px-3">{item.quantity === 0 ? 1 : item.quantity}</span>
               <button
-                className="bg-[#006370] text-white rounded-sm px-1"
-                onClick={() => handleDecrement(index)}
+                className={`rounded-sm px-1 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
               >
                 -
               </button>
             </div>
+            {isProductInCart(item?.id) && (
+                            <div className="absolute w-full top-1">
+                              <div className="relative w-full">
+                                <button
+                                  className="absolute left-1 bg-green-500 text-white rounded-sm px-1 text-xs"
+                                  onClick={() => setIsPopupOpen(true)}
+                                >
+                                  <MdEdit size={20} />
+                                </button>
+                                <button
+                                  className="absolute right-1 bg-red-500 text-white rounded-sm px-1 text-xs"
+                                  onClick={() => deleteCartProduct(correspondingCartItem?._id)} 
+                                >
+                                  <MdDelete size={20} />
+                                </button>
+                              </div>
+                            </div>
+                          )}
           </div>
-        ))}
+        )})}
       </div>
-      <AddedProductPreviewPopup 
-        isOpen={isPopupOpen} 
-        setIsOpen={setIsPopupOpen} 
-        cartItems={cartItems}  
+      <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} productDetails={productDetails}/>
+      <AddedProductPreviewPopup
+        isOpen={isAddedPopupOpen}
+        setIsOpen={setIsAddedPopupOpen}
+        cartItems={cartItems}
         productDetails={productDetails}
       />
       <SidebarPopup 

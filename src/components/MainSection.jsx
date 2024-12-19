@@ -14,20 +14,17 @@ import axios from "axios";
 const MainSection = ({ products }) => {
   const [selectedTab, setSelectedTab] = useState("Laundry");
   const [mode, setMode] = useState("B2C");
-  const [mobileNumber, setMobileNumber] = useState(
-    localStorage.getItem("mobileNumber") || ""
-  );
-  const [userName, setUserName] = useState(
-    localStorage.getItem("userName") || ""
-  );
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [userName, setUserName] = useState("");
   const [customerAddress, setCustomerAddress] = useState(null);
   const [debouncedUserName, setDebouncedUserName] = useState("");
   const { cartItems, refreshCart } = useCart();
   const [customerNewOld, setCustomerNewOld] = useState("New Customer")
+  const [isInputDisabled, setIsInputDisabled] = useState(false);
 
   const { data } = useFetch(
     mobileNumber
-      ? `https://api.fabodry.in/api/v1/customers/search?mobile=${mobileNumber}`
+      ? `${import.meta.env.VITE_BACKEND_URL}api/v1/customers/search?mobile=${mobileNumber}`
       : null,
     {},
     [mobileNumber]
@@ -38,13 +35,15 @@ const MainSection = ({ products }) => {
       localStorage.setItem("userId", data?.data?.customer?._id);
       refreshCart();
       setUserName(data?.data?.customer?.name);
+      setIsInputDisabled(true)
       setCustomerAddress(data?.data?.customer?.addresses);
-      if(data?.data?.customer?.addresses.length >= 1){
+      if(data?.data?.customer?.name){
         setCustomerNewOld("Old Customer")
       }else{
         setCustomerNewOld("New Customer")
       }
     } else if (mobileNumber) {
+      setIsInputDisabled(false)
       setUserName("");
     }
     createCustomer();
@@ -63,6 +62,20 @@ const MainSection = ({ products }) => {
     localStorage.setItem("mobileNumber", mobileNumber);
     localStorage.setItem("userName", userName);
   }, [mobileNumber, userName]);
+
+  useEffect(() => {
+    if (mobileNumber.trim() === "") {
+      setUserName("");
+      setCustomerAddress(null);
+      setCustomerNewOld("New Customer");
+      localStorage.removeItem("mobileNumber");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userId")
+      refreshCart(); 
+    } else {
+      refreshCart();
+    }
+  }, [mobileNumber]);
 
   useEffect(() => {
     if (mobileNumber) {
@@ -123,6 +136,14 @@ const MainSection = ({ products }) => {
   const onChange = (checked) => {
     setMode(checked ? "B2C" : "B2B");
   };
+  
+  const fetchAddress = async() => {
+    const responseSearching = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}api/v1/customers/search?mobile=${mobileNumber}`
+    );
+
+    setCustomerAddress(responseSearching?.data?.data?.customer?.addresses);
+  }
 
   const createCustomer = async () => {
     if (
@@ -134,7 +155,7 @@ const MainSection = ({ products }) => {
       try {
         const token = localStorage.getItem("authToken");
         const response = await fetch(
-          "https://api.fabodry.in/api/v1/admin/customers/create",
+          `${import.meta.env.VITE_BACKEND_URL}api/v1/admin/customers/create`,
           {
             method: "POST",
             headers: {
@@ -147,20 +168,19 @@ const MainSection = ({ products }) => {
             }),
           }
         );
-        refreshCart();
         const responseSearching = await axios.get(
-          `https://api.fabodry.in/api/v1/customers/search?mobile=${mobileNumber}`
+          `${import.meta.env.VITE_BACKEND_URL}api/v1/customers/search?mobile=${mobileNumber}`
         );
-        setUserName(data?.data?.customer?.name)
-        if(data.data.data.customer.addresses.length >= 1){
-          setCustomerNewOld("Old Customer")
+        if(responseSearching?.data?.data?.customer?.name){
+          setUserName(responseSearching?.data?.data?.customer?.name)
+          setIsInputDisabled(true)
         }
-
         if (response.ok) {
           console.log("New user created successfully");
         } else {
           console.error("Error creating new customer", await response.json());
         }
+        refreshCart();
       } catch (error) {
         console.error("Network error while creating customer", error);
       }
@@ -168,88 +188,94 @@ const MainSection = ({ products }) => {
   };
 
   return (
-    <div className="flex ml-[240px] mt-12 gap-10 h-screen text-[#00414e]">
-      <div className="flex-1 lg:w-[580px] xl:w-[800px]">
-        <div className="border-2 border-[#eef0f2] rounded-xl m-5 w-full mt-8">
-          <div className="p-5">
-            <div className="w-full flex justify-between ">
-              <div className={`flex justify-between items-center gap-3 w-40 py-1 px-2 text-xs rounded-lg ${mode === "B2B"? "bg-[#66BDC5] text-white" :  "bg-[#00414E] text-gray-200"}`}>
-                <span>B2B</span>
-                <Switch defaultChecked onChange={onChange} />
-                <span>B2C</span>
-              </div>
-              <h3 className="text-[10px] text-gray-600 text-center">
-                Current Mode: <span className="text-[#00414e]">{mode}</span>
-              </h3>
+    <div className="flex ml-[240px] pt-8 gap-10  text-[#00414e]">
+    <div className="flex-1 lg:w-[580px] xl:w-[800px]">
+      <div className="border-2 border-[#eef0f2] rounded-xl m-5 w-full mt-8">
+        <div className="p-5">
+          <div className="w-full flex justify-between">
+            <div
+              className={`flex justify-between items-center gap-3 w-40 py-1 px-2 text-xs rounded-lg ${
+                mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#00414E] text-gray-200"
+              }`}
+            >
+              <span>B2B</span>
+              <Switch defaultChecked onChange={onChange} />
+              <span>B2C</span>
             </div>
-            <div className="flex gap-4 items-center">
-
-              <div className="w-full">
-
-            <label className="block mb-2 text-xs font-medium mt-3">
-              New Walk In
-            </label>
+            <h3 className="text-[10px] text-gray-600 text-center">
+              Current Mode: <span className="text-[#00414e]">{mode}</span>
+            </h3>
+          </div>
+          <div className="flex gap-4 items-center">
+            <div className="w-full">
+              <label className="block mb-2 text-xs font-medium mt-3">New Walk In</label>
               <input
                 type="text"
                 className="border border-gray-300 text-xs rounded-md  block w-full p-2 h-10 active:outline-none focus:outline-none"
                 placeholder="Enter Mobile Number"
                 value={mobileNumber}
                 onChange={(e) => setMobileNumber(e.target.value)}
-                />
-                </div>
-              
-              <div className="w-full mt-3">
-              <p className={`text-[10px] p-1 rounded-bl-3xl rounded-tr-3xl py-1.5 px-4 mb-[-1px] items-end justify-self-end  ${mode === "B2B"? "bg-[#66BDC5] text-white" :  "bg-[#00414E] text-gray-200"}`}>{customerNewOld}</p>
-
-              <input
-                type="text"
-                className="border border-gray-300 text-xs rounded-md block w-full p-2 h-10"
-                placeholder="Enter New User"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                />
-
-                </div>
+              />
             </div>
-          </div>
-        </div>
-        <div className="border-2 border-[#eef0f2] rounded-xl mx-5 w-full my-4">
-          <div className="flex p-5 justify-between items-center gap-6 text-xs">
-            {[
-              "Laundry",
-              "Dry Cleaning",
-              "Ironing",
-              "Starching",
-              "Cleaning",
-            ].map((tab) => (
-              <button
-                key={tab}
-                className={`lg:px-3.5 xl:px-6 py-3 rounded-lg ${
-                  selectedTab === tab
-                    ? mode === "B2B"
-                      ? "bg-[#66BDC5] text-white"
-                      : "bg-[#004D57] text-white"
-                    : mode === "B2C"
-                    ? "bg-blue-100 text-gray-600" // Inactive button in B2C
-                    : "bg-[#d5e7ec] text-[#00414e]" // Inactive button in B2B
-                }`}
-                onClick={() => setSelectedTab(tab)}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
 
-          <div className="p-5">{componentsMap[selectedTab]}</div>
+              <div className="w-full mt-3">
+                <p
+                  className={`text-[10px] p-1 rounded-bl-3xl rounded-tr-3xl py-1.5 px-4 mb-[-1px] items-end justify-self-end ${
+                    mode === "B2B"
+                      ? "bg-[#66BDC5] text-gray-600"
+                      : "bg-[#00414E] text-gray-200"
+                  } ${customerNewOld === "Old Customer" ? "bg-[#00414E]" : "bg-blue-100 text-gray-800"}`}
+                >
+                  {customerNewOld}
+                </p>
+                <input
+                  type="text"
+                  className="border border-gray-300 text-xs rounded-md block w-full p-2 h-10"
+                  placeholder="Enter New User"
+                  value={userName}
+                  disabled={isInputDisabled}
+                  onChange={(e) => setUserName(e.target.value)}
+                />
+              </div>
+          </div>
         </div>
       </div>
+      <div className="border-2 border-[#eef0f2] rounded-xl mx-5 w-full my-4">
+        <div className="flex p-5 justify-between items-center gap-6 text-xs">
+          {["Laundry", "Dry Cleaning", "Ironing", "Starching", "Cleaning"].map((tab) => (
+            <button
+              key={tab}
+              className={`lg:px-3.5 xl:px-6 py-3 rounded-lg ${
+                selectedTab === tab
+                  ? mode === "B2B"
+                    ? "bg-[#66BDC5] text-white"
+                    : "bg-[#004D57] text-white"
+                  : mode === "B2C"
+                  ? "bg-blue-100 text-gray-600" // Inactive button in B2C
+                  : "bg-[#d5e7ec] text-[#00414e]" // Inactive button in B2B
+              }`}
+              onClick={() => setSelectedTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-5">{componentsMap[selectedTab]}</div>
+      </div>
+    </div>
+    
       <BillingSection
         data={data}
         customerAddress={customerAddress}
         cartItems={cartItems}
+        mode={mode}
+        mobileNumber={mobileNumber}
+        onAddressChange={fetchAddress}
       />
-    </div>
-  );
+
+  </div>
+);
 };
 
 export default MainSection;

@@ -2,7 +2,7 @@ import React from 'react'
 
 const CustomerManagement = () => {
   return (
-    <div className="mt-10 ml-[240px]">CustomerManagement</div>
+    <div className="pt-10  ml-[240px]">CustomerManagement</div>
   )
 }
 

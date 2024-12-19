@@ -1,6 +1,6 @@
 const AdminAndSystem = () => {
   return (
-    <div className="mt-10 ml-[240px]">AdminAndSystem</div>
+    <div className="pt-10  ml-[240px]">AdminAndSystem</div>
   )
 }
 

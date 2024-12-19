@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContenxt";
+import toast from "react-hot-toast";
 
 const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
   const togglePopup = () => setIsOpen(!isOpen); 
@@ -58,10 +59,10 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
 
     try {
         const response = await axios.put(
-            `https://api.fabodry.in/api/v1/carts/${cartId}`,
+            `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${cartId}`,
             {
                 customerId: userId,
-                productId: [productDetails?.productId],
+                // productId: [productDetails?.productId],
                 serviceId: productDetails?.serviceName,
                 quantity: quantity,
                 garmentType: selectedDetails.type,
@@ -78,8 +79,10 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
             }
         );
         await refreshCart();
+        toast.success("Garment details updated")
         setIsOpen(false)
     } catch (error) {
+      toast.error("Internal error occured")
         console.error("Error updating cart:", error);
     }
 };

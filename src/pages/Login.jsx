@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useFetch from "../hooks/useFetch";
+import { useCart } from "../context/CartContenxt";
 
 const 
 Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginTrigger, setLoginTrigger] = useState(false);
+  const {refreshCart}  = useCart();
 
   const navigate = useNavigate();
 
   const { data, loading, error } = useFetch(
-    loginTrigger ? "https://api.fabodry.in/api/v1/franchise-admin/login" : null,
+    loginTrigger ? `${import.meta.env.VITE_BACKEND_URL}api/v1/franchise-admin/login` : null,
     {
       method: "POST",
       headers: {
@@ -38,14 +40,16 @@ Login = () => {
       localStorage.setItem("mobileNumber", "")
       localStorage.setItem("userName", "")
       localStorage.setItem("userId", "")
-      navigate("/");
+      refreshCart();
+      navigate("/pos");
     }
   }, [data, navigate]);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      navigate("/");
+      refreshCart();
+      navigate("/pos");
     }
   }, [navigate]);
 

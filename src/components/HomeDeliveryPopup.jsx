@@ -1,201 +1,303 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import toast from "react-hot-toast";
+import { useCart } from "../context/CartContenxt";
+import { Autocomplete, useJsApiLoader } from "@react-google-maps/api";
 
-const HomeDeliveryPopup = ({ isOpen, setIsOpen }) => {
+// Define libraries array outside component to prevent recreating on each render
+const libraries = ["places"];
+
+const HomeDeliveryPopup = ({ isOpen, setIsOpen, onAddressChange }) => {
   const togglePopup = () => setIsOpen(!isOpen);
+  const { refreshCart } = useCart();
 
   const [location, setLocation] = useState("");
   const [fullAddress, setFullAddress] = useState("");
   const [plotNumber, setPlotNumber] = useState("");
   const [landmark, setLandmark] = useState("");
-  const [label, setLabel] = useState("Home");
-  const [postalCode, setPostalCode] = useState('');
+  const [label, setLabel] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [errors, setErrors] = useState({});
 
-  const addAddressForCustomer = async (e) => {
-    e.preventDefault();
-    const userId = localStorage.getItem("userId");
-    try {
-      const response = await axios.post(
-        `https://api.fabodry.in/api/v1/customers/${userId}/address`,
-        {
-          label: label,
-          addressLine1: fullAddress,
-          addressLine2: plotNumber,
-          city: landmark,
-          postalCode: postalCode,
-          state: 's',
-          country: 's'
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries // Using the static libraries array
+  });
+  
+  const [autocomplete, setAutocomplete] = useState(null);
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!location.trim()) newErrors.location = "Location is required";
+    if (!fullAddress.trim()) newErrors.fullAddress = "Address is required";
+    if (!plotNumber.trim()) newErrors.plotNumber = "Plot number is required";
+    if (!landmark.trim()) newErrors.landmark = "City is required";
+    if (!postalCode.trim()) newErrors.postalCode = "Postal code is required";
+    if (!label) newErrors.label = "Please select a label";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const onLoad = (autocompleteInstance) => {
+    setAutocomplete(autocompleteInstance);
+  };
+
+  const onPlaceChanged = () => {
+    if (autocomplete) {
+      const place = autocomplete.getPlace();
+      const addressComponents = place.address_components || [];
+      const formattedAddress = place.formatted_address || "";
+
+      let plot = "";
+      let city = "";
+      let postal = "";
+
+      addressComponents.forEach((component) => {
+        if (component.types.includes("street_number")) {
+          plot = component.long_name;
+        } else if (component.types.includes("locality")) {
+          city = component.long_name;
+        } else if (component.types.includes("postal_code")) {
+          postal = component.long_name;
         }
-      );
-      setIsOpen(!isOpen);
-      if (response) {
-        console.log("Address added successfully");
-      }
-    } catch (error) {
-      console.log(error, error.message, "Error Adding Address");
+      });
+
+      setLocation(formattedAddress);
+      setFullAddress(formattedAddress);
+      setPlotNumber(plot);
+      setLandmark(city);
+      setPostalCode(postal);
+      
+      // Clear errors when fields are populated
+      setErrors({});
     }
   };
 
+  const addAddressForCustomer = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    const userId = localStorage.getItem("userId");
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/customers/${userId}/address`,
+        {
+          label,
+          addressLine1: fullAddress,
+          addressLine2: plotNumber,
+          city: landmark,
+          postalCode,
+          state: "state",
+          country: "country",
+        }
+      );
+      if (response) {
+        toast.success("New Address added successfully");
+      }
+      refreshCart();
+      onAddressChange();
+      setIsOpen(false);
+    } catch (error) {
+      toast.error("Error Adding new Address");
+      console.error("Error Adding Address", error);
+    }
+  };
+
+  if (loadError) {
+    return <div>Error loading Google Maps API</div>;
+  }
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
-      {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-screen h-screen p-6 relative">
-            <h2 className="text-xl font-semibold mb-4">Delivery Details</h2>
-            <button
-              onClick={togglePopup}
-              className="absolute top-3 right-3 text-xl text-gray-500 hover:text-gray-800"
+      <div className="relative">
+        {isOpen && (
+          <div
+            className="fixed inset-0 bg-gray-800 bg-opacity-50 z-50"
+            onClick={() => setIsOpen(false)}
+          ></div>
+        )}
+        <div
+          className={`fixed inset-y-0 right-0 bg-white w-[450px] h-full shadow-lg pt-2 z-50 p-5 transform transition-transform duration-300 ${
+            isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <h2 className="text-xl font-semibold mb-4 pt-3">Delivery Details</h2>
+          <button
+            onClick={togglePopup}
+            className="absolute top-3 right-3 text-xl text-gray-200 px-2 py-1 rounded-xl bg-gray-800"
+          >
+            ✕
+          </button>
+          <div className="flex w-full h-full pb-10 justify-between">
+            <form
+              onSubmit={addAddressForCustomer}
+              className="w-[350px] rounded-xl p-5"
             >
-              ✕
-            </button>
-            <div className="flex w-full h-full pb-10 justify-between">
-              <div className="flex-1">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d121058.93187202603!2d73.78056642686632!3d18.524761373821995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bf2e67461101%3A0x828d43bf9d9ee343!2sPune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1732773032436!5m2!1sen!2sin"
-                  className="w-full h-full p-4 pr-4"
-                  allowfullscreen=""
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
-              </div>
-              <form
-                onSubmit={addAddressForCustomer}
-                className="w-[350px] rounded-xl p-5"
-              >
-                <div className="mb-4">
-                  <label
-                    htmlFor="fullAddress"
-                    className="block text-sm text-gray-400 mb-1"
-                  >
-                    Enter Location
-                  </label>
+              <div className="mb-4">
+                <label
+                  htmlFor="fullAddress"
+                  className="block text-sm text-gray-400 mb-1"
+                >
+                  Enter Location *
+                </label>
+                <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                   <input
                     id="fullAddress"
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm placeholder:text-gray-300"
+                    className={`w-full px-3 py-2 border ${
+                      errors.location ? 'border-red-500' : 'border-gray-300'
+                    } focus:outline-none rounded-md shadow-sm placeholder:text-gray-300`}
                     placeholder="Enter your location"
                   />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="selected-address"
-                    className="block text-sm text-gray-400 mb-1"
-                  >
-                    Selected Address
-                  </label>
-                  <input
-                    type="text"
-                    id="selected-address"
-                    value={fullAddress}
-                    onChange={(e) => setFullAddress(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm placeholder:text-gray-300"
-                    placeholder="Enter your selected address"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="plot-number"
-                    className="block text-sm text-gray-400 mb-1"
-                  >
-                    Plot Number
-                  </label>
-                  <input
-                    type="text"
-                    id="plot-number"
-                    value={plotNumber}
-                    onChange={(e) => setPlotNumber(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm placeholder:text-gray-300"
-                    placeholder="Enter your plot number"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="city"
-                    className="block text-sm text-gray-400 mb-1"
-                  >
-                    Enter your City
-                  </label>
-                  <input
-                    type="text"
-                    id="landmark"
-                    value={landmark}
-                    onChange={(e) => setLandmark(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm placeholder:text-gray-300"
-                    placeholder="Enter your landmark"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="postal-code"
-                    className="block text-sm text-gray-400 mb-1"
-                  >
-                    Enter your Postal Code
-                  </label>
-                  <input
-                    type="text"
-                    id="postal-code"
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none rounded-md shadow-sm placeholder:text-gray-300"
-                    placeholder="Enter your Postal Code"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="label"
-                    className="block text-sm text-gray-400 mb-1"
-                  >
-                    Select Label
-                  </label>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setLabel("Home")}
-                      className={`px-4 py-1 text-white ${
-                        label === "Home"
-                          ? "bg-[#00414e]"
-                          : "bg-[#00414e]/80"
-                      } rounded-full`}
-                    >
-                      Home
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLabel("Office")}
-                      className={`px-4 py-1 text-white ${
-                        label === "Office"
-                          ? "bg-[#00414e]"
-                          : "bg-[#00414e]/80"
-                      } rounded-full`}
-                    >
-                      Office
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLabel("Other")}
-                      className={`px-4 py-1 text-white ${
-                        label === "Other"
-                          ? "bg-[#00414e]"
-                          : "bg-[#00414e]/80"
-                      } rounded-full`}
-                    >
-                      Other
-                    </button>
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full px-4 py-2 bg-[#00414e] text-white rounded-md"
+                </Autocomplete>
+                {errors.location && (
+                  <p className="text-red-500 text-sm mt-1">{errors.location}</p>
+                )}
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="selected-address"
+                  className="block text-sm text-gray-400 mb-1"
                 >
-                  Add Address
-                </button>
-              </form>
-            </div>
+                  Selected Address *
+                </label>
+                <input
+                  type="text"
+                  id="selected-address"
+                  value={fullAddress}
+                  onChange={(e) => setFullAddress(e.target.value)}
+                  className={`w-full px-3 py-2 border ${
+                    errors.fullAddress ? 'border-red-500' : 'border-gray-300'
+                  } focus:outline-none rounded-md shadow-sm placeholder:text-gray-300`}
+                  placeholder="Enter your selected address"
+                />
+                {errors.fullAddress && (
+                  <p className="text-red-500 text-sm mt-1">{errors.fullAddress}</p>
+                )}
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="plot-number"
+                  className="block text-sm text-gray-400 mb-1"
+                >
+                  Plot Number *
+                </label>
+                <input
+                  type="text"
+                  id="plot-number"
+                  value={plotNumber}
+                  onChange={(e) => setPlotNumber(e.target.value)}
+                  className={`w-full px-3 py-2 border ${
+                    errors.plotNumber ? 'border-red-500' : 'border-gray-300'
+                  } focus:outline-none rounded-md shadow-sm placeholder:text-gray-300`}
+                  placeholder="Enter your plot number"
+                />
+                {errors.plotNumber && (
+                  <p className="text-red-500 text-sm mt-1">{errors.plotNumber}</p>
+                )}
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="city"
+                  className="block text-sm text-gray-400 mb-1"
+                >
+                  City *
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  value={landmark}
+                  onChange={(e) => setLandmark(e.target.value)}
+                  className={`w-full px-3 py-2 border ${
+                    errors.landmark ? 'border-red-500' : 'border-gray-300'
+                  } focus:outline-none rounded-md shadow-sm placeholder:text-gray-300`}
+                  placeholder="Enter your city"
+                />
+                {errors.landmark && (
+                  <p className="text-red-500 text-sm mt-1">{errors.landmark}</p>
+                )}
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="postal-code"
+                  className="block text-sm text-gray-400 mb-1"
+                >
+                  Postal Code *
+                </label>
+                <input
+                  type="text"
+                  id="postal-code"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  className={`w-full px-3 py-2 border ${
+                    errors.postalCode ? 'border-red-500' : 'border-gray-300'
+                  } focus:outline-none rounded-md shadow-sm placeholder:text-gray-300`}
+                  placeholder="Enter your postal code"
+                />
+                {errors.postalCode && (
+                  <p className="text-red-500 text-sm mt-1">{errors.postalCode}</p>
+                )}
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="label"
+                  className="block text-sm text-gray-400 mb-1"
+                >
+                  Select Label *
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setLabel("Home")}
+                    className={`px-4 py-1 text-white ${
+                      label === "Home" ? "bg-[#00414e]" : "bg-[#00414e]/80"
+                    } rounded-full`}
+                  >
+                    Home
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLabel("Office")}
+                    className={`px-4 py-1 text-white ${
+                      label === "Office" ? "bg-[#00414e]" : "bg-[#00414e]/80"
+                    } rounded-full`}
+                  >
+                    Office
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLabel("Other")}
+                    className={`px-4 py-1 text-white ${
+                      label === "Other" ? "bg-[#00414e]" : "bg-[#00414e]/80"
+                    } rounded-full`}
+                  >
+                    Other
+                  </button>
+                </div>
+                {errors.label && (
+                  <p className="text-red-500 text-sm mt-1">{errors.label}</p>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-[#00414e] text-white rounded-md"
+              >
+                Add Address
+              </button>
+            </form>
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 };

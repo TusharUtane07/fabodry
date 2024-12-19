@@ -5,7 +5,7 @@ const CouponPopup = ({ isOpen, setIsOpen, onCouponSelect }) => {
 
   const [couponCodes, setCouponCodes]  = useState(null);
       const token = localStorage.getItem("authToken");
-        const { data, loading, error } = useFetch("https://api.fabodry.in/api/v1/coupons/all", {
+        const { data, loading, error } = useFetch(`${import.meta.env.VITE_BACKEND_URL}api/v1/coupons/all`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -26,8 +26,8 @@ const CouponPopup = ({ isOpen, setIsOpen, onCouponSelect }) => {
           ></div>
         )}
         <div
-          className={`fixed inset-y-0 left-0 bg-white w-[250px] h-full shadow-lg z-50 transform transition-transform duration-300 ${
-            isOpen ? "translate-x-0" : "-translate-x-full"
+          className={`fixed inset-y-0 right-0 bg-white w-[350px] h-full shadow-lg z-50 transform transition-transform duration-300 ${
+            isOpen ? "translate-x-0" : "translate-x-[360px]"
           }`}
         >
           <div className="flex justify-between items-center p-2 border-b">
@@ -46,11 +46,11 @@ const CouponPopup = ({ isOpen, setIsOpen, onCouponSelect }) => {
                 className="border border-gray-400 my-2 mx-5 rounded-lg p-2.5 flex justify-between "
               >
                 <div>
-                  <p className="uppercase text-[10px]">{coupon.code}</p>
-                  <p className="text-[8px] text-gray-500">Discount: {coupon.discountValue}% off</p>
+                  <p className="uppercase text-[13px]">{coupon.code}</p>
+                  <p className="text-[12px] text-gray-500">Discount: {coupon.discountValue}% off</p>
                 </div>
                 <button 
-                  className="bg-[#00414e] text-gray-200 px-3 rounded-lg text-[10px]"
+                  className="bg-[#00414e] text-gray-200 px-5 rounded-lg text-[10px]"
                   onClick={() => onCouponSelect(coupon)}
                 >
                   Apply

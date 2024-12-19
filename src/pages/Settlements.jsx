@@ -1,6 +1,6 @@
 const Settlements = () => {
   return (
-    <div className="mt-10 ml-[240px]">Settlements</div>
+    <div className="pt-10  ml-[240px]">Settlements</div>
   )
 }
 
