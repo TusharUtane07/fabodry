@@ -113,7 +113,7 @@ const Ironing = ({mode, filteredIroningProducts}) => {
         </div>
 
         <div className="flex justify-between items-center gap-5">
-          <div className="border rounded-lg border-gray-300 lg:w-60 xl:w-72 ml-4 flex items-center justify-between">
+          <div className="border rounded-lg border-gray-300 lg:w-60 xl:w-60 ml-4 flex items-center justify-between">
             <input
               type="text"
               className="py-1.5 text-xs pl-3 rounded-xl focus:outline-none"
@@ -139,7 +139,7 @@ const Ironing = ({mode, filteredIroningProducts}) => {
             </button>
           </div>
           <div className="flex gap-1 items-center">
-            <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
+            <div className="text-xs w-full rounded-lg px-8 py-2  text-gray-500">
               Total Count: {!cartItems || cartItems.length === 0 
   ? "0" 
   : cartItems.length}
@@ -147,7 +147,7 @@ const Ironing = ({mode, filteredIroningProducts}) => {
             </div>
             <button 
               onClick={handlePreviewClick}
-              className={`text-xs rounded-md px-4 py-1.5 ${
+              className={`text-xs rounded-md px-3 py-1.5 ${
                 mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"
               }`}
             >

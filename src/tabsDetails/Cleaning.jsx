@@ -117,8 +117,14 @@ const Cleaning = ({mode}) => {
           },
         }
       );
+      toast.success(`${productName} added`)
       await refreshCart();
     } catch (error) {
+      if(userId == null){
+        toast.error("please enter mobile number")
+      }else{
+        toast.error("Internal server error")
+      }
       console.error("Error updating cart:", error);
     }
   };
@@ -245,7 +251,6 @@ const Cleaning = ({mode}) => {
                         addToCart(item?._id, item.serviceName, item.name)
                       }
                     >
-                      {" "}
                       Add
                     </button>
                   </div>

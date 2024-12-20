@@ -189,7 +189,7 @@ const B2Borders = () => {
     <div className="overflow-x-auto pt-20 ml-[264px] h-screen">
       <h2 className="text-lg py-2">All Orders</h2>
       <div className="border border-gray-300 rounded-lg mr-3 text-sm">
-        <div className="flex mb-2 justify-evenly mt-3 gap-3 p-2 rounded-md">
+        {/* <div className="flex mb-2 justify-evenly mt-3 gap-3 p-2 rounded-md">
           <div className="w-full">
             <Select
               showSearch
@@ -252,7 +252,7 @@ const B2Borders = () => {
             </button>
           </div>
         </div>
-        <hr />
+        <hr /> */}
         <div className="grid grid-cols-4 mt-2">
           {orderDetailsStatus.map((item, index) => {
             return (

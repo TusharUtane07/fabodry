@@ -61,11 +61,12 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
       setQuantity(quantity - 1);
     }
   }
+  console.log(productDetails);
   const addToCart = async () => {
     const mobileNumber = localStorage.getItem("mobileNumber");
     const userId = localStorage.getItem("userId");
     if(mobileNumber === "" && userId){
-      toast.error("Please enter mobile number before adding");
+      toast.error("Please enter mobile number");
       return
     }
     const token = localStorage.getItem("authToken");
@@ -92,11 +93,14 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
             }
         );
         await refreshCart();
+        toast.success(`${productDetails?.productName} Added`)
         togglePopup();
     } catch (error) {
-      toast.error(
-        "Please enter mobile number"
-      )
+      if(userId == null){
+        toast.error("please enter mobile number")
+      }else{
+        toast.error("Internal server error")
+      }
         console.error("Error updating cart:", error);
     }
 };

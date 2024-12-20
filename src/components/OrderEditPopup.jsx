@@ -210,7 +210,7 @@ const handleDecrement = () => {
                       +
                     </button>
                     <span className="text-gray-500 px-3">
-                      {quantity}
+                      {quantity ? quantity : 1}
                     </span>
                     <button
                       className="bg-[#006370] text-white rounded-sm px-1"

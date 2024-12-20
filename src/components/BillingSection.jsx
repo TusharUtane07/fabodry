@@ -39,7 +39,8 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
     deliveryDate: false,
     deliveryTime: false,
   });
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedAddons, setSelectedAddons] = useState({
     antiviralCleaning: false,
     fabricSoftener: false,
@@ -174,8 +175,8 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
           },
         }
       );
-      toast.success("Deleted Successfully")
       await refreshCart();
+      toast.success("Deleted Successfully")
     } catch (error) {
       toast.error("Error Deleting")
       console.log("Error deleting product: ", error, error.message);
@@ -199,7 +200,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
     const token = localStorage.getItem("authToken");
     const userName = localStorage.getItem("userName");
     const mobileNumber = localStorage.getItem("mobileNumber");
-
+    setIsSubmitting(true);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/admin/orders/create`,
@@ -234,12 +235,15 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       deleteAllCartItems();
     } catch (error) {
       console.error("Error creating order:", error);
+    }finally {
+      setIsSubmitting(false); 
     }
   };
 
   const deleteAllCartItems = async () => {
     const customerId = localStorage.getItem("userId");
     const token = localStorage.getItem("authToken");
+    setIsDeleting(true);
     try {
       const response = await axios.delete(
         `${
@@ -253,11 +257,16 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       );
       refreshCart();
     } catch (error) {
-      toast.error("Internal Server Error")
+      if(customerId == null){
+        toast.error("No Order to Cancel")
+      }
       console.error("Error Deleting All Cart Items: ", error.message, error);
+    } finally{
+      setIsDeleting(false)
     }
   };
-
+  const isDisabled =
+    isSubmitting || Object.values(formErrors).some((error) => error);
   return (
     <div
       className="col-span-1 relative bg-white mt-8   border-2 mr-4  border-[#eef0f2] rounded-xl overflow-y-scroll h-screen "
@@ -339,7 +348,6 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
           <div className="w-[421px] h-72 pb-8">
           {cartItems?.length > 0 ? (
   <div className="">
-    {/* Group Laundry items and other products */}
     {cartItems
       .reduce((acc, product) => {
         const serviceName = product.productId[0]?.serviceName?.toLowerCase();
@@ -757,17 +765,20 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
         <div className=" fixed bottom-2 w-[421px] flex items-center gap-2 ">
           <button
             onClick={() => createOrder()}
-            className="px-5 flex items-center justify-center gap-2 w-full py-2.5   bg-[#00414e] text-xs text-gray-200 rounded-lg"
+            disabled={isDisabled}
+            className={`px-5 flex items-center justify-center gap-2 w-full py-2.5 text-xs text-gray-200 rounded-lg ${
+              isDisabled ? "bg-[#00414e]/50 cursor-not-allowed" : "bg-[#00414e]"
+            }`}
           >
             <FaCheck />
-            <p> Create Order</p>
+            <p>{isSubmitting ? "Processing..." : "Create Order"}</p>
           </button>
           <button
             onClick={() => deleteAllCartItems()}
             className="px-5 flex items-center justify-center gap-2 py-2.5 w-full bg-red-500/90 text-xs text-gray-200 rounded-lg"
           >
             <MdDelete />
-            <p>Cancel Order</p>
+            <p>{isDeleting ? "Cancelling...": "Cancel Order"}</p>
           </button>
         </div>
       </div>

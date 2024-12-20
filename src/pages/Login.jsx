@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useFetch from "../hooks/useFetch";
 import { useCart } from "../context/CartContenxt";
+import toast from "react-hot-toast";
 
 const 
 Login = () => {
@@ -26,7 +27,7 @@ Login = () => {
 
   const handleLogin = () => {
     if (!email || !password) {
-      alert("Please enter both email and password.");
+      toast.error("Please enter both email and password.");
       return;
     }
     setLoginTrigger((prev) => !prev); 
