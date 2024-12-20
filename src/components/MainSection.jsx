@@ -31,6 +31,7 @@ const MainSection = ({ products }) => {
   );
 
   useEffect(() => {
+    setCustomerNewOld("New Customer")
     if (data?.data?.customer?.name) {
       localStorage.setItem("userId", data?.data?.customer?._id);
       refreshCart();
@@ -174,6 +175,10 @@ const MainSection = ({ products }) => {
         if(responseSearching?.data?.data?.customer?.name){
           setUserName(responseSearching?.data?.data?.customer?.name)
           setIsInputDisabled(true)
+          localStorage.setItem("mobileNumber", mobileNumber);
+    localStorage.setItem("userName", userName);
+    localStorage.setItem("userId", responseSearching?.data?.data?.customer?._id);
+
         }
         if (response.ok) {
           console.log("New user created successfully");

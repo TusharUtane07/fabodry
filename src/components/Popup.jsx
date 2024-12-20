@@ -92,8 +92,8 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
                 },
             }
         );
-        await refreshCart();
         toast.success(`${productDetails?.productName} Added`)
+        await refreshCart();
         togglePopup();
     } catch (error) {
       if(userId == null){
