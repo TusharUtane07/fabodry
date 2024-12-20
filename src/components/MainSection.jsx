@@ -193,9 +193,9 @@ const MainSection = ({ products }) => {
   };
 
   return (
-    <div className="flex ml-[240px] pt-8 gap-10  text-[#00414e]">
+    <div className="flex ml-[240px] pt-8 gap-10 text-[#00414e]">
     <div className="flex-1 lg:w-[580px] xl:w-[800px]">
-      <div className="border-2 border-[#eef0f2] rounded-xl m-5 w-full mt-8">
+      <div className="border-2 border-[#eef0f2] rounded-xl mx-5 my-2 w-full mt-8">
         <div className="p-5">
           <div className="w-full flex justify-between">
             <div
@@ -245,12 +245,12 @@ const MainSection = ({ products }) => {
           </div>
         </div>
       </div>
-      <div className="border-2 border-[#eef0f2] rounded-xl mx-5 w-full my-4">
-        <div className="flex p-5 justify-between items-center gap-6 text-xs">
+      <div className="border-2 border-[#eef0f2] rounded-xl mx-5 w-full ">
+        <div className="flex px-4 py-1 pt-1.5 justify-between items-center gap-6 text-xs">
           {["Laundry", "Dry Cleaning", "Ironing", "Starching", "Cleaning"].map((tab) => (
             <button
               key={tab}
-              className={`lg:px-3.5 xl:px-6 py-3 rounded-lg ${
+              className={`lg:px-3.5 xl:px-5 py-3 w-full rounded-lg ${
                 selectedTab === tab
                   ? mode === "B2B"
                     ? "bg-[#66BDC5] text-white"
@@ -266,7 +266,7 @@ const MainSection = ({ products }) => {
           ))}
         </div>
 
-        <div className="p-5">{componentsMap[selectedTab]}</div>
+        <div className="p-3">{componentsMap[selectedTab]}</div>
       </div>
     </div>
     

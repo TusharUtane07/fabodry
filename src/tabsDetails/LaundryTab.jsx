@@ -296,7 +296,7 @@ const Laundry = ({mode, filteredLaundryProducts }) => {
             <div className="mt-3">
               <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
             </div>
-            <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4 h-[400px] justify-center items-start  overflow-scroll  custom-scrollbar">
+            <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-2 h-[400px] justify-center items-start  overflow-scroll  custom-scrollbar">
               {filteredProducts?.map((item, index) => {
                 const isInCart = cartItems?.some(
                   (cartItem) =>

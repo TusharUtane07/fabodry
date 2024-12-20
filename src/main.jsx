@@ -28,6 +28,7 @@ import Navbar from './components/Navbar.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import PrintLabelsPage from './components/PrintLabels.jsx';
 import PrintReceipt from './components/PrintReceipt.jsx';
+import { SelectedAddonsProvider } from './context/AddonContext.jsx';
 
 const AppLayout = () => {
   const location = useLocation();
@@ -35,6 +36,7 @@ const AppLayout = () => {
 
   return (
     <CartProvider>
+      <SelectedAddonsProvider>
       {!isLoginPage && <Navbar />}
       {!isLoginPage && <Sidebar />}
       
@@ -69,6 +71,7 @@ const AppLayout = () => {
       </Routes>
       
       <Toaster />
+      </SelectedAddonsProvider>
     </CartProvider>
   );
 };

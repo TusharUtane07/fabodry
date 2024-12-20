@@ -61,7 +61,6 @@ const Popup = ({ isOpen, setIsOpen, productDetails }) => {
       setQuantity(quantity - 1);
     }
   }
-  console.log(productDetails);
   const addToCart = async () => {
     const mobileNumber = localStorage.getItem("mobileNumber");
     const userId = localStorage.getItem("userId");

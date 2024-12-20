@@ -246,7 +246,7 @@ const Cleaning = ({mode}) => {
                   <div className="w-full mx-2">
                     <button
                       className={`  px-4 w-full py-0.5 mt-1 rounded-lg
-          ${isInCart ? "bg-white text-gray-600" : "bg-[#006370] text-white"}`}
+          ${isInCart ? "bg-white text-gray-600" : "bg-[#006370] text-white hover:bg-blue-100 hover:text-gray-600"}`}
                       onClick={() =>
                         addToCart(item?._id, item.serviceName, item.name)
                       }

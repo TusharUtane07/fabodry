@@ -5,16 +5,15 @@ import { useCart } from "../context/CartContenxt";
 import OrderEditPopup from "./OrderEditPopup";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useSelectedAddons } from "../context/AddonContext";
 
 const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen, mode }) => {
   const { cartItems, refreshCart } = useCart();
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
   const [pCartId, setPCartId] = useState(null);
-  const [selectedAddons, setSelectedAddons] = useState({
-    antiviralCleaning: false,
-    fabricSoftener: false,
-  });
+  const { selectedAddons, updateAddons } = useSelectedAddons();
+
 
   const deleteCartProduct = async (id) => {
     const token = localStorage.getItem("authToken");
@@ -57,27 +56,8 @@ const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen, mode }) => {
 
   const handleCheckboxChange = (e) => {
     const { id, checked } = e.target;
-  
-    setSelectedAddons((prev) => {
-      const updatedAddons = { ...prev, [id]: checked };
-  
-      if (checked) {
-        localStorage.setItem("selectedAddons", JSON.stringify(updatedAddons));
-      } else {
-        const { [id]: _, ...remainingAddons } = updatedAddons;
-        localStorage.setItem("selectedAddons", JSON.stringify(remainingAddons));
-      }
-  
-      return updatedAddons;
-    });
+    updateAddons(id, checked);
   };
-  
-  useEffect(() => {
-    const savedAddons = localStorage.getItem("selectedAddons");
-    if (savedAddons) {
-      setSelectedAddons(JSON.parse(savedAddons));
-    }
-  }, []);
   
 
   return (
@@ -107,33 +87,31 @@ const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen, mode }) => {
           <div className="border border-gray-300 p-3 rounded-md">
             <p className="capitalize text-sm pb-2">{selectedItem} Addons</p>
             <hr />
-            <div className="flex  items-center mt-3  gap-3">
-              <input
-                type="checkbox"
-                id="antiviralCleaning"
-                checked={selectedAddons.antiviralCleaning}
-                onChange={handleCheckboxChange}
-              />
-              <div>
-                <p className="text-xs">Antiviral Cleaning | ₹ 5/kg</p>
-                <span className="text-[10px]">Removes 99.9% Germs</span>
-              </div>
-            </div>
-            <div className="flex mt-2 items-center gap-3">
-              <input
-                type="checkbox"
-                id="fabricSoftener"
-                checked={selectedAddons.fabricSoftener}
-                onChange={handleCheckboxChange}
-              />
-              <div>
-                <p className="text-xs">Fabirc Softener | ₹ 5/kg</p>
-                <span className="text-[10px]">
-                  Unbeatable shine & fragrance
-                </span>
-              </div>
-            </div>
-          </div>
+            <div className="flex items-center mt-3 gap-3">
+        <input
+          type="checkbox"
+          id="antiviralCleaning"
+          checked={selectedAddons.antiviralCleaning}
+          onChange={handleCheckboxChange}
+        />
+        <div>
+          <p className="text-xs">Antiviral Cleaning | ₹ 5/kg</p>
+          <span className="text-[10px]">Removes 99.9% Germs</span>
+        </div>
+      </div>
+      <div className="flex mt-2 items-center gap-3">
+        <input
+          type="checkbox"
+          id="fabricSoftener"
+          checked={selectedAddons.fabricSoftener}
+          onChange={handleCheckboxChange}
+        />
+        <div>
+          <p className="text-xs">Fabric Softener | ₹ 5/kg</p>
+          <span className="text-[10px]">Unbeatable shine & fragrance</span>
+        </div>
+      </div>
+    </div>
           <table className="table-auto w-full border-collapse">
             {cartItems?.length > 0 ? (
               <tbody className="text-[12px]">
@@ -141,21 +119,21 @@ const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen, mode }) => {
                   .reduce((acc, product) => {
                     const serviceName =
                       product.productId[0]?.serviceName?.toLowerCase();
+                    const serviceId = product?.serviceId;
+
                     if (serviceName === "laundry") {
                       const existingLaundry = acc.find(
                         (item) =>
                           item.productId[0]?.serviceName?.toLowerCase() ===
-                          "laundry"
+                            "laundry" && item?.serviceId === serviceId
                       );
+
                       if (existingLaundry) {
-                        // Add quantities for Laundry service
                         existingLaundry.quantity += product.quantity;
                       } else {
-                        // Add as a new grouped Laundry item
                         acc.push({ ...product });
                       }
                     } else {
-                      // Add non-Laundry items as they are
                       acc.push(product);
                     }
                     return acc;
@@ -166,7 +144,7 @@ const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen, mode }) => {
                         {product?.productId[0]?.serviceName?.toLowerCase() ===
                         "laundry"
                           ? `${product?.serviceId} X ${product?.quantity}`
-                          : `${product?.productId[0]?.name} X ${product?.quantity}`}
+                          : `${product?.productId[0]?.name} X ${product?.quantity}`}/Kg
                       </td>
                       <td className="text-center px-2 border border-gray-200">
                         ₹{product?.productId[0]?.price}

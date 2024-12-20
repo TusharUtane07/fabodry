@@ -12,7 +12,7 @@ const Ironing = ({mode, filteredIroningProducts}) => {
   const {cartItems, refreshCart} = useCart();
 
   const normalPrice = "10";
-  const premiumPrice = "20";
+  const premiumPrice = "10";
 
   const [quantities, setQuantities] = useState(filteredIroningProducts?.map(() => 1));
   const [isPremium, setIsPremium] = useState(false);
@@ -23,7 +23,7 @@ const Ironing = ({mode, filteredIroningProducts}) => {
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
 
-  // Function to check if a product is in the cart
+
   const isProductInCart = (productId) => {
     return cartItems?.some((cartItem) => 
       cartItem.productId?.some((product) => product._id === productId)

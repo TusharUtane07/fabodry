@@ -12,6 +12,7 @@ import { FaCheck, FaRegAddressCard } from "react-icons/fa";
 import { RiDiscountPercentLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import EditConfirmedOrderPopup from "./EditConfirmedOrderPopup";
+import { useSelectedAddons } from "../context/AddonContext";
 
 const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
   const [isChecked, setIsChecked] = useState(false);
@@ -35,22 +36,12 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
   const [formErrors, setFormErrors] = useState({
     branch: false,
     deliveryMethod: false,
-    cartItems: false,
     deliveryDate: false,
     deliveryTime: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedAddons, setSelectedAddons] = useState({
-    antiviralCleaning: false,
-    fabricSoftener: false,
-  });
-  useEffect(() => {
-    const savedAddons = localStorage.getItem("selectedAddons");
-    if (savedAddons) {
-      setSelectedAddons(JSON.parse(savedAddons));
-    }
-  }, []);
+  const { selectedAddons, updateAddons } = useSelectedAddons();
 
   const { cartItems, refreshCart } = useCart();
 
@@ -92,7 +83,6 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
     const errors = {
       branch: !selectedOption,
       deliveryMethod: !selectedRadio,
-      cartItems: !cartItems || cartItems.length === 0,
       deliveryDate: !selectedDate,
       deliveryTime: !selectedLabel,
     };
@@ -120,7 +110,6 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
     }, 0);
   };
 
-
   const calculateGrossTotal = () => {
     const itemsTotal = cartItems?.reduce(
       (total, item) => total + item?.productId[0]?.price * item.quantity,
@@ -145,7 +134,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
     );
     const addonsTotal = calculateAddonsTotal();
     const grossTotal = itemsTotal;
-    
+
     const discountAmount = selectedCoupon
       ? (grossTotal * selectedCoupon.discountValue) / 100
       : 0;
@@ -153,14 +142,15 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       ? (grossTotal * selectedExpressDeliveryRate) / 100
       : 0;
 
-    const totalAmount = grossTotal - discountAmount + expressCharge + addonsTotal;
-    
+    const totalAmount =
+      grossTotal - discountAmount + expressCharge + addonsTotal;
+
     return {
       grossTotal: grossTotal?.toFixed(2),
       discountAmount: discountAmount?.toFixed(2),
       expressCharge: expressCharge?.toFixed(2),
       totalAmount: totalAmount?.toFixed(2),
-      addonsTotal: addonsTotal?.toFixed(2)
+      addonsTotal: addonsTotal?.toFixed(2),
     };
   };
 
@@ -176,9 +166,9 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
         }
       );
       await refreshCart();
-      toast.success("Deleted Successfully")
+      toast.success("Deleted Successfully");
     } catch (error) {
-      toast.error("Error Deleting")
+      toast.error("Error Deleting");
       console.log("Error deleting product: ", error, error.message);
     }
   };
@@ -186,6 +176,10 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
   const navigate = useNavigate();
   const createOrder = async () => {
     if (!validateForm()) {
+      return;
+    }
+    if(cartItems?.length === 0 || !cartItems){
+      toast.error("Add items for creating order");
       return;
     }
 
@@ -209,7 +203,8 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
           serviceIds: serviceName,
           branchName: selectedOption,
           totalCount: cartItems?.length,
-          totalAmount: mode === "B2B" ? (Number(totalAmount) * 2) : (Number(totalAmount)),
+          totalAmount:
+            mode === "B2B" ? Number(totalAmount) * 2 : Number(totalAmount),
           discountAmount: Number(discountAmount),
           expressCharge: Number(expressCharge),
           customerName: userName,
@@ -235,8 +230,8 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       deleteAllCartItems();
     } catch (error) {
       console.error("Error creating order:", error);
-    }finally {
-      setIsSubmitting(false); 
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -257,12 +252,12 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       );
       refreshCart();
     } catch (error) {
-      if(customerId == null){
-        toast.error("No Order to Cancel")
+      if (customerId == null) {
+        toast.error("No Order to Cancel");
       }
       console.error("Error Deleting All Cart Items: ", error.message, error);
-    } finally{
-      setIsDeleting(false)
+    } finally {
+      setIsDeleting(false);
     }
   };
   const isDisabled =
@@ -346,147 +341,149 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
         <div className="relative overflow-x-auto border border-gray-300 rounded-xl mt-3 p-2 w-full ">
           <p>Added Garments: </p>
           <div className="w-[421px] h-72 pb-8">
-          {cartItems?.length > 0 ? (
-  <div className="">
-    {cartItems
-      .reduce((acc, product) => {
-        const serviceName = product.productId[0]?.serviceName?.toLowerCase();
-        if (serviceName === "laundry") {
-          const existingLaundry = acc.find(
-            (item) => item.productId[0]?.serviceName?.toLowerCase() === "laundry"
-          );
-          if (existingLaundry) {
-            existingLaundry.quantity += product.quantity;
-          } else {
-            acc.push({ ...product });
-          }
-        } else {
-          acc.push(product);
-        }
-        return acc;
-      }, [])
-      .map((product, index) => (
-        <div
-          key={index}
-          className="border border-gray-300 my-1.5 p-1 rounded-md"
-        >
-          <div className="flex gap-2 items-start mx-1">
-            <div className="flex gap-2 items-center">
-              {product.productId[0]?.serviceName === "Cleaning" ? (
-                " "
-              ) : (
-                <button
-                  onClick={() => {
-                    setIsEditPopupOpen(true);
-                    setCartPId(product?._id);
-                    setProductDetails({
-                      productId: product.productId[0]?._id,
-                      selectedItem: product?.productid[0]?.serviceName,
-                      serviceName: product?.productId[0]?.serviceName,
-                      productName: product.productId[0]?.name,
-                      quantity: product.productId[0]?.quantity,
-                    });
-                  }}
-                  className="text-sm text-green-400 "
-                >
-                  <MdEdit />
-                </button>
-              )}
-              <button
-                onClick={() => deleteCartProduct(product?._id)}
-                className="text-sm text-red-400"
-              >
-                <MdDelete />
-              </button>
-            </div>
-            <div className="text-[14px] flex items-center justify-between w-full">
-              <p className="capitalize">
-                {product.productId[0]?.serviceName?.toLowerCase() === "laundry"
-                  ? product?.serviceId
-                  : product?.productId[0]?.name}
-                {!product?.garmentType ||
-                ["kitchen", "toilet", "car", "sofa"].includes(
-                  product?.serviceId
-                )
-                  ? null
-                  : ` [${product?.garmentType}]`}
-              </p>
+            {cartItems?.length > 0 ? (
+              <div className="">
+                {cartItems
+                  .reduce((acc, product) => {
+                    const serviceName =
+                      product.productId[0]?.serviceName?.toLowerCase();
+                    const serviceId = product?.serviceId;
 
-              <p>
-                {product?.quantity}
-                {product?.productId[0]?.serviceName?.toLowerCase() ===
-                "laundry"
-                  ? "/Kg"
-                  : ""}{" "}
-                X{" "}
-                {mode === "B2B"
-                  ? product?.productId[0]?.price * 2
-                  : product?.productId[0]?.price}{" "}
-                = ₹
-                {mode === "B2B"
-                  ? product?.productId[0]?.price *
-                    product.quantity *
-                    2
-                  : product?.productId[0]?.price * product.quantity}
-              </p>
-            </div>
-          </div>
-          <p className="text-xs">
-  {product?.productId[0]?.serviceName?.toLowerCase() === "laundry" ? (
-    <>
-      
-        {selectedAddons.antiviralCleaning && (
-          <>
-           [ Antiviral Cleaning + ₹{5 * product.quantity} ]
-          </>
-        )}
-        {selectedAddons.fabricSoftener && (
-          <>
-            [{selectedAddons.antiviralCleaning && " "}Fabric Softener + ₹{5 * product.quantity}]
-          </>
-        )}
-      
-    </>
-  ) : (
-    " "
-  )}
-</p>
+                    if (serviceName === "laundry") {
+                      const existingLaundry = acc.find(
+                        (item) =>
+                          item.productId[0]?.serviceName?.toLowerCase() ===
+                            "laundry" && item?.serviceId === serviceId
+                      );
 
-          <div>
-            {product.productId[0]?.serviceName?.toLowerCase() === "laundry" ? (
-              null
+                      if (existingLaundry) {
+                        existingLaundry.quantity += product.quantity;
+                      } else {
+                        acc.push({ ...product });
+                      }
+                    } else {
+                      acc.push(product);
+                    }
+                    return acc;
+                  }, [])
+                  .map((product, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-300 my-1.5 p-1 rounded-md"
+                    >
+                      <div className="flex gap-2 items-start mx-1">
+                        <div className="flex gap-2 items-center">
+                          {product.productId[0]?.serviceName === "Cleaning" ? (
+                            " "
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setIsEditPopupOpen(true);
+                                setCartPId(product?._id);
+                                setProductDetails({
+                                  productId: product.productId[0]?._id,
+                                  selectedItem:
+                                    product?.productId[0]?.serviceName,
+                                  serviceName:
+                                    product?.productId[0]?.serviceName,
+                                  productName: product.productId[0]?.name,
+                                  quantity: product.quantity,
+                                });
+                              }}
+                              className="text-sm text-green-400 "
+                            >
+                              <MdEdit />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteCartProduct(product?._id)}
+                            className="text-sm text-red-400"
+                          >
+                            <MdDelete />
+                          </button>
+                        </div>
+                        <div className="text-[14px] flex items-center justify-between w-full">
+                          <p className="capitalize">
+                            {product.productId[0]?.serviceName?.toLowerCase() ===
+                            "laundry"
+                              ? product?.serviceId
+                              : product?.productId[0]?.name}
+                            {!product?.garmentType ||
+                            ["kitchen", "toilet", "car", "sofa"].includes(
+                              product?.serviceId
+                            )
+                              ? null
+                              : ` [${product?.garmentType}]`}
+                          </p>
+
+                          <p>
+                            {product?.quantity}
+                            {product?.productId[0]?.serviceName?.toLowerCase() ===
+                            "laundry"
+                              ? "/Kg"
+                              : ""}{" "}
+                            X{" "}
+                            {mode === "B2B"
+                              ? product?.productId[0]?.price * 2
+                              : product?.productId[0]?.price}{" "}
+                            = ₹
+                            {mode === "B2B"
+                              ? product?.productId[0]?.price *
+                                product.quantity *
+                                2
+                              : product?.productId[0]?.price * product.quantity}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs">
+                        {product?.productId[0]?.serviceName?.toLowerCase() ===
+                        "laundry" ? (
+                          <>
+                            {selectedAddons.antiviralCleaning && (
+                              <>
+                                [ Antiviral Cleaning + ₹{5 * product.quantity} ]
+                              </>
+                            )}
+                            {selectedAddons.fabricSoftener && (
+                              <>
+                                [{selectedAddons.antiviralCleaning && " "}Fabric
+                                Softener + ₹{5 * product.quantity}]
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          " "
+                        )}
+                      </p>
+
+                      <div>
+                        {product.productId[0]?.serviceName?.toLowerCase() ===
+                        "laundry" ? null : (
+                          <p className="text-[12px] text-gray-500 ">
+                            Service:{" "}
+                            <span className="uppercase">
+                              {product?.productId[0]?.serviceName}
+                            </span>
+                          </p>
+                        )}
+                        {product.comments.length > 1 ? (
+                          <p className="text-[12px] text-gray-500">
+                            Comments: {`[ ${product.comments.join(", ")} ]`}
+                          </p>
+                        ) : (
+                          " "
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                <p className="py-1"></p>
+              </div>
             ) : (
-              <p className="text-[12px] text-gray-500 ">
-                Service:{" "}
-                <span className="uppercase">
-                  {product?.productId[0]?.serviceName}
-                </span>
+              <p className="text-sm text-gray-600 flex items-center justify-center h-full">
+                No garments added
               </p>
             )}
-            {product.comments.length > 1 ? (
-              <p className="text-[12px] text-gray-500">
-                Comments: {`[ ${product.comments.join(", ")} ]`}
-              </p>
-            ) : (
-              " "
-            )}
           </div>
-        </div>
-      ))}
-    <p className="py-1"></p>
-  </div>
-) : (
-  <p className="text-sm text-gray-600 flex items-center justify-center h-full">
-    No garments added
-  </p>
-)}
-
-          </div>
-          {formErrors.cartItems && (
-            <p className="text-red-500 text-xs mt-1">
-              At least one garment must be added
-            </p>
-          )}
         </div>
       </div>
       <hr />
@@ -537,10 +534,9 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
         <div className="text-gray-400">
           <div className="flex justify-between mt-1">
             <p>Total Count:</p>
-            <span>{!cartItems || cartItems.length === 0 
-  ? "0" 
-  : cartItems.length}
-</span>
+            <span>
+              {!cartItems || cartItems.length === 0 ? "0" : cartItems.length}
+            </span>
           </div>
           <div className="flex justify-between mt-1">
             <p>Gross Total:</p>
@@ -649,27 +645,28 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
             </p>
           )}
         </div>
-        { customerAddress &&
+        {customerAddress && (
           <div className={`flex items-center justify-start gap-2 mt-3 mb-4`}>
-          <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              className="sr-only peer"
-              checked={isChecked}
-              onChange={(e) => setIsChecked(e.target.checked)}
-            />
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={isChecked}
+                onChange={(e) => setIsChecked(e.target.checked)}
+              />
 
-            <div
-              className={`relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white  after:border after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-green-600`}
-            ></div>
-          </label>
-          <label
-            htmlFor="home_delivery"
-            className="ml-2 text-[14px] text-gray-400 cursor-pointer"
-          >
-            Home Delivery
-          </label>
-        </div>}
+              <div
+                className={`relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white  after:border after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-green-600`}
+              ></div>
+            </label>
+            <label
+              htmlFor="home_delivery"
+              className="ml-2 text-[14px] text-gray-400 cursor-pointer"
+            >
+              Home Delivery
+            </label>
+          </div>
+        )}
         {isChecked && (
           <div>
             {savedAddress ? (
@@ -678,9 +675,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
                   variant="borderless"
                   className="w-full text-[10px] border border-gray-300 rounded-lg"
                   defaultValue={
-                    savedAddress
-                      ? `Select address`
-                      : "No Saved Address"
+                    savedAddress ? `Select address` : "No Saved Address"
                   }
                   onChange={handleChangeForDeliveryAddress}
                   options={customerAddress?.map((address) => ({
@@ -711,58 +706,63 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
           </div>
         )}
 
-         {cartItems?.length > 0 ? (
-        <div className="flex items-center justify-start gap-2 mt-3 pb-16">
-         <> <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              className="sr-only peer"
-              onChange={(e) => setIsExpressDelivery(e.target.checked)}
-              checked={isExpressDelivery}
-            />
+        {cartItems?.length > 0 ? (
+          <div className="flex items-center justify-start gap-2 mt-3 pb-32">
+            <>
+              {" "}
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  onChange={(e) => setIsExpressDelivery(e.target.checked)}
+                  checked={isExpressDelivery}
+                />
 
-            <div
-              className={`relative w-11 h-5 bg-gray-200 rounded-full peer  peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white  after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-green-600`}
-            ></div>
-          </label>
-          <label
-            htmlFor="express"
-            className="ml-2 text-[14px] text-gray-400 cursor-pointer"
-          >
-            Express Delivery
-          </label></>
-          {isExpressDelivery ? (
-            <div className="border border-gray-300 rounded-lg ">
-              <Select
-                bordered={false}
-                className="outline-none border-none focus:border-none focus:outline-none"
-                defaultValue={selectedExpressDeliveryRate}
-                style={{ width: 170, outline: "none", border: "none" }}
-                onChange={handleChangeForExpressDelivery}
-                options={[
-                  {
-                    value: 25,
-                    label: `25% (₹${(grossTotal * 0.25)?.toFixed(2)})`,
-                  },
-                  {
-                    value: 50,
-                    label: `50% (₹${(grossTotal * 0.5)?.toFixed(2)})`,
-                  },
-                  {
-                    value: 75,
-                    label: `75% (₹${(grossTotal * 0.75)?.toFixed(2)})`,
-                  },
-                  {
-                    value: 100,
-                    label: `100% (₹${grossTotal?.toFixed(2)})`,
-                  },
-                ]}
-              />
-            </div>
-          ) : null}
-        </div>
-      ) : ""}
-        <div className=" fixed bottom-2 w-[421px] flex items-center gap-2 ">
+                <div
+                  className={`relative w-11 h-5 bg-gray-200 rounded-full peer  peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white  after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-green-600`}
+                ></div>
+              </label>
+              <label
+                htmlFor="express"
+                className="ml-2 text-[14px] text-gray-400 cursor-pointer"
+              >
+                Express Delivery
+              </label>
+            </>
+            {isExpressDelivery ? (
+              <div className="border border-gray-300 rounded-lg ">
+                <Select
+                  bordered={false}
+                  className="outline-none border-none focus:border-none focus:outline-none"
+                  defaultValue={selectedExpressDeliveryRate}
+                  style={{ width: 170, outline: "none", border: "none" }}
+                  onChange={handleChangeForExpressDelivery}
+                  options={[
+                    {
+                      value: 25,
+                      label: `25% (₹${(grossTotal * 0.25)?.toFixed(2)})`,
+                    },
+                    {
+                      value: 50,
+                      label: `50% (₹${(grossTotal * 0.5)?.toFixed(2)})`,
+                    },
+                    {
+                      value: 75,
+                      label: `75% (₹${(grossTotal * 0.75)?.toFixed(2)})`,
+                    },
+                    {
+                      value: 100,
+                      label: `100% (₹${grossTotal?.toFixed(2)})`,
+                    },
+                  ]}
+                />
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          ""
+        )}
+        <div className=" fixed bottom-2 w-[400px] py-2 flex items-center gap-2 ">
           <button
             onClick={() => createOrder()}
             disabled={isDisabled}
@@ -778,7 +778,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
             className="px-5 flex items-center justify-center gap-2 py-2.5 w-full bg-red-500/90 text-xs text-gray-200 rounded-lg"
           >
             <MdDelete />
-            <p>{isDeleting ? "Cancelling...": "Cancel Order"}</p>
+            <p>{isDeleting ? "Cancelling..." : "Cancel Order"}</p>
           </button>
         </div>
       </div>
