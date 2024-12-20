@@ -679,13 +679,13 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
                   className="w-full text-[10px] border border-gray-300 rounded-lg"
                   defaultValue={
                     savedAddress
-                      ? `(${customerAddress[0]?.label}) ${customerAddress[0]?.addressLine1}, ${customerAddress[0]?.city}`
+                      ? `Select address`
                       : "No Saved Address"
                   }
                   onChange={handleChangeForDeliveryAddress}
                   options={customerAddress?.map((address) => ({
-                    value: `(${address.label}) ${address?.addressLine1}, ${address?.city}`,
-                    label: `(${address.label}) ${address?.addressLine1}, ${address?.city}`,
+                    value: `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
+                    label: `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
                   }))}
                 />
 
