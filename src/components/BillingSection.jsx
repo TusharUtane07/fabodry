@@ -115,7 +115,8 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       (total, item) => total + item?.productId[0]?.price * item.quantity,
       0
     );
-    return itemsTotal;
+    
+    return mode === "B2B" ? itemsTotal *2 : itemsTotal;
   };
 
   const grossTotal = calculateGrossTotal();
@@ -132,8 +133,8 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       (total, item) => total + item?.productId[0]?.price * item.quantity,
       0
     );
-    const addonsTotal = calculateAddonsTotal();
-    const grossTotal = itemsTotal;
+    const addonsTotal = mode === "B2B" ?  calculateAddonsTotal()*2 : calculateAddonsTotal();
+    const grossTotal =  mode === "B2B" ? itemsTotal *2 : itemsTotal;
 
     const discountAmount = selectedCoupon
       ? (grossTotal * selectedCoupon.discountValue) / 100
