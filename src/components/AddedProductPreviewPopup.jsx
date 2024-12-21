@@ -79,7 +79,7 @@ const AddedProductPreviewPopup = ({ isOpen, setIsOpen, productDetails, mode }) =
             </td>
             <td className="border border-gray-300">
               <div className="flex justify-center  gap-3 mx-3">
-                {item.productId[0]?.serviceName === "Cleaning" ? (
+              {item?.additionalServices[0]?.toLowerCase() === "cleaning" ? (
                   " "
                 ) : (
                   <button

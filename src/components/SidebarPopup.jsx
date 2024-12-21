@@ -146,7 +146,7 @@ const SidebarPopup = ({ isOpen, setIsOpen }) => {
               ₹{product?.productId[0]?.price}
             </td>
             <td className="px-2 text-sm border border-gray-200">
-              {product.productId[0]?.serviceName === "Cleaning" ? (
+            {product?.additionalServices[0]?.toLowerCase() === "cleaning" ?  (
                 " "
               ) : (
                 <button

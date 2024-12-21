@@ -373,7 +373,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
                     >
                       <div className="flex gap-2 items-start mx-1">
                         <div className="flex gap-2 items-center">
-                          {product.productId[0]?.serviceName === "Cleaning" ? (
+                          {product.additionalServices[0]?.toLowerCase() === "cleaning" ? (
                             " "
                           ) : (
                             <button
