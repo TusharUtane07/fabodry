@@ -62,9 +62,9 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
             `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${cartId}`,
             {
                 customerId: userId,
-                // productId: [productDetails?.productId],
+                productId: [productDetails?.productId],
                 serviceId: productDetails?.serviceName,
-                quantity: quantity,
+                quantity: quantity ? quantity: 1,
                 garmentType: selectedDetails.type,
                 additionalServices: selectedDetails.services,
                 onHangerPrice: selectedDetails.requirement === "On Hanger" ? 20 : 12,

@@ -7,10 +7,12 @@ import { MdDelete, MdEdit } from "react-icons/md";
 import Popup from "../components/Popup";
 import toast from "react-hot-toast";
 import axios from "axios";
+import OrderEditPopup from "../components/OrderEditPopup";
 
 const Ironing = ({mode, filteredIroningProducts}) => {
   const {cartItems, refreshCart} = useCart();
-
+const [editOpen, setEditOpen] = useState(false);
+const [cartPId, setCartPId] = useState(null);
   const normalPrice = "10";
   const premiumPrice = "10";
 
@@ -197,7 +199,17 @@ const Ironing = ({mode, filteredIroningProducts}) => {
                               <div className="relative w-full">
                                 <button
                                   className="absolute left-1 bg-green-500 text-white rounded-sm px-1 text-xs"
-                                  onClick={() => setIsPopupOpen(true)}
+                                  onClick={() => {
+                                    setCartPId(correspondingCartItem?._id);
+                                    setEditOpen(true);
+                                    setProductDetails({
+                                      productId: item?.productId[0]?._id,
+                                      selectedItem: item?.productid[0]?.serviceName,
+                                      serviceName: item?.productId[0]?.serviceName,
+                                      productName: item?.productId[0]?.name,
+                                      quantity: item?.productId[0]?.quantity,
+                                    });
+                                  }}
                                 >
                                   <MdEdit size={20} />
                                 </button>
@@ -219,6 +231,12 @@ const Ironing = ({mode, filteredIroningProducts}) => {
         setIsOpen={setIsAddedPopupOpen}
         cartItems={cartItems}
         productDetails={productDetails}
+      />
+      <OrderEditPopup
+      productDetails={productDetails}
+      isOpen={editOpen}
+      setIsOpen={setEditOpen}
+      cartId={cartPId}
       />
       <SidebarPopup 
         isOpen={isPreviewPopupOpen} 

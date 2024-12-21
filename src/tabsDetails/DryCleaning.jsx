@@ -8,11 +8,13 @@ import { useCart } from "../context/CartContenxt";
 import { MdDelete, MdEdit } from "react-icons/md";
 import Popup from "../components/Popup";
 import toast from "react-hot-toast";
+import OrderEditPopup from "../components/OrderEditPopup";
 
 const DryCleaning = ({ mode, filteredDcProducts }) => {
   const { refreshCart, cartItems } = useCart();
+  const [editOpen, setEditOpen] = useState(false);
+  const [cartPId, setCartPId] = useState(null);
 
-  const [quantities, setQuantities] = useState(filteredDcProducts.map(() => 1));
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isAddedPopupOpen, setIsAddedPopupOpen] = useState(false);
@@ -179,7 +181,17 @@ const DryCleaning = ({ mode, filteredDcProducts }) => {
                   <div className="relative w-full">
                     <button
                       className="absolute left-1 bg-green-500 text-white rounded-sm px-1 text-xs"
-                      onClick={() => setIsPopupOpen(true)}
+                      onClick={() => {
+                        setCartPId(item?._id);
+                        setEditOpen(true);
+                        setProductDetails({
+                          productId: item?.productId[0]?._id,
+                          selectedItem: item?.productid[0]?.serviceName,
+                          serviceName: item?.productId[0]?.serviceName,
+                          productName: item?.productId[0]?.name,
+                          quantity: item?.productId[0]?.quantity,
+                        });
+                      }}
                     >
                       <MdEdit size={20} />
                     </button>
@@ -202,6 +214,12 @@ const DryCleaning = ({ mode, filteredDcProducts }) => {
         setIsOpen={setIsAddedPopupOpen}
         cartItems={cartItems}
         productDetails={productDetails}
+      />
+      <OrderEditPopup
+      productDetails={productDetails}
+      isOpen={editOpen}
+      setIsOpen={setEditOpen}
+      cartId={cartPId}
       />
       <SidebarPopup
         isOpen={isPreviewPopupOpen}
