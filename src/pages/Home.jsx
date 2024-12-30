@@ -6,7 +6,8 @@ import useFetch from "../hooks/useFetch";
 const Home = () => {
   const [products, setProducts] = useState(null);
   const navigate = useNavigate();
-  const { data } = useFetch(`http://localhost:8888/api/v1/products`);
+  const { data } = useFetch(`${
+    import.meta.env.VITE_BACKEND_URL}api/v1/products`);
   useEffect(() => {
     if (data) {
       setProducts(data);
