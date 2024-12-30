@@ -15,13 +15,13 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen, onAddressChange }) => {
   const [fullAddress, setFullAddress] = useState("");
   const [plotNumber, setPlotNumber] = useState("");
   const [landmark, setLandmark] = useState("");
-  const [label, setLabel] = useState("");
+  const [label, setLabel] = useState("Home");
   const [postalCode, setPostalCode] = useState("");
   const [errors, setErrors] = useState({});
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries // Using the static libraries array
+    libraries 
   });
   
   const [autocomplete, setAutocomplete] = useState(null);
@@ -33,7 +33,6 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen, onAddressChange }) => {
     if (!plotNumber.trim()) newErrors.plotNumber = "Plot number is required";
     if (!landmark.trim()) newErrors.landmark = "City is required";
     if (!postalCode.trim()) newErrors.postalCode = "Postal code is required";
-    if (!label) newErrors.label = "Please select a label";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -68,8 +67,6 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen, onAddressChange }) => {
       setPlotNumber(plot);
       setLandmark(city);
       setPostalCode(postal);
-      
-      // Clear errors when fields are populated
       setErrors({});
     }
   };
@@ -253,14 +250,14 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen, onAddressChange }) => {
                   htmlFor="label"
                   className="block text-sm text-gray-400 mb-1"
                 >
-                  Select Label *
+                  Select Label 
                 </label>
                 <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => setLabel("Home")}
-                    className={`px-4 py-1 text-white ${
-                      label === "Home" ? "bg-[#00414e]" : "bg-[#00414e]/80"
+                    className={`px-4 py-1 ${
+                      label === "Home" ? "bg-[#00414e] text-white" : "border border-[#00414e] text-gray-700"
                     } rounded-full`}
                   >
                     Home
@@ -268,8 +265,8 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen, onAddressChange }) => {
                   <button
                     type="button"
                     onClick={() => setLabel("Office")}
-                    className={`px-4 py-1 text-white ${
-                      label === "Office" ? "bg-[#00414e]" : "bg-[#00414e]/80"
+                    className={`px-4 py-1 ${
+                      label === "Office" ? "bg-[#00414e] text-white" : "border border-[#00414e] text-gray-700"
                     } rounded-full`}
                   >
                     Office
@@ -277,16 +274,13 @@ const HomeDeliveryPopup = ({ isOpen, setIsOpen, onAddressChange }) => {
                   <button
                     type="button"
                     onClick={() => setLabel("Other")}
-                    className={`px-4 py-1 text-white ${
-                      label === "Other" ? "bg-[#00414e]" : "bg-[#00414e]/80"
+                    className={`px-4 py-1 ${
+                      label === "Other" ? "bg-[#00414e] text-white" : "border border-[#00414e] text-gray-700"
                     } rounded-full`}
                   >
                     Other
                   </button>
                 </div>
-                {errors.label && (
-                  <p className="text-red-500 text-sm mt-1">{errors.label}</p>
-                )}
               </div>
               <button
                 type="submit"

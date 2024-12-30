@@ -9,11 +9,11 @@ import { useCart } from "../context/CartContenxt";
 import axios from "axios";
 import useFetch from "../hooks/useFetch";
 import { IoChevronBackCircle } from "react-icons/io5";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdVerified } from "react-icons/md";
 import toast from "react-hot-toast";
 
-const Cleaning = ({mode}) => {
-  const { cartItems, refreshCart } = useCart();
+const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetails }) => {
+  const { refreshCart, cartProdcuts } = useCart();
 
   const categories = [
     {
@@ -39,7 +39,6 @@ const Cleaning = ({mode}) => {
   ];
 
   const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAlphabet, setSelectedAlphabet] = useState("");
@@ -48,6 +47,11 @@ const Cleaning = ({mode}) => {
   const [carProducts, setCarProducts] = useState([]);
   const [toiletProducts, setToiletProducts] = useState([]);
   const [kitchenProducts, setKitchenProducts] = useState([]);
+  const [isPremium, setIsPremium] = useState("Regular");
+
+  const togglePress = () => {
+    setIsPremium((prevState) => (prevState === "Regular" ? "Premium" : "Regular"));
+  };
 
   const { data } = useFetch(
     `${import.meta.env.VITE_BACKEND_URL}api/v1/products`
@@ -73,8 +77,12 @@ const Cleaning = ({mode}) => {
   }, [data]);
 
   const handleAlphabetClick = (alphabet) => {
-    setSelectedAlphabet(alphabet);
-    setSearchTerm("");
+    if (selectedAlphabet === alphabet) {
+      setSelectedAlphabet("");
+    } else {
+      setSelectedAlphabet(alphabet);
+      setSearchTerm("");
+    }
   };
 
   const filteredProducts = categories?.filter((item) => {
@@ -92,24 +100,42 @@ const Cleaning = ({mode}) => {
     setIsPreviewPopupOpen(true);
   };
 
-  const addToCart = async (productId, serviceName, productName) => {
+  const addToCart = async (productId, serviceName, item, price, productName) => {
+    if(isEditOrder){
+      setUpdatedOrderProductDetails(prevState => {
+        return [
+          ...(prevState || []), 
+          {
+            productId: item,
+            serviceName: selectedItem || "",
+            quantity: 1,
+            garmentType: mode == "B2B" ? [{ price: price?.B2B }] : [{ price: price?.B2C }],
+            serviceAddons: [{ name: "cleaning" }],
+            requirements: [{ "": "" }],
+            comments: [""],
+            isPremium: isPremium === "Regular" ? false : true,
+          }
+        ];
+      });
+      toast.success("Added New Garment")
+      return
+    } else {
     const token = localStorage.getItem("authToken");
     const userId = localStorage.getItem("userId");
-
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/add`,
         {
           customerId: userId,
           productId: [productId],
-          serviceId: serviceName,
+          serviceName: selectedItem,
           quantity: 1,
-          garmentType: productName,
-          additionalServices: ["Cleaning"],
-          onHangerPrice: 0,
-          requirements: "",
+          garmentType:
+            mode == "B2B" ? [{ price: price?.B2B }] : [{ price: price?.B2C }],
+          serviceAddons: [{ name: "cleaning" }],
+          requirements: [{ "": "" }],
           comments: [""],
-          press: "",
+          isPremium: isPremium === "Regular" ? false : true,
         },
         {
           headers: {
@@ -117,59 +143,94 @@ const Cleaning = ({mode}) => {
           },
         }
       );
-      toast.success(`${productName} added`)
+      toast.success(`${productName} added`);
       await refreshCart();
     } catch (error) {
-      if(userId == null){
-        toast.error("please enter mobile number")
-      }else{
-        toast.error("Internal server error")
+      if (userId == null) {
+        toast.error("please enter mobile number");
+      } else {
+        toast.error("Internal server error");
       }
       console.error("Error updating cart:", error);
     }
+  }
   };
 
   const deleteCartProduct = async (id) => {
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       console.log("Delete response: ", response);
-      toast.success("Deleted Successfully")
+      toast.success("Deleted Successfully");
       await refreshCart();
     } catch (error) {
-      toast.error("Error Deleting")
+      toast.error("Error Deleting");
       console.log("Error deleting product: ", error, error.message);
     }
   };
 
   const getCategoryProducts = () => {
+    let products = [];
     switch (selectedItem) {
       case "sofa":
-        return sofaProducts;
+        products = sofaProducts;
+        break;
       case "kitchen":
-        return kitchenProducts;
+        products = kitchenProducts;
+        break;
       case "toilet":
-        return toiletProducts;
+        products = toiletProducts;
+        break;
       case "car":
-        return carProducts;
+        products = carProducts;
+        break;
       default:
-        return [];
+        products = [];
     }
+
+    return products.filter((product) => {
+      const matchesSearchTerm = product.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesAlphabet = selectedAlphabet
+        ? product.name.toLowerCase().startsWith(selectedAlphabet.toLowerCase())
+        : true;
+
+      return matchesSearchTerm && matchesAlphabet;
+    });
+  };
+
+  const getPrice = (priceObj) => {
+    if (!priceObj) return 0;
+    return mode === "B2B" ? priceObj?.B2B : priceObj?.B2C;
   };
 
   return (
     <div>
       {selectedItem ? (
         <div>
-          <div className={`border border-gray-300 py-2 rounded-lg font-semibold capitalize flex items-center gap-3 px-3 ${mode === "B2B" ? "text-[#66BDC5]" : "text-[#004d57]"}`}>
+          <div
+            className={`border border-gray-300 py-2 rounded-lg font-semibold capitalize flex items-center gap-3 px-3 ${
+              mode === "B2B" ? "text-[#66BDC5]" : "text-[#004d57]"
+            }`}
+          >
             <button onClick={() => setSelectedItem(null)}>
               <IoChevronBackCircle size={25} />
             </button>
-            <h2 className={`text-sm text-center w-full ${mode === "B2B" ? "text-[#66BDC5]" : "text-[#004d57]"}`}>{selectedItem}</h2>
+            <h2
+              className={`text-sm text-center w-full ${
+                mode === "B2B" ? "text-[#66BDC5]" : "text-[#004d57]"
+              }`}
+            >
+              {selectedItem}
+            </h2>
           </div>
           <div className="flex justify-between items-center mt-1">
             <div className="border rounded-lg border-gray-300 w-72 ml-1 flex items-center justify-between">
@@ -202,19 +263,19 @@ const Cleaning = ({mode}) => {
             </div>
             <div className="flex gap-1 items-center">
               <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
-                Total Count:{!cartItems || cartItems.length === 0 
-  ? "0" 
-  : cartItems.length}
-
+                Total Count: {" "}
+                {cartProdcuts?.length > 0 ? cartProdcuts?.length : 0}
               </div>
-              <button
+              {/* <button
                 onClick={handlePreviewClick}
                 className={`text-xs rounded-md px-4 py-1.5 ${
-                  mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"
+                  mode === "B2B"
+                    ? "bg-[#66BDC5] text-white"
+                    : "bg-[#004d57] text-white"
                 }`}
               >
                 Preview
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -223,43 +284,56 @@ const Cleaning = ({mode}) => {
           </div>
           <div className="grid lg:grid-cols-4 xl:grid-cols-4 mx-auto justify-center gap-4  my-4">
             {getCategoryProducts()?.map((item, index) => {
-              const isInCart = cartItems?.some(
+              const isInCart = cartProdcuts?.some(
                 (cartItem) =>
-                  cartItem.productId[0]?.id === item.id &&
-                  cartItem.serviceId === selectedItem
+                  cartItem?.productId?._id === item?._id
               );
 
-              const correspondingCartItem = cartItems?.find(
+              const correspondingCartItem = cartProdcuts?.find(
                 (cartItem) =>
-                  cartItem.productId[0]?.id === item.id &&
-                  cartItem.serviceId === selectedItem
+                  cartItem?.productId?._id === item?._id
               );
+
               return (
                 <div
                   key={index}
                   className={`border cursor-pointer border-gray-300 rounded-lg p-2 flex flex-col justify-center items-center relative
-          ${isInCart ? "bg-[#006370] text-white" : ""}`}
+      ${isInCart ? "bg-[#006370] text-white" : ""}`}
                 >
                   <img src={sofa} alt="" className="w-14 h-14 mx-auto" />
-                  <p className="text-sm pt-2 capitalize">{item.name}</p>
-                  <p className="text-sm py-1 ">₹ { mode === "B2B" ? item?.price * 2 : item?.price}/-</p>
+                  <p className="text-sm pt-2 capitalize">{item?.name}</p>
+                  <p className="text-sm py-1">₹ {getPrice(item?.price)}/-</p>
+
                   <div className="w-full mx-2">
                     <button
-                      className={`  px-4 w-full py-0.5 mt-1 rounded-lg
-          ${isInCart ? "bg-white text-gray-600" : "bg-[#006370] text-white hover:bg-blue-100 hover:text-gray-600"}`}
+                      className={`px-4 w-full py-0.5 mt-1 rounded-lg
+          ${
+            isInCart
+              ? "bg-white text-gray-600"
+              : "bg-[#006370] text-white hover:bg-blue-100 hover:text-gray-600"
+          }`}
                       onClick={() =>
-                        addToCart(item?._id, item.serviceName, item.name)
+                        addToCart(
+                          item?._id,
+                          item?.serviceName,
+                          item,
+                          item?.price,
+                          item?.name
+                        )
                       }
                     >
-                      Add
+                      {isInCart ? "Added" : "Add"}
                     </button>
                   </div>
+
                   {isInCart && (
                     <div className="absolute w-full top-1">
                       <div className="relative w-full">
                         <button
-                          className="absolute right-1 bg-red-500 text-white rounded-sm px-1 text-xs"
-                          onClick={() => deleteCartProduct(correspondingCartItem?._id)} 
+                          className="absolute right-1 text-red-500 rounded-sm text-xs"
+                          onClick={() =>
+                            deleteCartProduct(correspondingCartItem?._id)
+                          }
                         >
                           <MdDelete size={20} />
                         </button>
@@ -303,62 +377,109 @@ const Cleaning = ({mode}) => {
               </button>
             </div>
             <div className="flex gap-1 items-center">
-              <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
-                Total Count: {!cartItems || cartItems.length === 0 
-  ? "0" 
-  : cartItems.length}
-
+            <div className="text-xs rounded-lg px-4 py-2  text-gray-500">
+                Total Count: {" "}
+                {cartProdcuts?.length > 0 ? cartProdcuts?.length : 0}
               </div>
-              <button
-                onClick={handlePreviewClick}
-                className={`text-xs rounded-md px-4 py-1.5 ${
-                  mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"
+              <div
+              className={`flex mt-1  items-center justify-between w-60 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
+              onClick={togglePress}
+            >
+              <div
+                className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
+                  isPremium === "Regular"
+                    ? "bg-[#006370] text-white"
+                    : "text-black"
                 }`}
               >
-                Preview
-              </button>
+                Regular
+              </div>
+              <div
+                className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
+                  isPremium === "Premium"
+                    ? "bg-[#006370] text-white"
+                    : "text-black"
+                }`}
+              >
+                Premium
+              </div>
+            </div>
             </div>
           </div>
           <div className="mt-3">
             <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
           </div>
           <div className="grid lg:grid-cols-4 xl:grid-cols-4 gap-4 my-4">
-            {filteredProducts?.map((item, index) => (
-              <div
-                key={index}
-                className="border border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-12 h-12 mx-auto"
-                />
-                <p className="text-sm capitalize">{item.name}</p>
-                <p className="text-gray-400 text-xs my-2">Starting from</p>
-                <p className="text-xs text-[#006370]">₹ { mode === "B2B" ? item?.price * 2 : item?.price}/-</p>
+            {filteredProducts?.map((item, index) => {
+              const hasItemsInCart = cartProdcuts?.some(
+                cartItem => cartItem?.serviceName === item.name
+              );
 
-                <button
-                  className={`text-xs  px-3 py-1.5 rounded-md mt-2 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
-                  onClick={() => setSelectedItem(item.name)}
+              return (
+                <div
+                  key={index}
+                  className={`border relative border-gray-300 rounded-xl p-5 flex flex-col justify-center items-center ${
+                    hasItemsInCart
+                      ? mode === "B2B"
+                        ? "bg-[#66BDC5] text-white"
+                        : "bg-[#004d57] text-white"
+                      : ""
+                  }`}
                 >
-                  Add Product
-                </button>
-              </div>
-            ))}
+                  {hasItemsInCart && (
+                    <p className="absolute top-1 right-1 text-blue-500">
+                      <MdVerified size={25} />
+                    </p>
+                  )}
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-12 h-12 mx-auto"
+                  />
+                  <p className="text-sm capitalize mt-2">{item.name}</p>
+                  <p
+                    className={`text-xs my-2 ${
+                      hasItemsInCart ? "text-white" : "text-gray-400"
+                    }`}
+                  >
+                    Starting from
+                  </p>
+                  <p
+                    className={`text-xs ${
+                      hasItemsInCart ? "text-white" : "text-[#006370]"
+                    }`}
+                  >
+                    ₹ {item?.price}/-
+                  </p>
+
+                  <button
+                    className={`text-xs px-3 py-1.5 rounded-md mt-2 ${
+                      hasItemsInCart
+                        ? "bg-white text-[#006370]"
+                        : mode === "B2B"
+                        ? "bg-[#66BDC5] text-white"
+                        : "bg-[#004d57] text-white"
+                    }`}
+                    onClick={() => setSelectedItem(item.name)}
+                  >
+                    {hasItemsInCart ? "View Details" : "Add Product"}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </>
       )}
-
-      <AddedProductPreviewPopup
+      {/* <AddedProductPreviewPopup
         isOpen={isPopupOpen}
         setIsOpen={setIsPopupOpen}
         cartItems={cartItems}
-      />
-      <SidebarPopup
+      /> */}
+      {/* <SidebarPopup
         isOpen={isPreviewPopupOpen}
         setIsOpen={setIsPreviewPopupOpen}
         cartItems={cartItems}
-      />
+      /> */}
     </div>
   );
 };

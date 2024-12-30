@@ -5,6 +5,8 @@ const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(null);
+  const [cartProdcuts, setCartProducts] = useState(null);
+  const [laundryCart, setLaundryCart] = useState(null);
 
   const refreshCart = async () => {
     const mobileNumber = localStorage.getItem("mobileNumber");
@@ -18,7 +20,10 @@ export const CartProvider = ({ children }) => {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}api/v1/customers/search?mobile=${mobileNumber}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setCartItems(response?.data?.data?.customer?.cart); 
+      // setCartItems(response?.data?.data?.customer?.cart); 
+      setCartItems([])
+      setCartProducts(response?.data?.data?.customer?.cart)
+      setLaundryCart(response?.data?.data?.customer?.laundryCart)
     } catch (error) {
       console.error("Error fetching cart:", error);
     }
@@ -29,7 +34,7 @@ export const CartProvider = ({ children }) => {
   }, []); 
 
   return (
-    <CartContext.Provider value={{ cartItems, refreshCart }}>
+    <CartContext.Provider value={{ cartItems, refreshCart, cartProdcuts, laundryCart }}>
       {children}
     </CartContext.Provider>
   );

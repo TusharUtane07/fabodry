@@ -1,32 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import HomeDeliveryPopup from "./HomeDeliveryPopup";
 import { Space, DatePicker, Select } from "antd";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit, MdModeEditOutline } from "react-icons/md";
 import CouponPopup from "./CouponPopup";
 import dayjs from "dayjs";
 import { useCart } from "../context/CartContenxt";
 import axios from "axios";
 import OrderEditPopup from "./OrderEditPopup";
 import { useNavigate } from "react-router-dom";
-import { FaCheck, FaRegAddressCard } from "react-icons/fa";
+import { FaAngleLeft, FaAngleRight, FaCheck, FaRegAddressCard } from "react-icons/fa";
 import { RiDiscountPercentLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import EditConfirmedOrderPopup from "./EditConfirmedOrderPopup";
 import { useSelectedAddons } from "../context/AddonContext";
+import { RxCross2 } from "react-icons/rx";
+import LaundryCartComponent from "./LaundryCartComponent";
 
-const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
+const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab }) => {
   const [isChecked, setIsChecked] = useState(false);
   const [isHomeDeliveryPopupOpen, setIsHomeDeliveryPopupOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
-  const [savedAddress, setSavedAddress] = useState(true);
+  const [savedAddress, setSavedAddress] = useState(false);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
-  const [productDetails, setProductDetails] = useState(null);
   const [cartPId, setCartPId] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpressDelivery, setIsExpressDelivery] = useState(false);
+  const [productDetails, setProductDetails] = useState(null);
   const [expressDeliveryValue, setExpressDeliveryValue] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedExpressDeliveryRate, setSelectedExpressDeliveryRate] =
@@ -43,7 +45,15 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const { selectedAddons, updateAddons } = useSelectedAddons();
 
-  const { cartItems, refreshCart } = useCart();
+  useEffect(() => {
+    customerAddress?.map((item) => {
+      if (item) {
+        setSavedAddress(true);
+      }
+    });
+  }, [customerAddress]);
+
+  const { cartItems, refreshCart, cartProdcuts, laundryCart } = useCart();
 
   const onChange = (date, dateString) => {
     setSelectedDate(dateString);
@@ -67,6 +77,24 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
   const handleCouponSelect = (coupon) => {
     setSelectedCoupon(coupon);
     setIsDrawerOpen(false);
+  };
+
+  const calculateTotalItemPrice = (item) => {
+    const garmentPrice = (item?.garmentType[0]?.price || 0) * (item?.quantity || 0);
+  
+    const requirementsPrice =
+      item?.requirements?.reduce(
+        (acc, req) => acc + (req?.price || 0) * (item?.quantity || 0),
+        0
+      ) || 0;
+  
+    const serviceAddonsPrice =
+      item?.serviceAddons?.reduce(
+        (acc, addon) => acc + (addon?.price || 0) * (item?.quantity || 0),
+        0
+      ) || 0;
+  
+    return garmentPrice + requirementsPrice + serviceAddonsPrice;
   };
 
   const removeCoupon = () => {
@@ -95,30 +123,30 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
   };
 
   const calculateAddonsTotal = () => {
-    return cartItems?.reduce((total, item) => {
-      if (item.productId[0]?.serviceName?.toLowerCase() === "laundry") {
-        let addonCost = 0;
-        if (selectedAddons.antiviralCleaning) {
-          addonCost += 5 * item.quantity;
-        }
-        if (selectedAddons.fabricSoftener) {
-          addonCost += 5 * item.quantity;
-        }
-        return total + addonCost;
-      }
-      return total;
-    }, 0);
+    return 0;
+  };
+
+  const calculateLaundryTotalPrice = (item) => {
+    const addonsPriceSum = item.productAddons?.reduce((total, addon) => {
+      return total + addon?.price;
+    }, 0) || 0;
+    const totalPricePerKg = Number(item?.totalPrice) + Number(addonsPriceSum);
+    const finalTotal = Number(totalPricePerKg) * Number(item?.weight)
+    return finalTotal;
   };
 
   const calculateGrossTotal = () => {
-    const itemsTotal = cartItems?.reduce(
-      (total, item) => total + item?.productId[0]?.price * item.quantity,
+    const itemsTotal = cartProdcuts?.reduce(
+      (total, item) => total + calculateTotalItemPrice(item),
       0
     );
-    
-    return mode === "B2B" ? itemsTotal *2 : itemsTotal;
-  };
 
+    const lItemTotal = laundryCart?.reduce (
+      (total, item ) => total + calculateLaundryTotalPrice(item), 0);
+
+    const finalTotal = lItemTotal + itemsTotal;
+    return finalTotal;
+  };
   const grossTotal = calculateGrossTotal();
 
   const handleChangeForExpressDelivery = (value) => {
@@ -129,13 +157,6 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
   };
 
   const calculateTotalAmount = () => {
-    const itemsTotal = cartItems?.reduce(
-      (total, item) => total + item?.productId[0]?.price * item.quantity,
-      0
-    );
-    const addonsTotal = mode === "B2B" ?  calculateAddonsTotal()*2 : calculateAddonsTotal();
-    const grossTotal =  mode === "B2B" ? itemsTotal *2 : itemsTotal;
-
     const discountAmount = selectedCoupon
       ? (grossTotal * selectedCoupon.discountValue) / 100
       : 0;
@@ -144,14 +165,13 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       : 0;
 
     const totalAmount =
-      grossTotal - discountAmount + expressCharge + addonsTotal;
+      grossTotal - discountAmount + expressCharge;
 
     return {
-      grossTotal: grossTotal?.toFixed(2),
-      discountAmount: discountAmount?.toFixed(2),
-      expressCharge: expressCharge?.toFixed(2),
-      totalAmount: totalAmount?.toFixed(2),
-      addonsTotal: addonsTotal?.toFixed(2),
+      grossTotal,
+      discountAmount,
+      expressCharge,
+      totalAmount,
     };
   };
 
@@ -179,7 +199,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
     if (!validateForm()) {
       return;
     }
-    if(cartItems?.length === 0 || !cartItems){
+    if (laundryCart?.length === 0 && cartProdcuts?.length === 0) {
       toast.error("Add items for creating order");
       return;
     }
@@ -189,11 +209,12 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
 
     const productName = [];
     const serviceName = [];
-    cartItems?.map((item) => productName.push(item?.productId[0]?.name));
-    cartItems?.map((item) => serviceName.push(item?.serviceId));
+    // cartItems?.map((item) => productName.push(item?.productId[0]?.name));
+    // cartItems?.map((item) => serviceName.push(item?.serviceName));
 
     const token = localStorage.getItem("authToken");
     const userName = localStorage.getItem("userName");
+    const userId = localStorage.getItem("userId");
     const mobileNumber = localStorage.getItem("mobileNumber");
     setIsSubmitting(true);
     try {
@@ -201,15 +222,15 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
         `${import.meta.env.VITE_BACKEND_URL}api/v1/admin/orders/create`,
         {
           productIds: productName,
-          serviceIds: serviceName,
+          serviceNames: serviceName,
           branchName: selectedOption,
-          totalCount: cartItems?.length,
-          totalAmount:
-            mode === "B2B" ? Number(totalAmount) * 2 : Number(totalAmount),
-          discountAmount: Number(discountAmount),
-          expressCharge: Number(expressCharge),
+          totalCount: String(laundryCart?.length) || "0",
+          totalAmount: String(totalAmount) || "0",
+          discountAmount: String(discountAmount) || "0",
+          expressCharge: String(expressCharge) || "0",
           customerName: userName,
-          address: selectedAddress,
+          address: selectedAddress ? selectedAddress : "No Address Added",
+          customer: userId,
           customerNumber: mobileNumber,
           deliveryDate: selectedDate,
           deliveryTimeSlot: selectedLabel,
@@ -218,6 +239,8 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
           deliveryMethod: selectedRadio,
           paymentMethod: "CARD",
           paymentStatus: "unpaid",
+          cart: cartProdcuts,
+          laundryCart: laundryCart
         },
         {
           headers: {
@@ -240,11 +263,18 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
     const customerId = localStorage.getItem("userId");
     const token = localStorage.getItem("authToken");
     setIsDeleting(true);
+  
     try {
       const response = await axios.delete(
-        `${
-          import.meta.env.VITE_BACKEND_URL
-        }api/v1/carts/customer/${customerId}`,
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/customer/${customerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/delete-all/${customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -261,11 +291,13 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
       setIsDeleting(false);
     }
   };
+  
+
   const isDisabled =
     isSubmitting || Object.values(formErrors).some((error) => error);
   return (
     <div
-      className="col-span-1 relative bg-white mt-8   border-2 mr-4  border-[#eef0f2] rounded-xl overflow-y-scroll h-screen "
+      className="col-span-1 relative bg-white mt-8  w-full border-2 mr-4  border-[#eef0f2] rounded-xl overflow-y-scroll h-[100vh-62 w-fullpx] "
       style={{ scrollbarWidth: "none" }}
     >
       <div className="p-2">
@@ -341,143 +373,157 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
         </div>
         <div className="relative overflow-x-auto border border-gray-300 rounded-xl mt-3 p-2 w-full ">
           <p>Added Garments: </p>
-          <div className="w-[421px] h-72 pb-8">
-            {cartItems?.length > 0 ? (
-              <div className="">
-                {cartItems
-                  .reduce((acc, product) => {
-                    const serviceName =
-                      product.productId[0]?.serviceName?.toLowerCase();
-                    const serviceId = product?.serviceId;
-
-                    if (serviceName === "laundry") {
-                      const existingLaundry = acc.find(
-                        (item) =>
-                          item.productId[0]?.serviceName?.toLowerCase() ===
-                            "laundry" && item?.serviceId === serviceId
-                      );
-
-                      if (existingLaundry) {
-                        existingLaundry.quantity += product.quantity;
-                      } else {
-                        acc.push({ ...product });
-                      }
-                    } else {
-                      acc.push(product);
-                    }
-                    return acc;
-                  }, [])
-                  .map((product, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-300 my-1.5 p-1 rounded-md"
-                    >
-                      <div className="flex gap-2 items-start mx-1">
-                        <div className="flex gap-2 items-center">
-                          {product.additionalServices[0]?.toLowerCase() === "cleaning" ? (
-                            " "
-                          ) : (
-                            <button
-                              onClick={() => {
+          <div className="w-full h-72">
+            {cartProdcuts?.length > 0 || laundryCart?.length > 0 ? (
+              <div className="pb-10">
+                <LaundryCartComponent setSelectedTab={setSelectedTab}/>
+                {cartProdcuts?.length > 0 &&
+                  cartProdcuts?.map((item) => {
+                    return (
+                      <div
+                        key={item?._id}
+                        className="border border-gray-300 p-2 rounded-lg capitalize mt-0.5 mb-2"
+                      >
+                        <div className="flex justify-between px-2 w-full gap-2">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1">
+                              { item?.serviceAddons[0]?.name === "cleaning" ? " " :  <button onClick={() => {
+                                setCartPId(item?._id);
                                 setIsEditPopupOpen(true);
-                                setCartPId(product?._id);
-                                setProductDetails({
-                                  productId: product.productId[0]?._id,
-                                  selectedItem:
-                                    product?.productId[0]?.serviceName,
-                                  serviceName:
-                                    product?.productId[0]?.serviceName,
-                                  productName: product.productId[0]?.name,
-                                  quantity: product.quantity,
-                                });
-                              }}
-                              className="text-sm text-green-400 "
-                            >
-                              <MdEdit />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => deleteCartProduct(product?._id)}
-                            className="text-sm text-red-400"
-                          >
-                            <MdDelete />
-                          </button>
-                        </div>
-                        <div className="text-[14px] flex items-center justify-between w-full">
-                          <p className="capitalize">
-                            {product.productId[0]?.serviceName?.toLowerCase() ===
-                            "laundry"
-                              ? product?.serviceId
-                              : product?.productId[0]?.name}
-                            {!product?.garmentType ||
-                            ["kitchen", "toilet", "car", "sofa"].includes(
-                              product?.serviceId
-                            )
-                              ? null
-                              : ` [${product?.garmentType}]`}
-                          </p>
-
-                          <p>
-                            {product?.quantity}
-                            {product?.productId[0]?.serviceName?.toLowerCase() ===
-                            "laundry"
-                              ? "/Kg"
-                              : ""}{" "}
-                            X{" "}
-                            {mode === "B2B"
-                              ? product?.productId[0]?.price * 2
-                              : product?.productId[0]?.price}{" "}
-                            = ₹
-                            {mode === "B2B"
-                              ? product?.productId[0]?.price *
-                                product.quantity *
-                                2
-                              : product?.productId[0]?.price * product.quantity}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-xs">
-                        {product?.productId[0]?.serviceName?.toLowerCase() ===
-                        "laundry" ? (
-                          <>
-                            {selectedAddons.antiviralCleaning && (
-                              <>
-                                [ Antiviral Cleaning + ₹{5 * product.quantity} ]
-                              </>
+                                setProductDetails(item?.productId);
+                              }} className="text-green-500">
+                                <MdModeEditOutline />
+                              </button>}
+                              <button
+                                onClick={() => deleteCartProduct(item?._id)}
+                                className="text-red-500 text-lg font-bold"
+                              >
+                                <RxCross2 />
+                              </button>
+                            </div>
+                            {item?.productId?.name && (
+                              <div className="font-semibold">
+                                {item?.productId?.name}
+                                {item?.garmentType[0]?.name
+                                  ? ` [${item?.garmentType[0]?.name}]`
+                                  : ""}{" "}
+                                {item?.serviceAddons[0]?.name === "cleaning"
+                                  ? ""
+                                  : ` X ${item?.quantity || 1}`}
+                              </div>
                             )}
-                            {selectedAddons.fabricSoftener && (
-                              <>
-                                [{selectedAddons.antiviralCleaning && " "}Fabric
-                                Softener + ₹{5 * product.quantity}]
-                              </>
-                            )}
-                          </>
-                        ) : (
-                          " "
-                        )}
-                      </p>
+                          </div>
+                          {item?.garmentType[0]?.price &&
+                            (item?.serviceAddons[0]?.name === "cleaning" ? (
+                              <div className="font-semibold text-sm">
+                                ₹ {item?.garmentType[0]?.price}
+                              </div>
+                            ) : (
+                              <div className="font-semibold text-sm">
+                                ₹
+                                {(item?.garmentType[0]?.price || 0) *
+                                  (item?.quantity || 0)}
+                                {/* Check if there are valid prices for requirements or addons */}
+                                {item?.requirements?.some(
+                                  (req) => req?.price
+                                ) ||
+                                item?.serviceAddons?.some(
+                                  (addon) => addon?.price
+                                ) ? (
+                                  <>
+                                    {item?.requirements?.length > 0 &&
+                                      item?.requirements?.some(
+                                        (req) => req?.price
+                                      ) &&
+                                      " + "}
+                                    {item?.requirements?.map((req, index) =>
+                                      req?.price ? (
+                                        <span key={req?._id}>
+                                          ₹
+                                          {(req?.price || 0) *
+                                            (item?.quantity || 0)}
+                                          {index <
+                                            item?.requirements?.length - 1 &&
+                                            item?.requirements[index + 1]
+                                              ?.price &&
+                                            " + "}
+                                        </span>
+                                      ) : null
+                                    )}
 
-                      <div>
-                        {product.productId[0]?.serviceName?.toLowerCase() ===
-                        "laundry" ? null : (
-                          <p className="text-[12px] text-gray-500 ">
-                            Service:{" "}
-                            <span className="uppercase">
-                              {product?.productId[0]?.serviceName}
-                            </span>
-                          </p>
-                        )}
-                        {product.comments.length > 1 ? (
-                          <p className="text-[12px] text-gray-500">
-                            Comments: {`[ ${product.comments.join(", ")} ]`}
-                          </p>
+                                    {item?.serviceAddons?.length > 0 &&
+                                      item?.serviceAddons?.some(
+                                        (addon) => addon?.price
+                                      ) &&
+                                      " + "}
+                                    {item?.serviceAddons?.map((addon, index) =>
+                                      addon?.price ? (
+                                        <span key={addon?._id}>
+                                          ₹
+                                          {(addon?.price || 0) *
+                                            (item?.quantity || 0)}
+                                          {index <
+                                            item?.serviceAddons?.length - 1 &&
+                                            item?.serviceAddons[index + 1]
+                                              ?.price &&
+                                            " + "}
+                                        </span>
+                                      ) : null
+                                    )}
+
+                                    {" = ₹"}
+                                    {  calculateTotalItemPrice(item)                                    }
+                                  </>
+                                ) : null}
+                              </div>
+                            ))}
+                        </div>
+                        {item?.serviceAddons[0]?.name === "cleaning" ? (
+                          <div className="text-[12px]">
+                            <p>
+                              {item?.isPremium === true ? "Premium" : "Regular"}
+                            </p>
+                            <p>Service: {item?.serviceName}</p>
+                          </div>
                         ) : (
-                          " "
+                          <div className="text-[12px]">
+                            <div className="flex items-center gap-1">
+                              <p className="font-medium">
+                                {item?.isPremium === true
+                                  ? "Premium"
+                                  : "Regular"}{" "}
+                                -
+                              </p>
+                              <p className="font-medium">
+                                Service: {item?.serviceName}
+                              </p>
+                            </div>
+                            {item?.requirements[0]?.name && (
+                              <p>
+                                Requirements: {item?.requirements[0]?.name} (₹{" "}
+                                {item?.requirements[0]?.price || 0})
+                              </p>
+                            )}
+                            {item?.serviceAddons?.length > 0 && (
+                              <p>
+                                Additional Services:{" "}
+                                {item?.serviceAddons?.map((service, index) => (
+                                  <span key={index}>
+                                    {service?.name} (₹ {service?.price})
+                                    {index < item?.serviceAddons?.length - 1 &&
+                                      ", "}
+                                  </span>
+                                ))}
+                              </p>
+                            )}
+                            {/* {item?.comments?.length > 0 && (
+                            <p>Comments: {item.comments.join(", ")}</p>
+                          )} */}
+                          </div>
                         )}
                       </div>
-                    </div>
-                  ))}
-                <p className="py-1"></p>
+                    );
+                  })}
               </div>
             ) : (
               <p className="text-sm text-gray-600 flex items-center justify-center h-full">
@@ -517,7 +563,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
           </div>
         ) : (
           <div className="text-center mt-4">
-            {cartItems?.length >= 1 ? (
+            {cartProdcuts?.length >= 1 ? (
               <button
                 onClick={() => setIsDrawerOpen(true)}
                 className="px-3 py-2 flex items-center justify-center gap-2 text-xs bg-gray-200 text-gray-600 rounded-lg w-full"
@@ -531,17 +577,17 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
           </div>
         )}
       </div>
-      <div className="w-full px-5 mt-3 text-[13px]">
+      <div className="w-full px-5 mt-3 text-[13px] relative">
         <div className="text-gray-400">
           <div className="flex justify-between mt-1">
             <p>Total Count:</p>
             <span>
-              {!cartItems || cartItems.length === 0 ? "0" : cartItems.length}
+              {!cartProdcuts && !laundryCart || cartProdcuts?.length === 0 && laundryCart?.length === 0 ? "0" : cartProdcuts?.length + laundryCart?.length}
             </span>
           </div>
           <div className="flex justify-between mt-1">
             <p>Gross Total:</p>
-            <span>₹ {grossTotal ? grossTotal?.toFixed(2) : 0}</span>
+            <span>₹ {grossTotal ? grossTotal : 0}</span>
           </div>
 
           {calculateAddonsTotal() > 0 && (
@@ -646,142 +692,139 @@ const BillingSection = ({ customerAddress, mode, onAddressChange }) => {
             </p>
           )}
         </div>
-        {customerAddress && (
-          <div className={`flex items-center justify-start gap-2 mt-3 mb-4`}>
-            <label className="inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={isChecked}
-                onChange={(e) => setIsChecked(e.target.checked)}
-              />
-
-              <div
-                className={`relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white  after:border after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-green-600`}
-              ></div>
-            </label>
-            <label
-              htmlFor="home_delivery"
-              className="ml-2 text-[14px] text-gray-400 cursor-pointer"
-            >
-              Home Delivery
-            </label>
-          </div>
-        )}
-        {isChecked && (
-          <div>
-            {savedAddress ? (
-              <div className="w-full">
-                <Select
-                  variant="borderless"
-                  className="w-full text-[10px] border border-gray-300 rounded-lg"
-                  defaultValue={
-                    savedAddress ? `Select address` : "No Saved Address"
-                  }
-                  onChange={handleChangeForDeliveryAddress}
-                  options={customerAddress?.map((address) => ({
-                    value: `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
-                    label: `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
-                  }))}
-                />
-
-                <div className="">
+        <div className="flex  mt-3 mb-20 gap-3 w-full">
+          <div className="flex flex-col  w-full gap-2">
+            {customerAddress && (
+              <div className="flex items-center justify-start gap-2">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={isChecked}
+                    onChange={(e) => setIsChecked(e.target.checked)}
+                  />
+                  <div className="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                </label>
+                <label
+                  htmlFor="home_delivery"
+                  className="ml-2 text-[14px] text-gray-400 cursor-pointer"
+                >
+                  Home Delivery
+                </label>
+              </div>
+            )}
+            {isChecked && (
+              <div className="">
+                {savedAddress ? (
+                  <div className="flex gap-2 flex-col">
+                    <div className="">
+                      <Select
+                        variant="borderless"
+                        className="text-[10px] border border-gray-300 rounded-lg w-full"
+                        defaultValue={
+                          customerAddress && customerAddress[0]?.label
+                            ? `${customerAddress[0]?.label} ${customerAddress[0]?.addressLine1}, ${customerAddress[0]?.city}`
+                            : "No Saved Address"
+                        }
+                        onChange={handleChangeForDeliveryAddress}
+                        options={customerAddress?.map((address) => ({
+                          value: `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
+                          label: `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
+                        }))}
+                      />
+                    </div>
+                    <div className="w-full">
+                      <button
+                        onClick={() => setIsHomeDeliveryPopupOpen(true)}
+                        className="text-[10px] text-gray-600 flex items-center justify-center gap-2 bg-gray-200 px-4 py-2 mt-1 rounded-md w-full"
+                      >
+                        <FaRegAddressCard size={16} />
+                        <p>Add new Address</p>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                   <button
                     onClick={() => setIsHomeDeliveryPopupOpen(true)}
-                    className="text-[10px] text-gray-600 flex items-center justify-center gap-2 bg-gray-200 w-full py-2 mt-1.5 rounded-md"
+                    className="text-[10px] text-gray-600 flex items-center justify-center gap-2 bg-gray-200 w-full py-2 mt-1 rounded-md"
                   >
                     <FaRegAddressCard size={16} />
                     <p>Add new Address</p>
                   </button>
-                </div>
+                )}
               </div>
-            ) : (
-              <button
-                onClick={() => setIsHomeDeliveryPopupOpen(true)}
-                className="text-[10px] text-gray-600 flex items-center justify-center gap-2 bg-gray-200 w-full py-2 mt-1.5 rounded-md"
-              >
-                <FaRegAddressCard size={16} />
-                <p>Add new Address</p>
-              </button>
             )}
-          </div>
-        )}
 
-        {cartItems?.length > 0 ? (
-          <div className="flex items-center justify-start gap-2 mt-3 pb-32">
-            <>
-              {" "}
-              <label className="inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  onChange={(e) => setIsExpressDelivery(e.target.checked)}
-                  checked={isExpressDelivery}
-                />
-
-                <div
-                  className={`relative w-11 h-5 bg-gray-200 rounded-full peer  peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white  after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-green-600`}
-                ></div>
-              </label>
-              <label
-                htmlFor="express"
-                className="ml-2 text-[14px] text-gray-400 cursor-pointer"
-              >
-                Express Delivery
-              </label>
-            </>
-            {isExpressDelivery ? (
-              <div className="border border-gray-300 rounded-lg ">
-                <Select
-                  bordered={false}
-                  className="outline-none border-none focus:border-none focus:outline-none"
-                  defaultValue={selectedExpressDeliveryRate}
-                  style={{ width: 170, outline: "none", border: "none" }}
-                  onChange={handleChangeForExpressDelivery}
-                  options={[
-                    {
-                      value: 25,
-                      label: `25% (₹${(grossTotal * 0.25)?.toFixed(2)})`,
-                    },
-                    {
-                      value: 50,
-                      label: `50% (₹${(grossTotal * 0.5)?.toFixed(2)})`,
-                    },
-                    {
-                      value: 75,
-                      label: `75% (₹${(grossTotal * 0.75)?.toFixed(2)})`,
-                    },
-                    {
-                      value: 100,
-                      label: `100% (₹${grossTotal?.toFixed(2)})`,
-                    },
-                  ]}
-                />
+            {cartProdcuts?.length > 0 ? (
+              <div className="flex gap-2 w-full items-center">
+                <div className="flex gap-2">
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      onChange={(e) => setIsExpressDelivery(e.target.checked)}
+                      checked={isExpressDelivery}
+                    />
+                    <div className="relative w-11 h-5 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                  </label>
+                  <label
+                    htmlFor="express"
+                    className="ml-2 text-[14px] text-gray-400 cursor-pointer"
+                  >
+                    Express Delivery
+                  </label>
+                </div>
+                {isExpressDelivery && (
+                  <div className=" border border-gray-300 rounded-lg">
+                    <Select
+                      bordered={false}
+                      className="outline-none border-none focus:border-none focus:outline-none"
+                      defaultValue={selectedExpressDeliveryRate}
+                      onChange={handleChangeForExpressDelivery}
+                      options={[
+                        {
+                          value: 25,
+                          label: `25% (₹${(grossTotal * 0.25)?.toFixed(2)})`,
+                        },
+                        {
+                          value: 50,
+                          label: `50% (₹${(grossTotal * 0.5)?.toFixed(2)})`,
+                        },
+                        {
+                          value: 75,
+                          label: `75% (₹${(grossTotal * 0.75)?.toFixed(2)})`,
+                        },
+                        {
+                          value: 100,
+                          label: `100% (₹${grossTotal?.toFixed(2)})`,
+                        },
+                      ]}
+                    />
+                  </div>
+                )}
               </div>
             ) : null}
           </div>
-        ) : (
-          ""
-        )}
-        <div className=" fixed bottom-2 w-[400px] py-2 flex items-center gap-2 ">
-          <button
-            onClick={() => createOrder()}
-            disabled={isDisabled}
-            className={`px-5 flex items-center justify-center gap-2 w-full py-2.5 text-xs text-gray-200 rounded-lg ${
-              isDisabled ? "bg-[#00414e]/50 cursor-not-allowed" : "bg-[#00414e]"
-            }`}
-          >
-            <FaCheck />
-            <p>{isSubmitting ? "Processing..." : "Create Order"}</p>
-          </button>
-          <button
-            onClick={() => deleteAllCartItems()}
-            className="px-5 flex items-center justify-center gap-2 py-2.5 w-full bg-red-500/90 text-xs text-gray-200 rounded-lg"
-          >
-            <MdDelete />
-            <p>{isDeleting ? "Cancelling..." : "Cancel Order"}</p>
-          </button>
         </div>
+      </div>
+      <div className="fixed w-[calc(100%-1000px)] bottom-0 border-t border-gray-300 bg-white py-2 flex items-center justify-center gap-3 px-2 ">
+        <button
+          onClick={() => createOrder()}
+          disabled={isDisabled}
+          className={`px-5 flex items-center justify-center gap-2 py-2.5 text-xs w-full text-gray-200 rounded-lg ${
+            isDisabled ? "bg-[#00414e]/50 cursor-not-allowed" : "bg-[#00414e]"
+          }`}
+        >
+          <FaCheck />
+          <p>{isSubmitting ? "Processing..." : "Create Order"}</p>
+        </button>
+        <button
+          onClick={() => deleteAllCartItems()}
+          className="px-5 flex items-center justify-center gap-2 py-2.5  bg-red-500/90 text-xs w-full text-gray-200 rounded-lg"
+        >
+          <MdDelete />
+          <p>{isDeleting ? "Cancelling..." : "Cancel Order"}</p>
+        </button>
       </div>
       <CouponPopup
         isOpen={isDrawerOpen}

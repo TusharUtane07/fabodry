@@ -116,38 +116,38 @@ const LaundryPreviewTab = ({ selectedItem, isOpen, setIsOpen, mode }) => {
             {cartItems?.length > 0 ? (
               <tbody className="text-[12px]">
                 {cartItems
-                  .reduce((acc, product) => {
-                    const serviceName =
-                      product.productId[0]?.serviceName?.toLowerCase();
-                    const serviceId = product?.serviceId;
+                  // .reduce((acc, product) => {
+                  //   const serviceName =
+                  //     product.productId[0]?.serviceName?.toLowerCase();
+                  //   const serviceId = product?.serviceName;
 
-                    if (serviceName === "laundry") {
-                      const existingLaundry = acc.find(
-                        (item) =>
-                          item.productId[0]?.serviceName?.toLowerCase() ===
-                            "laundry" && item?.serviceId === serviceId
-                      );
+                  //   if (serviceName === "laundry") {
+                  //     const existingLaundry = acc.find(
+                  //       (item) =>
+                  //         item.productId[0]?.serviceName?.toLowerCase() ===
+                  //           "laundry" && item?.serviceName === serviceId
+                  //     );
 
-                      if (existingLaundry) {
-                        existingLaundry.quantity += product.quantity;
-                      } else {
-                        acc.push({ ...product });
-                      }
-                    } else {
-                      acc.push(product);
-                    }
-                    return acc;
-                  }, [])
+                  //     if (existingLaundry) {
+                  //       existingLaundry.quantity += product.quantity;
+                  //     } else {
+                  //       acc.push({ ...product });
+                  //     }
+                  //   } else {
+                  //     acc.push(product);
+                  //   }
+                  //   return acc;
+                  // }, [])
                   .map((product, index) => (
                     <tr key={product?.productId[0]?._id}>
                       <td className="px-2 border border-gray-200">
                         {product?.productId[0]?.serviceName?.toLowerCase() ===
                         "laundry"
-                          ? `${product?.serviceId} X ${product?.quantity}`
+                          ? `${product?.serviceName} X ${product?.quantity}`
                           : `${product?.productId[0]?.name} X ${product?.quantity}`}/Kg
                       </td>
                       <td className="text-center px-2 border border-gray-200">
-                        ₹{product?.productId[0]?.price}
+                        ₹{product?.productId[0]?.price?.B2C}
                       </td>
                       <td className="px-2 text-sm border border-gray-200">
                      {product?.additionalServices[0]?.toLowerCase() === "cleaning" ? (

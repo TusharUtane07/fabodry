@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import fabodry from '../assets/fabodry.svg'
+import fabodry from '../assets/fabodry.svg';
 
-const PrintLabelsPage = () => {
+const PrintLabelsPage = ({orderData}) => {
   const [labels, setLabels] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const orderData = location.state?.order;
     if (orderData) {
@@ -15,44 +15,60 @@ const PrintLabelsPage = () => {
       const formattedDate = currentDate.toLocaleDateString('en-US', {
         year: 'numeric',
         month: '2-digit',
-        day: '2-digit'
+        day: '2-digit',
       });
       const formattedTime = currentDate.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
       });
 
       function formatDate(isoDate) {
         const date = new Date(isoDate);
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); 
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
       }
 
       const deliveryDate = formatDate(order?.deliveryDate);
-      const labelData = order.productIds.map((product, index) => {
-        const serviceName =
-          order?.serviceIds[index] === "Wash & Iron" ? "W&I" :
-          order?.serviceIds[index] === "Wash & Fold" ? "W&F" :
-          order?.serviceIds[index] === "Premium Laundry" ? "PL" :
-          order?.serviceIds[index]; 
       
-        return {
-          orderId: order?.orderId,
-          customerName: order?.customerName,
-          garment: product,
-          serviceName, 
-          count: `${index + 1}/${order?.productIds?.length}`,
-          date: formattedDate,
-          dd: deliveryDate,
-          time: formattedTime,
-        };
-      });
+      const labelData = [
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        ...order?.cartItems?.map((product, index) => {
+          return {
+            orderId: order?._id,
+            customerName: order?.customerName,
+            garment: product?.productId?.name,
+            serviceName: product?.serviceName || product?.productId?.serviceName,
+            count: `${index + 1}/${order?.cartItems?.length}`,
+            date: formattedDate,
+            dd: deliveryDate,
+            time: formattedTime,
+            isPremium: product.isPremium,
+            isExpress: product.expressCharge ? true : false
+          };
+        }),
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        ...order?.laundryCartItems?.map((product, index) => {
+          return {
+            orderId: order?._id,
+            customerName: order?.customerName,
+            garment: product?.productId?.name,
+            serviceName: product?.serviceName || product?.productId?.serviceName,
+            count: `${order?.cartItems?.length + index + 1}/${order?.laundryCartItems?.length + order?.cartItems?.length}`,
+            date: formattedDate,
+            dd: deliveryDate,
+            time: formattedTime,
+            isPremium: product.isPremium,
+            isExpress: product?.expressCharge?.length > 0 ? true : false
+          };
+        }),
+      ];
       
-
+      // After constructing labelData, call setLabels to set the state
       setLabels(labelData);
+      
       const printTimer = setTimeout(() => {
         window.print();
       }, 100);
@@ -77,14 +93,27 @@ const PrintLabelsPage = () => {
         visibility: visible;
       }
       #print-section > div {
-        page-break-after: always;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        text-align: center; /* Center content */
+        margin: 0 auto; /* Center the div within the page */
+        width: 70mm; /* Set a fixed width for labels */
+        padding: 10mm; /* Add padding inside the label */
+        border: 1px solid black; /* Optional for a border around the label */
+        border-bottom: 1px dotted black; /* Dotted line for separation */
       }
       #print-section > div:last-child {
-        page-break-after: avoid;
+        border-bottom: none;
+      }
+      img {
+        display: block;
+        margin: 0 auto 5px; /* Center image and add spacing below */
+        width: 100px; /* Adjust image width */
+        height: auto;
       }
       @page {
-        size: 4in 6in; /* Common thermal printer size */
-        margin: 0; /* No margin for thermal printers */
+        size: auto;
+        margin: 10mm; /* Add margin for thermal printers */
       }
     }
   `;
@@ -92,47 +121,41 @@ const PrintLabelsPage = () => {
   return (
     <>
       <style>{printStyles}</style>
-      <div 
-        id="print-section"
-        style={{
-          fontFamily: 'Arial, sans-serif',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: '100%',
-        }}
-      >
-        {labels.map((label, index) => (
-          <div 
-            key={index} 
-            style={{
-              width: '100%',
-              height: '100vh', // Use full screen height
-              maxHeight: '6in', // Cap the height to thermal printer size
-              padding: '10mm',
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              textAlign: 'center',
-              border: '1px solid black',
-              margin: '0 auto',
-            }}
-          >
-                <img src={fabodry} alt="" />
-            <div style={{ display: "flex", alignItems: "center", gap: "3px", marginTop:"3px" }}>
-              <p style={{ margin: '1mm 0' }}>{label.date},</p>
-              <p style={{ margin: '1mm' }}>{label.time}</p>
-            </div>
-            <p>.................................................</p>
-            <p style={{ margin: '1mm 0' }}>{label.customerName}</p>
-            <p style={{ margin: '1mm 0', fontWeight: "bold", fontSize: "10px" }}>Order ID: {label.orderId}</p>
-            <p style={{ margin: '1mm 0' }}>{label.garment}</p>
-            <p style={{ margin: '1mm 0', border: "1px solid black", padding: "2px" }}>{label.serviceName}</p>
-            <p style={{ margin: '1mm 0', fontWeight: 'bold', display: 'flex' }}>
-              <span>DD: {label.dd}</span>{" - "}
-              <span>{`[${label.count}]`}</span>
+      <div id="print-section" style={{ fontFamily: 'Arial, sans-serif' }}>
+        {labels?.map((label, index) => (
+          <div  className='relative' key={index}>
+            <img src={fabodry} alt="" />
+            <p>
+              <strong></strong> {label.date}, {label.time}
+            </p>
+            <p><strong>{label.orderId.slice(0, 6)}</strong></p>
+            <p>
+              <strong> {label.customerName}</strong>
+            </p>
+            <p className='absolute top-2 right-2'>
+              <p className='bg-black p-1 rounded-full border border-gray-800'>{label.isPremium ? "PR" : "RG"}</p> 
+              {/* {label.orderId} */}
+            </p>
+            <p className='absolute top-2 left-2'>
+              <p className='bg-black p-1 rounded-full border border-gray-800'>{label.isExpress ? "EX": "RG"}</p> 
+              {/* {label.orderId} */}
+            </p>
+            <p>
+              <strong> {label.garment}</strong>
+            </p>
+            <p
+              style={{
+                border: '1px solid black',
+                padding: '2px',
+                display: 'inline-block',
+              }}
+            >
+              <strong>Service:</strong> {label.serviceName}
+            </p>
+            <p style={{
+              padding:'2px'
+            }}>
+              <strong>DD:</strong> {label.dd} - [{label.count}]
             </p>
           </div>
         ))}

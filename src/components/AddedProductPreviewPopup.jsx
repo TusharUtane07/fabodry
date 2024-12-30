@@ -47,35 +47,35 @@ const AddedProductPreviewPopup = ({ isOpen, setIsOpen, productDetails, mode }) =
   {cartItems?.length > 0 ? (
     <tbody>
       {cartItems
-                  .reduce((acc, product) => {
-                    const serviceName =
-                      product.productId[0]?.serviceName?.toLowerCase();
-                    const serviceId = product?.serviceId;
+                  // .reduce((acc, product) => {
+                  //   const serviceName =
+                  //     product.productId[0]?.serviceName?.toLowerCase();
+                  //   const serviceId = product?.serviceName;
 
-                    if (serviceName === "laundry") {
-                      const existingLaundry = acc.find(
-                        (item) =>
-                          item.productId[0]?.serviceName?.toLowerCase() ===
-                            "laundry" && item?.serviceId === serviceId
-                      );
+                  //   if (serviceName === "laundry") {
+                  //     const existingLaundry = acc.find(
+                  //       (item) =>
+                  //         item.productId[0]?.serviceName?.toLowerCase() ===
+                  //           "laundry" && item?.serviceName === serviceId
+                  //     );
 
-                      if (existingLaundry) {
-                        existingLaundry.quantity += product.quantity;
-                      } else {
-                        acc.push({ ...product });
-                      }
-                    } else {
-                      acc.push(product);
-                    }
-                    return acc;
-                  }, [])
+                  //     if (existingLaundry) {
+                  //       existingLaundry.quantity += product.quantity;
+                  //     } else {
+                  //       acc.push({ ...product });
+                  //     }
+                  //   } else {
+                  //     acc.push(product);
+                  //   }
+                  //   return acc;
+                  // }, [])
         .map((item, index) => (
           <tr
             key={index}
             className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
           >
             <td className="border border-gray-300 px-2">
-            {item?.productId[0]?.serviceName?.toLowerCase() === "laundry" ? `${item?.serviceId} X ${item?.quantity}/Kg`  : `${item?.productId[0]?.name} X ${item?.quantity}` }
+            {item?.productId[0]?.serviceName?.toLowerCase() === "laundry" ? `${item?.serviceName} X ${item?.quantity}/Kg`  : `${item?.productId[0]?.name} X ${item?.quantity}` }
             </td>
             <td className="border border-gray-300">
               <div className="flex justify-center  gap-3 mx-3">

@@ -10,8 +10,8 @@ import Popup from "../components/Popup";
 import toast from "react-hot-toast";
 import OrderEditPopup from "../components/OrderEditPopup";
 
-const DryCleaning = ({ mode, filteredDcProducts }) => {
-  const { refreshCart, cartItems } = useCart();
+const DryCleaning = ({ mode, filteredDcProducts, orderDetails, isEditOrder, setUpdatedOrderProductDetails }) => {
+  const { refreshCart, cartItems, cartProdcuts } = useCart();
   const [editOpen, setEditOpen] = useState(false);
   const [cartPId, setCartPId] = useState(null);
 
@@ -24,29 +24,20 @@ const DryCleaning = ({ mode, filteredDcProducts }) => {
   const [productDetails, setProductDetails] = useState(null);
 
   const isProductInCart = (productId) => {
-    return cartItems?.some((cartItem) =>
-      cartItem?.productId?.some((product) => product._id === productId)
+    return cartProdcuts?.some((cartItem) =>
+      cartItem?.productId?._id === productId
     );
   };
 
   const handleIncrement = (
-    index,
-    productId,
-    serviceName,
-    productName,
-    quantity
+    item
   ) => {
-    setProductDetails({
-      productId,
-      selectedItem: serviceName,
-      serviceName,
-      productName,
-      quantity,
-    });
-    if(!cartItems || cartItems.length === 0){
+    setProductDetails(item);
+    if(!cartProdcuts || cartProdcuts?.length === 0){
       setIsPopupOpen(true);
     }else{
-      setIsAddedPopupOpen(true)
+      setIsPopupOpen(true);
+      // setIsAddedPopupOpen(true)
     }
   };
 
@@ -90,6 +81,11 @@ const DryCleaning = ({ mode, filteredDcProducts }) => {
     setIsPreviewPopupOpen(true);
   };
 
+  const getPrice = (priceObj) => {
+    if (!priceObj) return 0;
+    return mode === "B2B" ? priceObj?.B2B : priceObj?.B2C;
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center">
@@ -121,82 +117,70 @@ const DryCleaning = ({ mode, filteredDcProducts }) => {
         <div className="flex gap-1 items-center">
           <div className="text-xs rounded-lg px-8 text-gray-500">
             Total Count:{" "}
-            {!cartItems || cartItems.length === 0 ? "0" : cartItems.length}
+            {!cartProdcuts || cartProdcuts?.length === 0 ? "0" : cartProdcuts?.length}
           </div>
-          <button
+          {/* <button
             onClick={handlePreviewClick}
             className={`text-xs rounded-md px-4 py-1.5 ${
               mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"
             }`}
           >
             Preview
-          </button>
+          </button> */}
         </div>
       </div>
       <div className="mt-3">
         <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
       </div>
       <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4">
-        {filteredProducts.map((item, index) => {
-          const correspondingCartItem = cartItems?.find(
+        {filteredProducts?.map((item, index) => {
+          const correspondingCartItem = cartProdcuts?.find(
             (cartItem) =>
-              cartItem.productId[0]?.id === item.id 
+              cartItem.productId?._id === item?._id 
           );
           return (
             <div
               key={index}
               className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center relative ${
-                isProductInCart(item.id) ? "bg-[#006370] text-white" : ""
+                isProductInCart(item?._id) ? "bg-[#006370] text-white" : ""
               }`}
             >
               <img src={item.image} alt="" className="w-12 h-12 mx-auto " />
               <p className="text-sm pt-2 capitalize">{item.name}</p>
-              <p className="text-xs py-1">₹ {mode === "B2B" ? item.price * 2 : item.price}/-</p>
+              <p className="text-xs py-1">₹ {getPrice(item?.price)}/-</p>
               <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
                 <button
                   className={`rounded-sm px-1 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
                   onClick={() =>
                     handleIncrement(
-                      index,
-                      item.id,
-                      item.serviceName,
-                      item.name,
-                      item.quantity
+                      item
                     )
                   }
                 >
                   +
                 </button>
-                <span className=" px-3">
-                  {item.quantity === 0 ? 1 : item.quantity}
-                </span>
+                <span className=" px-3">{correspondingCartItem?.quantity || 0}</span>
                 <button
                   className={`rounded-sm px-1 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
                 >
                   -
                 </button>
               </div>
-              {isProductInCart(item?.id) && (
+              {isProductInCart(item?._id) && (
                 <div className="absolute w-full top-1">
                   <div className="relative w-full">
                     <button
-                      className="absolute left-1 bg-green-500 text-white rounded-sm px-1 text-xs"
+                      className="absolute left-1 text-green-500 rounded-sm  text-xs"
                       onClick={() => {
-                        setCartPId(item?._id);
+                        setCartPId(correspondingCartItem?._id);
                         setEditOpen(true);
-                        setProductDetails({
-                          productId: item?.productId[0]?._id,
-                          selectedItem: item?.productid[0]?.serviceName,
-                          serviceName: item?.productId[0]?.serviceName,
-                          productName: item?.productId[0]?.name,
-                          quantity: item?.productId[0]?.quantity,
-                        });
+                        setProductDetails(item);
                       }}
                     >
                       <MdEdit size={20} />
                     </button>
                     <button
-                      className="absolute right-1 bg-red-500 text-white rounded-sm px-1 text-xs"
+                      className="absolute right-1 text-red-500 rounded-sm text-xs"
                       onClick={() => deleteCartProduct(correspondingCartItem?._id)} 
                     >
                       <MdDelete size={20} />
@@ -208,25 +192,26 @@ const DryCleaning = ({ mode, filteredDcProducts }) => {
           );
         })}
       </div>
-      <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} productDetails={productDetails}/>
-      <AddedProductPreviewPopup
+      <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} productDetails={productDetails} isEditOrder={isEditOrder} 
+        orderDetails={orderDetails} setUpdatedOrderProductDetails={setUpdatedOrderProductDetails}/>
+      {/* <AddedProductPreviewPopup
         isOpen={isAddedPopupOpen}
         setIsOpen={setIsAddedPopupOpen}
         cartItems={cartItems}
         productDetails={productDetails}
-      />
+      /> */}
       <OrderEditPopup
-      productDetails={productDetails}
-      isOpen={editOpen}
-      setIsOpen={setEditOpen}
-      cartId={cartPId}
+        productDetails={productDetails}
+        isOpen={editOpen}
+        setIsOpen={setEditOpen}
+        cartId={cartPId}
       />
-      <SidebarPopup
+      {/* <SidebarPopup
         isOpen={isPreviewPopupOpen}
         setIsOpen={setIsPreviewPopupOpen}
         cartItems={cartItems}
         productDetails={productDetails}
-      />
+      /> */}
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useFetch from "../hooks/useFetch";
 import { useCart } from "../context/CartContenxt";
 import toast from "react-hot-toast";
+import mainImg from '../assets/F2.png'
 
 const 
 Login = () => {
@@ -55,12 +56,14 @@ Login = () => {
   }, [navigate]);
 
   return (
-    <div className="flex min-h-full justify-center px-6 py-40 lg:px-8 ">
-      <div className="sm:mx-auto sm:w-full h-full sm:max-w-sm mx-auto text-center">
-       <div className="w-full mx-auto flex flex-col items-center h-full justify-center">
-       <svg
-          width="145"
-          height="55"
+    <div className="h-screen w-screen grid grid-cols-2  justify-evenly">
+      <div className="h-full w-full">
+        <img src={mainImg} alt="" className="bg-cover h-full w-full" />
+      </div>
+      <div className="mx-32 my-28">
+      <svg
+          width="400"
+          height="80"
           viewBox="0 0 145 55"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -161,15 +164,14 @@ Login = () => {
             fillOpacity="0.78"
           />
         </svg>
-
-        <p className="mt-10 text-3xl">Best Dry Clean & Laundry Service</p>
-       </div>
-
-      </div>
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 mb-3 text-2xl/9 font-bold tracking-tight uppercase text-gray-700">
-          Sign in 
-        </h2>
+      <div className="mt-5">
+        <h2 className="text-3xl font-semibold ">Sign In</h2>
+        <p className="mt-3 text-gray-400">Welcome Back</p>
+        <p className=" text-gray-400">Want to login your branches? <span className="underline text-[#004D57] font-medium">Branch Login</span></p>
+        <div className="mt-1.5 bg-gray-200 text-[#004D57] font-medium w-72 text-center py-1 rounded-xl">
+          <p>(Admin or employee sign in)</p>
+        </div>
+        <div className="mt-5 w-[500px]">
         <form className="space-y-6" onSubmit={
           (e) => {
             e.preventDefault();
@@ -244,6 +246,8 @@ Login = () => {
             </button>
           </div>
         </form>
+        </div>
+      </div>
       </div>
     </div>
   );

@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { IoPrint, IoReceipt } from 'react-icons/io5';
 import { MdBorderColor, MdOutlinePayments } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
+import PaymentPopup from './PaymentsPopup';
 
 const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
   const navigate = useNavigate();
+  const [isPaymentPopupOpen, setIsPaymentPopupOpen] = useState(false);
   if (!isOpen || !order) return null;
 
   const handlePrintLabels = () => {
@@ -34,7 +37,7 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
               <h2 className="text-lg text-[#00414e] mb-4 ml-5">
                 Order Created successfully
               </h2>
-              <button onClick={() => setIsOpen(false)} className='mb-2 bg-gray-200 p-2  rounded-full px-3.5 text-gray-600 font-semibold'>X</button>
+              <button onClick={() => setIsOpen(false)} className='mb-2 bg-gray-200 p-2  rounded-lg px-3.5 text-gray-600 font-semibold'>X</button>
               </div>
               <p className='text-xl'>Order Id: {order?.orderId}</p>
               <div className="mt-4 p-4 flex items-center">
@@ -53,13 +56,15 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
                   <p>Print Receipt</p>
                 </button>
                 <button
+                onClick={() => navigate(`/edit-order/${order?._id}`)}
                   className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2 flex items-center justify-center gap-2"
                 >
                   <MdBorderColor />
                   Edit Order
                 </button>
                 <button
-                  className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2 flex items-center justify-center gap-2"
+                 onClick={() => setIsPaymentPopupOpen(true)}
+                 className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2 flex items-center justify-center gap-2"
                 >
                   <MdOutlinePayments />
                   Collect Payments
@@ -68,6 +73,7 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
             </div>
           </div>
         )}
+        <PaymentPopup setIsOpen={setIsPaymentPopupOpen} isOpen={isPaymentPopupOpen} order={order} />
       </div>
     </>
   );

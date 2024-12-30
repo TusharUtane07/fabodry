@@ -29,6 +29,7 @@ import Sidebar from './components/Sidebar.jsx';
 import PrintLabelsPage from './components/PrintLabels.jsx';
 import PrintReceipt from './components/PrintReceipt.jsx';
 import { SelectedAddonsProvider } from './context/AddonContext.jsx';
+import EditOrders from './pages/EditOrders.jsx';
 
 const AppLayout = () => {
   const location = useLocation();
@@ -44,12 +45,13 @@ const AppLayout = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/pos" element={<Home />} />
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Login />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/orders/all" element={<Orders />} />
         {/* <Route path="/b2c-orders/all" element={<B2Corders />} />
         <Route path="/b2c-orders" element={<B2Corders />} /> */}
         <Route path="/pickup-drop" element={<PickupAndDrop />} />
+        <Route path="/edit-order/:id" element={<EditOrders />} />
         <Route path="/print-labels" element={<PrintLabelsPage />} />
         <Route path="/print-receipt" element={<PrintReceipt />} />
         <Route path="/leads-and-enquires" element={<LeadsAndEnquiries />} />
