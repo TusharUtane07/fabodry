@@ -133,11 +133,11 @@ const PrintLabelsPage = ({orderData}) => {
               <strong> {label.customerName}</strong>
             </p>
             <p className='absolute top-2 right-2'>
-              <p className='bg-black p-1 rounded-full border border-gray-800'>{label.isPremium ? "PR" : "RG"}</p> 
+              <p className='bg-black text-white p-1 rounded-full border border-gray-800'>{label.isPremium ? "PR" : "RG"}</p> 
               {/* {label.orderId} */}
             </p>
             <p className='absolute top-2 left-2'>
-              <p className='bg-black p-1 rounded-full border border-gray-800'>{label.isExpress ? "EX": "RG"}</p> 
+              <p className='bg-black text-white p-1 rounded-full border border-gray-800'>{label.isExpress ? "EX": "RG"}</p> 
               {/* {label.orderId} */}
             </p>
             <p>

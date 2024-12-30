@@ -218,18 +218,24 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
     const mobileNumber = localStorage.getItem("mobileNumber");
     setIsSubmitting(true);
     try {
+      const address = selectedAddress 
+    ? selectedAddress 
+    : customerAddress && customerAddress[0]
+        ? `${customerAddress[0]?.label || ''} ${customerAddress[0]?.addressLine1 || ''}, ${customerAddress[0]?.city || ''}`.trim()
+        : "No Saved Address";
+
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/admin/orders/create`,
         {
           productIds: productName,
           serviceNames: serviceName,
           branchName: selectedOption,
-          totalCount: String(laundryCart?.length + cartProdcuts?.length) || "0",
+          totalCount: String(laundryCart?.length + cartProdcuts?.lenght) || "0",
           totalAmount: String(totalAmount) || "0",
           discountAmount: String(discountAmount) || "0",
           expressCharge: String(expressCharge) || "0",
           customerName: userName,
-          address: selectedAddress ? selectedAddress : "No Address Added",
+          address: address,
           customer: userId,
           customerNumber: mobileNumber,
           deliveryDate: selectedDate,

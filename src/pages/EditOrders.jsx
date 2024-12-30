@@ -372,7 +372,7 @@ const EditOrders = () => {
         style={{ scrollbarWidth: "none" }}
       >
         <div className="flex items-center justify-evenly pt-3 gap-3">
-          <div>Tagger- [{customersOrderProducts?.orderId}]</div>
+          <div>Tagger- [{customersOrderProducts?._id?.slice(0, 6)}]</div>
           <div className="flex items-center justify-center">
             <p>{customersOrderProducts?.customerName}</p>
             <p>-{customersOrderProducts?.address}</p>

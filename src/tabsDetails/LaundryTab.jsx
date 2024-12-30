@@ -22,9 +22,11 @@ const Laundry = ({
   const [selectedItem, setSelectedItem] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
-  // const [editOpen, setEditOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [cartPId, setCartPId] = useState(null);
   const [isInCart, setIsInCart] = useState(false);
+  const [editingGarment, setEditingGarment] = useState(null);
+
 
   const [serviceAddData, setServiceAddData] = useState({
     totalSelectedWeight: 0,
@@ -109,6 +111,11 @@ const Laundry = ({
       });
     }
   }, [laundryCart]);
+
+  const handleEdit = (garment) => {
+    setEditingGarment(garment);
+    setEditOpen(true);
+  };
 
   const [cartItemId, setCartItemId] = useState(null);
   const [existingCartItem, setExistingCartItem] = useState(null);
@@ -388,17 +395,19 @@ const Laundry = ({
   const addToCart = async () => {
     const mobileNumber = localStorage.getItem("mobileNumber");
     const userId = localStorage.getItem("userId");
+    
     if (mobileNumber === "" && userId == null) {
       toast.error("Please enter mobile number");
       return;
     }
+    
     if (!serviceAddData?.garments?.length && 
-      !servicePlAddData?.garments?.length && 
-      !serviceWfAddData?.garments?.length) {
+        !servicePlAddData?.garments?.length && 
+        !serviceWfAddData?.garments?.length) {
       toast.error("Add garments before confirming");
       return;
     }
-
+  
     const token = localStorage.getItem("authToken");
     
     // Get current service data based on selected service
@@ -407,39 +416,31 @@ const Laundry = ({
       : selectedItem === "Wash & Fold"
       ? serviceWfAddData
       : servicePlAddData;
-
-    // If updating, merge with existing data
-    const mergedData = {
-      weight: isInCart 
-        ? (existingCartItem?.weight || 0) + (currentServiceData?.serviceWeight || 0)
-        : currentServiceData?.serviceWeight || 0,
+  
+    // Create new data object without merging with existing data
+    const newData = {
+      weight: currentServiceData?.serviceWeight || 0,
       customerId: userId,
       serviceName: selectedItem,
-      productAddons: isInCart
-        ? [...new Set([...existingCartItem?.productAddons || [], ...currentServiceData?.addons || []])]
-        : currentServiceData?.addons || [],
+      productAddons: currentServiceData?.addons || [],
       isPremium: currentServiceData?.press === "Premium",
-      products: isInCart
-        ? [...(existingCartItem?.products || []), ...(currentServiceData?.garments || [])]
-        : currentServiceData?.garments || [],
-      pieceCount: isInCart
-        ? (existingCartItem?.pieceCount || 0) + (currentServiceData?.garments?.length || 0)
-        : currentServiceData?.garments?.length || 0,
+      products: currentServiceData?.garments || [],
+      pieceCount: currentServiceData?.garments?.length || 0,
       totalPrice: 12, // Replace with dynamic calculation if necessary
     };
-
+  
     if (isEditOrder) {
       setUpdatedLaundryProductDetails(prev => {
-        return [...(prev || []), mergedData];
+        return [...(prev || []), newData];
       });
       toast.success("Added successfully");
     } else {
       try {
         if (isInCart && cartItemId) {
-          // Update existing cart item with merged data
+          // Update only the current service data
           const response = await axios.put(
             `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartItemId}`,
-            mergedData,
+            newData,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -451,7 +452,7 @@ const Laundry = ({
           // Add new item to cart
           const response = await axios.post(
             `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/add`,
-            mergedData,
+            newData,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -470,35 +471,23 @@ const Laundry = ({
         console.error(error);
       }
     }
-    
+  
     // Reset current service data after successful addition
+    const resetData = {
+      totalSelectedWeight: 0,
+      selectedService: null,
+      addons: [],
+      garments: [],
+      serviceWeight: 0,
+      press: "Regular",
+    };
+  
     if (selectedItem === "Wash & Iron") {
-      setServiceAddData({
-        totalSelectedWeight: 0,
-        selectedService: null,
-        addons: [],
-        garments: [],
-        serviceWeight: 0,
-        press: "Regular",
-      });
+      setServiceAddData(resetData);
     } else if (selectedItem === "Wash & Fold") {
-      setServiceWfAddData({
-        totalSelectedWeight: 0,
-        selectedService: null,
-        addons: [],
-        garments: [],
-        serviceWeight: 0,
-        press: "Regular",
-      });
+      setServiceWfAddData(resetData);
     } else {
-      setServicePlAddData({
-        totalSelectedWeight: 0,
-        selectedService: null,
-        addons: [],
-        garments: [],
-        serviceWeight: 0,
-        press: "Regular",
-      });
+      setServicePlAddData(resetData);
     }
   };
 
@@ -794,7 +783,7 @@ const Laundry = ({
                             >
                               <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-1">
-                                  <button className="text-green-500">
+                                  <button onClick={() => handleEdit(item)} className="text-green-500">
                                     <MdModeEditOutline />
                                   </button>
                                   <button
@@ -1131,12 +1120,19 @@ const Laundry = ({
         mode={mode}
         productDetails={productDetails}
       /> */}
-      {/* <OrderEditPopup
-        productDetails={productDetails}
-        isOpen={editOpen}
-        setIsOpen={setEditOpen}
-        cartId={cartPId}
-      /> */}
+      <OrderEditPopup
+  isOpen={editOpen}
+  setIsOpen={setEditOpen}
+  productDetails={productDetails}
+  serviceAddData={serviceAddData}
+  setServiceAddData={setServiceAddData}
+  serviceWfAddData={serviceWfAddData}
+  setServiceWfAddData={setServiceWfAddData}
+  servicePlAddData={servicePlAddData}
+  setServicePlAddData={setServicePlAddData}
+  selectedItem={selectedItem}
+  editingGarment={editingGarment}  // Pass the garment being edited
+/>
     </>
   );
 };
