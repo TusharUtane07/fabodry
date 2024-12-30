@@ -224,7 +224,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
           productIds: productName,
           serviceNames: serviceName,
           branchName: selectedOption,
-          totalCount: String(laundryCart?.length) || "0",
+          totalCount: String(laundryCart?.length + cartProdcuts?.length) || "0",
           totalAmount: String(totalAmount) || "0",
           discountAmount: String(discountAmount) || "0",
           expressCharge: String(expressCharge) || "0",

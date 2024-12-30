@@ -39,7 +39,7 @@ const EditConfirmedOrderPopup = ({ isOpen, setIsOpen, order }) => {
               </h2>
               <button onClick={() => setIsOpen(false)} className='mb-2 bg-gray-200 p-2  rounded-lg px-3.5 text-gray-600 font-semibold'>X</button>
               </div>
-              <p className='text-xl'>Order Id: {order?.orderId}</p>
+              <p className='text-xl'>Order Id: {order?._id.slice(0, 6)}</p>
               <div className="mt-4 p-4 flex items-center">
                 <button
                   className="px-3 py-1 bg-[#004D57] rounded-md text-white text-sm mx-2 flex items-center justify-center gap-2"

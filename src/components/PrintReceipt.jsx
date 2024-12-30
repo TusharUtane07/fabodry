@@ -59,7 +59,7 @@ const PrintReceipt = () => {
         const quantity = parseInt(item.quantity, 10) || 0;
         return sum + (price * quantity);
       }, 0);
-      
+      console.log(order);
       setReceiptData({
         orderId: order._id,
         branchName: order?.branchName,
@@ -70,6 +70,7 @@ const PrintReceipt = () => {
         addressC: order?.address,
         express: Number(order?.expressCharge),
         items,
+        count: order?.totalCount,
         items2,
         totalAmount: order?.totalAmount,
         discountAmount: Number(order?.discountAmount),
@@ -185,6 +186,10 @@ const PrintReceipt = () => {
 
           {/* Total */}
           <div className="w-[300px] py-2 border-t border-gray-200 flex flex-col gap-2">
+            <div className="flex justify-between">
+              <span className="font-semibold">Total Count:</span>
+              <span>{receiptData?.count}</span>
+            </div>
             <div className="flex justify-between">
               <span className="font-semibold">Discount Amount:</span>
               <span>₹{receiptData?.discountAmount}</span>

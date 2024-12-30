@@ -116,7 +116,7 @@ const B2Borders = () => {
     }
     const exportData = orders?.map((order, index) => ({
       "Sr. No": index + 1,
-      "Order ID": order?.orderId,
+      "Order ID":  order?._id.slice(0, 6),
       "Order Date": formatDate(order?.updatedAt),
       "Delivery Date": formatDate(order?.deliveryDate),
       "Time Slot": order?.deliveryTimeSlot || "No Time Slot",

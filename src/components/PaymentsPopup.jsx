@@ -17,22 +17,22 @@ const PaymentPopup = ({ isOpen, setIsOpen, order }) => {
           <div className="bg-white p-6 rounded-lg text-gray-600 text-xs shadow-lg w-[50vw] flex flex-col items-start ">
             <div className=" flex justify-between w-full">
             <h2 className="text-lg font-medium">
-              Settle Order -<span>[{order?.orderId}]</span>
+              Settle Order -<span>[{order?._id.slice(0, 6)}]</span>
             </h2>
             <button onClick={() => setIsOpen(false)} className="text-gray-600 bg-gray-200 p-2 px-3 rounded-lg"> X </button>
             </div>
             <div className="flex justify-between my-5 text-sm items-center w-full">
               <div className="flex items-center gap-1">
                 <p className="font-medium">Invoice Amount: </p>
-                <span>INR 448</span>
+                <span>₹ {order?.totalAmount}</span>
               </div>
               <div className="flex items-center gap-1">
                 <p className="font-medium">Paid Amount: </p>
-                <span>INR 0</span>
+                <span>₹ 0</span>
               </div>
               <div className="flex items-center gap-1">
                 <p className="font-medium">Due Amount: </p>
-                <span>INR 448</span>
+                <span>₹ {order?.totalAmount}</span>
               </div>
             </div>
             <div className="text-start p-3 rounded-md border border-gray-300 w-full">
@@ -69,7 +69,7 @@ const PaymentPopup = ({ isOpen, setIsOpen, order }) => {
 </div>
 <div className="mt-6 flex items-center justify-center w-full gap-1">
     <p>New Due Amount: </p>
-    <span>INR 0</span>
+    <span>₹ 0</span>
 </div>
 <div className="mt-3 mx-auto">
     <button className="bg-[#00414E] px-3 w-40 py-1.5 rounded-md text-white">Settle</button>
