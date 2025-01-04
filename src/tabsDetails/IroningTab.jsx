@@ -8,48 +8,57 @@ import Popup from "../components/Popup";
 import toast from "react-hot-toast";
 import axios from "axios";
 import OrderEditPopup from "../components/OrderEditPopup";
+import { useUtility } from "../context/UtilityContext";
+import OtherServicesMultipleEdit from "../components/OtherServicesMultipleEdit";
 
-const Ironing = ({mode, filteredIroningProducts, orderDetails, isEditOrder, setUpdatedOrderProductDetails}) => {
-  const { refreshCart, cartProdcuts} = useCart();
-const [editOpen, setEditOpen] = useState(false);
-const [cartPId, setCartPId] = useState(null);
-  const [isAddedPopupOpen, setIsAddedPopupOpen] = useState(false);
+const Ironing = ({
+  mode,
+  filteredIroningProducts,
+  orderDetails,
+  isEditOrder,
+  setUpdatedOrderProductDetails,
+}) => {
+  const { refreshCart, cartProdcuts } = useCart();
+  const { validateMobileNumber } = useUtility();
+
+  const [editGarmentsOpen, setEditGarmentsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [cartPId, setCartPId] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(""); 
-  const [filteredProducts, setFilteredProducts] = useState(filteredIroningProducts);
-  const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState(
+    filteredIroningProducts
+  );
   const [productDetails, setProductDetails] = useState(null);
 
-
   const isProductInCart = (productId) => {
-    return cartProdcuts?.some((cartItem) => 
-      cartItem?.productId?._id === productId
+    return cartProdcuts?.some(
+      (cartItem) => cartItem?.productId?._id === productId
     );
   };
 
   const handleIncrement = (item) => {
     setProductDetails(item);
-    if(!cartProdcuts || cartProdcuts?.length === 0){
-      setIsPopupOpen(true);
-    }else{
-      setIsPopupOpen(true);
-      // setIsAddedPopupOpen(true)
-    }
+    if (!validateMobileNumber()) return;
+    setIsPopupOpen(true);
   };
 
   const deleteCartProduct = async (id) => {
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       console.log("Delete response: ", response);
-      toast.success("Deleted Successfully")
+      toast.success("Deleted Successfully");
       await refreshCart();
     } catch (error) {
-      toast.error("Error Deleting")
+      toast.error("Error Deleting");
       console.log("Error deleting product: ", error, error.message);
     }
   };
@@ -112,10 +121,10 @@ const [cartPId, setCartPId] = useState(null);
         </div>
         <div className="flex gap-1 items-center">
           <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
-            Total Count: {!cartProdcuts || cartProdcuts?.length === 0 
-  ? "0" 
-  : cartProdcuts?.length}
-
+            Total Count:{" "}
+            {!cartProdcuts || cartProdcuts?.length === 0
+              ? "0"
+              : cartProdcuts?.length}
           </div>
           {/* <button
             onClick={handlePreviewClick}
@@ -135,61 +144,85 @@ const [cartPId, setCartPId] = useState(null);
       <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4">
         {filteredProducts?.map((item, index) => {
           const correspondingCartItem = cartProdcuts?.find(
-            (cartItem) =>
-              cartItem?.productId?._id === item?._id 
+            (cartItem) => cartItem?.productId?._id === item?._id
           );
-          return(
-          <div
-            key={index}
-            className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center relative ${
-              isProductInCart(item._id) ? 'bg-[#006370] text-white' : ''
-            }`}
-          >
-            <img src={item.image} alt="" className="w-12 h-12 mx-auto " />
-            <p className="text-sm pt-2 capitalize">{item.name}</p>
-            <p className="text-xs py-1 ">₹ {getPrice(item?.price)}/pc
-            </p>
-            <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
-              <button
-                className={`rounded-sm px-1 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
-                onClick={() => handleIncrement(item)}
-              >
-                +
-              </button>
-              <span className=" px-3">{correspondingCartItem?.quantity || 0}</span>
-              <button
-                className={`rounded-sm px-1 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
-              >
-                -
-              </button>
+          return (
+            <div
+              key={index}
+              className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center relative ${
+                isProductInCart(item._id) ? "bg-[#006370] text-white" : ""
+              }`}
+            >
+              <img src={item.image} alt="" className="w-12 h-12 mx-auto " />
+              <p className="text-sm pt-2 capitalize">{item.name}</p>
+              <p className="text-xs py-1 ">₹ {getPrice(item?.price)}/pc</p>
+              <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
+                <button
+                  className={`rounded-sm px-1 ${
+                    mode === "B2B"
+                      ? "bg-[#66BDC5] text-white"
+                      : "bg-[#004d57] text-white"
+                  }`}
+                  onClick={() => handleIncrement(item)}
+                >
+                  +
+                </button>
+                <span className=" px-3">
+                  {correspondingCartItem?.quantity || 0}
+                </span>
+                <button
+                  className={`rounded-sm px-1 ${
+                    mode === "B2B"
+                      ? "bg-[#66BDC5] text-white"
+                      : "bg-[#004d57] text-white"
+                  }`}
+                >
+                  -
+                </button>
+              </div>
+              {isProductInCart(item?._id) && (
+                <div className="absolute w-full top-1">
+                  <div className="relative w-full">
+                    <button
+                      className="absolute left-1 text-green-500 rounded-sm text-xs"
+                      onClick={() => {
+                        const oneOrMore = cartProdcuts?.filter((litem) => litem?.serviceName === item.serviceName);
+                        setCartPId(correspondingCartItem?._id);
+
+                        console.log(oneOrMore.length, "item");
+                        if(oneOrMore && oneOrMore.length === 1){
+                          setEditOpen(true)
+                          setProductDetails(item);
+                        }else {
+                          setEditGarmentsOpen(true)
+                        }
+                      }}
+                    >
+                      <MdEdit size={20} />
+                    </button>
+                    <button
+                      className="absolute right-1 text-red-500 rounded-sm text-xs"
+                      onClick={() =>
+                        deleteCartProduct(correspondingCartItem?._id)
+                      }
+                    >
+                      <MdDelete size={20} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            {isProductInCart(item?._id) && (
-                            <div className="absolute w-full top-1">
-                              <div className="relative w-full">
-                                <button
-                                  className="absolute left-1 text-green-500 rounded-sm text-xs"
-                                  onClick={() => {
-                                    setCartPId(correspondingCartItem?._id);
-                                    setEditOpen(true);
-                                    setProductDetails(item);
-                                  }}
-                                >
-                                  <MdEdit size={20} />
-                                </button>
-                                <button
-                                  className="absolute right-1 text-red-500 rounded-sm text-xs"
-                                  onClick={() => deleteCartProduct(correspondingCartItem?._id)} 
-                                >
-                                  <MdDelete size={20} />
-                                </button>
-                              </div>
-                            </div>
-                          )}
-          </div>
-        )})}
+          );
+        })}
       </div>
-      <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} productDetails={productDetails} isEditOrder={isEditOrder} 
-        orderDetails={orderDetails} setUpdatedOrderProductDetails={setUpdatedOrderProductDetails}/>
+      <Popup
+        isOpen={isPopupOpen}
+        setIsOpen={setIsPopupOpen}
+        productDetails={productDetails}
+        isEditOrder={isEditOrder}
+        orderDetails={orderDetails}
+        setUpdatedOrderProductDetails={setUpdatedOrderProductDetails}
+      />
       {/* <AddedProductPreviewPopup
         isOpen={isAddedPopupOpen}
         setIsOpen={setIsAddedPopupOpen}
@@ -202,6 +235,9 @@ const [cartPId, setCartPId] = useState(null);
         setIsOpen={setEditOpen}
         cartId={cartPId}
       />
+
+<OtherServicesMultipleEdit serviceName={"Ironing"} isOpen={editGarmentsOpen} setIsOpen={setEditGarmentsOpen} mode={mode}/>
+
       {/* <SidebarPopup 
         isOpen={isPreviewPopupOpen} 
         setIsOpen={setIsPreviewPopupOpen} 

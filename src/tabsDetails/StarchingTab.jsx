@@ -9,10 +9,15 @@ import { MdDelete, MdEdit } from "react-icons/md";
 import axios from "axios";
 import toast from "react-hot-toast";
 import OrderEditPopup from "../components/OrderEditPopup";
+import { useUtility } from "../context/UtilityContext";
+import OtherServicesMultipleEdit from "../components/OtherServicesMultipleEdit";
 
 const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrder, setUpdatedOrderProductDetails }) => {
   const { cartItems, refreshCart, cartProdcuts } = useCart();
+  const {validateMobileNumber} = useUtility();
+
   const [editOpen, setEditOpen] = useState(false);
+  const [editGarmentsOpen, setEditGarmentsOpen] = useState(false);
   const [cartPId, setCartPId] = useState(null);
 
   const [isAddedPopupOpen, setIsAddedPopupOpen] = useState(false);
@@ -51,12 +56,8 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
 
   const handleIncrement = (index, item) => {
     setProductDetails(item);
-    if (!cartProdcuts || cartProdcuts?.length === 0) {
-      setIsPopupOpen(true);
-    } else {
-      setIsPopupOpen(true);
-      // setIsAddedPopupOpen(true)
-    }
+    if(!validateMobileNumber()) return;
+    setIsPopupOpen(true);
   };
 
   const handleSearch = (event) => {
@@ -179,9 +180,16 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
                     <button
                       className="absolute left-1 text-green-500 rounded-sm text-xs"
                       onClick={() => {
+                        const oneOrMore = cartProdcuts?.filter((litem) => litem?.serviceName === item.serviceName);
                         setCartPId(correspondingCartItem?._id);
-                        setEditOpen(true);
-                        setProductDetails(item);
+
+                        console.log(oneOrMore.length, "item");
+                        if(oneOrMore && oneOrMore.length === 1){
+                          setEditOpen(true)
+                          setProductDetails(item);
+                        }else {
+                          setEditGarmentsOpen(true)
+                        }
                       }}
                     >
                       <MdEdit size={20} />
@@ -227,7 +235,9 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
         setIsOpen={setIsPreviewPopupOpen}
         cartItems={cartItems}
         productDetails={productDetails}
-      /> */}
+      /> */}      
+      <OtherServicesMultipleEdit serviceName={"Starching"} isOpen={editGarmentsOpen} setIsOpen={setEditGarmentsOpen} mode={mode}/>
+
     </div>
   );
 };

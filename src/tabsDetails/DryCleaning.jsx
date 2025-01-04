@@ -1,59 +1,61 @@
 import { useState } from "react";
 import AlphabetsComponent from "../components/alphabetsComponent";
-import shirt from "../assets/shirt.png";
-import SidebarPopup from "../components/SidebarPopup";
-import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
 import axios from "axios";
-import { useCart } from "../context/CartContenxt";
 import { MdDelete, MdEdit } from "react-icons/md";
+import { useCart } from "../context/CartContenxt";
+import { useUtility } from "../context/UtilityContext";
 import Popup from "../components/Popup";
 import toast from "react-hot-toast";
 import OrderEditPopup from "../components/OrderEditPopup";
+import OtherServicesMultipleEdit from "../components/OtherServicesMultipleEdit";
 
-const DryCleaning = ({ mode, filteredDcProducts, orderDetails, isEditOrder, setUpdatedOrderProductDetails }) => {
-  const { refreshCart, cartItems, cartProdcuts } = useCart();
+const DryCleaning = ({
+  mode,
+  filteredDcProducts,
+  orderDetails,
+  isEditOrder,
+  setUpdatedOrderProductDetails,
+}) => {
+  const { refreshCart, cartProdcuts } = useCart();
+  const { validateMobileNumber } = useUtility();
+
   const [editOpen, setEditOpen] = useState(false);
   const [cartPId, setCartPId] = useState(null);
 
-
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isAddedPopupOpen, setIsAddedPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState(filteredDcProducts);
-  const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
+  const [editGarmentsOpen, setEditGarmentsOpen] = useState(false);
 
   const isProductInCart = (productId) => {
-    return cartProdcuts?.some((cartItem) =>
-      cartItem?.productId?._id === productId
+    return cartProdcuts?.some(
+      (cartItem) => cartItem?.productId?._id === productId
     );
   };
 
-  const handleIncrement = (
-    item
-  ) => {
+  const handleIncrement = (item) => {
     setProductDetails(item);
-    if(!cartProdcuts || cartProdcuts?.length === 0){
-      setIsPopupOpen(true);
-    }else{
-      setIsPopupOpen(true);
-      // setIsAddedPopupOpen(true)
-    }
+    if(!validateMobileNumber()) return;
+    setIsPopupOpen(true);
   };
 
   const deleteCartProduct = async (id) => {
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       console.log("Delete response: ", response);
-      toast.success("Deleted Successfully")
+      toast.success("Deleted Successfully");
       await refreshCart();
     } catch (error) {
-      toast.error("Error Deleting")
+      toast.error("Error Deleting");
       console.log("Error deleting product: ", error, error.message);
     }
   };
@@ -75,10 +77,6 @@ const DryCleaning = ({ mode, filteredDcProducts, orderDetails, isEditOrder, setU
       product.name.toLowerCase().startsWith(query)
     );
     setFilteredProducts(filtered);
-  };
-
-  const handlePreviewClick = () => {
-    setIsPreviewPopupOpen(true);
   };
 
   const getPrice = (priceObj) => {
@@ -117,16 +115,10 @@ const DryCleaning = ({ mode, filteredDcProducts, orderDetails, isEditOrder, setU
         <div className="flex gap-1 items-center">
           <div className="text-xs rounded-lg px-8 text-gray-500">
             Total Count:{" "}
-            {!cartProdcuts || cartProdcuts?.length === 0 ? "0" : cartProdcuts?.length}
+            {!cartProdcuts || cartProdcuts?.length === 0
+              ? "0"
+              : cartProdcuts?.length}
           </div>
-          {/* <button
-            onClick={handlePreviewClick}
-            className={`text-xs rounded-md px-4 py-1.5 ${
-              mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"
-            }`}
-          >
-            Preview
-          </button> */}
         </div>
       </div>
       <div className="mt-3">
@@ -135,8 +127,7 @@ const DryCleaning = ({ mode, filteredDcProducts, orderDetails, isEditOrder, setU
       <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4">
         {filteredProducts?.map((item, index) => {
           const correspondingCartItem = cartProdcuts?.find(
-            (cartItem) =>
-              cartItem.productId?._id === item?._id 
+            (cartItem) => cartItem.productId?._id === item?._id
           );
           return (
             <div
@@ -150,18 +141,24 @@ const DryCleaning = ({ mode, filteredDcProducts, orderDetails, isEditOrder, setU
               <p className="text-xs py-1">₹ {getPrice(item?.price)}/-</p>
               <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
                 <button
-                  className={`rounded-sm px-1 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
-                  onClick={() =>
-                    handleIncrement(
-                      item
-                    )
-                  }
+                  className={`rounded-sm px-1 ${
+                    mode === "B2B"
+                      ? "bg-[#66BDC5] text-white"
+                      : "bg-[#004d57] text-white"
+                  }`}
+                  onClick={() => handleIncrement(item)}
                 >
                   +
                 </button>
-                <span className=" px-3">{correspondingCartItem?.quantity || 0}</span>
+                <span className=" px-3">
+                  {correspondingCartItem?.quantity || 0}
+                </span>
                 <button
-                  className={`rounded-sm px-1 ${mode === "B2B" ? "bg-[#66BDC5] text-white" : "bg-[#004d57] text-white"}`}
+                  className={`rounded-sm px-1 ${
+                    mode === "B2B"
+                      ? "bg-[#66BDC5] text-white"
+                      : "bg-[#004d57] text-white"
+                  }`}
                 >
                   -
                 </button>
@@ -172,16 +169,25 @@ const DryCleaning = ({ mode, filteredDcProducts, orderDetails, isEditOrder, setU
                     <button
                       className="absolute left-1 text-green-500 rounded-sm  text-xs"
                       onClick={() => {
+                        const oneOrMore = cartProdcuts?.filter((litem) => litem?.serviceName === item.serviceName);
                         setCartPId(correspondingCartItem?._id);
-                        setEditOpen(true);
-                        setProductDetails(item);
+
+                        console.log(oneOrMore.length, "item");
+                        if(oneOrMore && oneOrMore.length === 1){
+                          setEditOpen(true)
+                          setProductDetails(item);
+                        }else {
+                          setEditGarmentsOpen(true)
+                        }
                       }}
                     >
                       <MdEdit size={20} />
                     </button>
                     <button
                       className="absolute right-1 text-red-500 rounded-sm text-xs"
-                      onClick={() => deleteCartProduct(correspondingCartItem?._id)} 
+                      onClick={() =>
+                        deleteCartProduct(correspondingCartItem?._id)
+                      }
                     >
                       <MdDelete size={20} />
                     </button>
@@ -192,26 +198,21 @@ const DryCleaning = ({ mode, filteredDcProducts, orderDetails, isEditOrder, setU
           );
         })}
       </div>
-      <Popup isOpen={isPopupOpen} setIsOpen={setIsPopupOpen} productDetails={productDetails} isEditOrder={isEditOrder} 
-        orderDetails={orderDetails} setUpdatedOrderProductDetails={setUpdatedOrderProductDetails}/>
-      {/* <AddedProductPreviewPopup
-        isOpen={isAddedPopupOpen}
-        setIsOpen={setIsAddedPopupOpen}
-        cartItems={cartItems}
+      <Popup
+        isOpen={isPopupOpen}
+        setIsOpen={setIsPopupOpen}
         productDetails={productDetails}
-      /> */}
+        isEditOrder={isEditOrder}
+        orderDetails={orderDetails}
+        setUpdatedOrderProductDetails={setUpdatedOrderProductDetails}
+      />
       <OrderEditPopup
         productDetails={productDetails}
         isOpen={editOpen}
         setIsOpen={setEditOpen}
         cartId={cartPId}
       />
-      {/* <SidebarPopup
-        isOpen={isPreviewPopupOpen}
-        setIsOpen={setIsPreviewPopupOpen}
-        cartItems={cartItems}
-        productDetails={productDetails}
-      /> */}
+      <OtherServicesMultipleEdit  serviceName={"dc"} isOpen={editGarmentsOpen} setIsOpen={setEditGarmentsOpen} mode={mode}/>
     </div>
   );
 };

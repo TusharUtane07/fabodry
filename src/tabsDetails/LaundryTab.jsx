@@ -2,13 +2,19 @@ import { useEffect, useState } from "react";
 import AlphabetsComponent from "../components/alphabetsComponent";
 import productGif from "../assets/product.gif";
 import { useCart } from "../context/CartContenxt";
-import { MdModeEditOutline, MdVerified } from "react-icons/md";
+import { useUtility } from "../context/UtilityContext";
+import {
+  MdDelete,
+  MdEdit,
+  MdModeEditOutline,
+  MdVerified,
+} from "react-icons/md";
 import { IoChevronBackCircle } from "react-icons/io5";
 import axios from "axios";
 import toast from "react-hot-toast";
-import OrderEditPopup from "../components/OrderEditPopup";
 import { RxCross2 } from "react-icons/rx";
 import LaundryAddDataPopup from "../components/LaundryAddDataPopup";
+import LaundryEditDataPopup from "../components/LaundryEditDataPopup";
 
 const Laundry = ({
   mode,
@@ -16,129 +22,16 @@ const Laundry = ({
   orderDetails,
   isEditOrder,
   setUpdatedLaundryProductDetails,
+  setHiddenElement,
 }) => {
   const { refreshCart, laundryCart } = useCart();
-  const [isAddedPopupOpen, setIsAddedPopupOpen] = useState(false);
+  const { validateMobileNumber } = useUtility();
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isPreviewPopupOpen, setIsPreviewPopupOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [cartPId, setCartPId] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isInCart, setIsInCart] = useState(false);
-  const [editingGarment, setEditingGarment] = useState(null);
-
-
-  const [serviceAddData, setServiceAddData] = useState({
-    totalSelectedWeight: 0,
-    selectedService: null,
-    addons: [],
-    garments: [],
-    serviceWeight: 0,
-    press: "Regular",
-  });
-  const [serviceWfAddData, setServiceWfAddData] = useState({
-    totalSelectedWeight: 0,
-    selectedService: null,
-    addons: [],
-    garments: [],
-    serviceWeight: 0,
-    press: "Regular",
-  });
-  const [servicePlAddData, setServicePlAddData] = useState({
-    totalSelectedWeight: 0,
-    selectedService: null,
-    addons: [],
-    garments: [],
-    serviceWeight: 0,
-    press: "Regular",
-  });
-
-  useEffect(() => {
-    if (laundryCart && laundryCart?.length > 0) {
-      const totalWeight = laundryCart?.reduce(
-        (sum, item) => sum + (item?.weight || 0),
-        0
-      );
-
-      // Process each service separately
-      laundryCart.forEach((cartItem) => {
-        const serviceName = cartItem.serviceName;
-
-        // Get addons specific to this service item
-        const serviceAddons = cartItem.productAddons || [];
-
-        // Get garments specific to this service item
-        const serviceGarments =
-          cartItem.products?.map((product) => ({
-            productDetails: product.productDetails,
-            quantity: product.quantity,
-            garmentType: product.garmentType,
-            additionalServices: product.additionalServices,
-            requirements: product.requirements,
-            comments: product.comments,
-            onHangerPrice: product.onHangerPrice,
-            serviceName: cartItem.serviceName,
-            isPremium: cartItem.isPremium,
-          })) || [];
-
-        // Calculate service-specific weight
-        const serviceWeight = cartItem.weight || 0;
-
-        // Create service-specific data object
-        const serviceData = {
-          totalSelectedWeight: serviceWeight,
-          selectedService: serviceName,
-          addons: serviceAddons,
-          garments: serviceGarments,
-          serviceWeight: serviceWeight,
-          press: cartItem?.isPremium === true ? "Premium" : "Regular",
-        };
-
-        // Set data based on service name
-        switch (serviceName) {
-          case "Wash & Fold":
-            setServiceWfAddData(serviceData);
-            break;
-          case "Wash & Iron":
-            setServiceAddData(serviceData);
-            break;
-          case "Premium Laundry":
-            setServicePlAddData(serviceData);
-            break;
-          default:
-            break;
-        }
-      });
-    }
-  }, [laundryCart]);
-
-  const handleEdit = (garment) => {
-    setEditingGarment(garment);
-    setEditOpen(true);
-  };
-
-  const [cartItemId, setCartItemId] = useState(null);
-  const [existingCartItem, setExistingCartItem] = useState(null);
-  
-  // Add useEffect to check if selected service is in cart and store existing data
-  useEffect(() => {
-    if (selectedItem && laundryCart?.length > 0) {
-      const cartItem = laundryCart.find(item => item.serviceName === selectedItem);
-      if (cartItem) {
-        setIsInCart(true);
-        setCartItemId(cartItem._id);
-        setExistingCartItem(cartItem);
-      } else {
-        setIsInCart(false);
-        setCartItemId(null);
-        setExistingCartItem(null);
-      }
-    } else {
-      setIsInCart(false);
-      setCartItemId(null);
-      setExistingCartItem(null);
-    }
-  }, [selectedItem, laundryCart]);
+  const [cartPId, setCartPId] = useState(null);
 
   const addons = [
     {
@@ -169,24 +62,126 @@ const Laundry = ({
 
   const laundryServices = [
     {
-      name: "Wash & Iron",
-      price: 12,
-      description: "Updated description for Laundry Services",
-      image: productGif,
-    },
-    {
       name: "Wash & Fold",
       price: 12,
       description: "Updated description for Laundry Services",
       image: productGif,
     },
     {
+      name: "Wash & Iron",
+      price: 20,
+      description: "Updated description for Laundry Services",
+      image: productGif,
+    },
+    {
       name: "Premium Laundry",
-      price: 12,
+      price: 40,
       description: "Updated description for Laundry Services",
       image: productGif,
     },
   ];
+
+  const [serviceAddData, setServiceAddData] = useState({
+    totalSelectedWeight: 0,
+    selectedService: null,
+    addons: [],
+    garments: [],
+    serviceWeight: 0,
+    price: laundryServices[1].price,
+  });
+  const [serviceWfAddData, setServiceWfAddData] = useState({
+    totalSelectedWeight: 0,
+    selectedService: null,
+    addons: [],
+    garments: [],
+    serviceWeight: 0,
+    price: laundryServices[0].price,
+  });
+  const [servicePlAddData, setServicePlAddData] = useState({
+    totalSelectedWeight: 0,
+    selectedService: null,
+    addons: [],
+    garments: [],
+    serviceWeight: 0,
+    price: laundryServices[2].price,
+  });
+
+  useEffect(() => {
+    if (laundryCart && laundryCart?.length > 0) {
+      laundryCart?.forEach((cartItem) => {
+        const serviceName = cartItem?.serviceName;
+        const serviceAddons = cartItem?.productAddons || [];
+        const serviceGarments = [];
+
+        laundryCart.forEach((item) => {
+          if (item.serviceName === serviceName) {
+            item.products?.forEach((product) => {
+              serviceGarments.push({
+                cartId: item?._id,
+                productDetails: product.productDetails,
+                quantity: product.quantity,
+                garmentType: product.garmentType?.label,
+                additionalServices: product.additionalServices || [],
+                requirements: product.requirements || null,
+                comments: product.comments || [],
+                serviceName: serviceName,
+              });
+            });
+          }
+        });
+
+        if (cartItem.serviceName === serviceName) {
+          const serviceData = {
+            totalSelectedWeight: cartItem.weight || 0,
+            selectedService: serviceName,
+            addons: serviceAddons,
+            garments: serviceGarments,
+            serviceWeight: cartItem.weight || 0,
+          };
+
+          
+          switch (serviceName) {
+            case "Wash & Fold":
+              setServiceWfAddData(serviceData);
+              break;
+            case "Wash & Iron":
+              setServiceAddData(serviceData);
+              break;
+            case "Premium Laundry":
+              setServicePlAddData(serviceData);
+              break;
+            default:
+              break;
+          }
+        }
+      });
+    }
+  }, [laundryCart, selectedItem]);
+
+
+  const [cartItemId, setCartItemId] = useState(null);
+  const [existingCartItem, setExistingCartItem] = useState(null);
+
+  useEffect(() => {
+    if (selectedItem && laundryCart?.length > 0) {
+      const cartItem = laundryCart.find(
+        (item) => item?.serviceName === selectedItem 
+      );
+      if (cartItem) {
+        setIsInCart(true);
+        setCartItemId(cartItem._id);
+        setExistingCartItem(cartItem);
+      } else {
+        setIsInCart(false);
+        setCartItemId(null);
+        setExistingCartItem(null);
+      }
+    } else {
+      setIsInCart(false);
+      setCartItemId(null);
+      setExistingCartItem(null);
+    }
+  }, [selectedItem, laundryCart]);
 
   const [selectAddonPopup, setSelectedAddonPopup] = useState(false);
   const [weights, setWeights] = useState(() =>
@@ -214,7 +209,6 @@ const Laundry = ({
       setIsPopupOpen(true);
     } else {
       setIsPopupOpen(true);
-      // setIsAddedPopupOpen(true);
     }
   };
 
@@ -222,14 +216,13 @@ const Laundry = ({
     const token = localStorage.getItem("authToken");
     try {
       const response = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${id}`,
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/delete/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log("Delete response: ", response);
       toast.success("Deleted Successfully");
       await refreshCart();
     } catch (error) {
@@ -261,13 +254,20 @@ const Laundry = ({
     }
   };
 
-  // const handlePreviewClick = () => {
-  //   setIsPreviewPopupOpen(true);
-  // };
-
   const handleAddProductClick = (index, itemName) => {
+    if (!validateMobileNumber()) return;
+
     setClickedItems((prev) => ({ ...prev, [index]: true }));
-    if (weights[index] > 0) {
+
+    let serviceWeight = 0;
+    if (index === 0) {
+      serviceWeight = serviceWfAddData?.serviceWeight || 0;
+    } else if (index === 1) {
+      serviceWeight = serviceAddData?.serviceWeight || 0;
+    } else if (index === 2) {
+      serviceWeight = servicePlAddData?.serviceWeight || 0;
+    }
+    if (serviceWeight > 0) {
       handleServiceSelection(itemName);
     }
   };
@@ -277,29 +277,33 @@ const Laundry = ({
     setWeights((prev) => ({ ...prev, [index]: newValue }));
     setClickedItems((prev) => ({ ...prev, [index]: false }));
 
-    if (index === 0) {
+    if (index === 1) {
       setServiceAddData((prev) => ({
         ...prev,
-        // totalSelectedWeight: newValue,
         serviceWeight: newValue,
       }));
-    } else if (index === 1) {
+    } else if (index === 0) {
       setServiceWfAddData((prevData) => ({
         ...prevData,
-        // totalSelectedWeight: newValue,
         serviceWeight: newValue,
       }));
     } else {
       setServicePlAddData((prevData) => ({
         ...prevData,
-        // totalSelectedWeight: newValue,
         serviceWeight: newValue,
       }));
     }
   };
 
+  useEffect(() => {
+    if (selectedItem === null) {
+      setHiddenElement(false);
+    }
+  }, [selectedItem]);
+
   const handleServiceSelection = (itemName) => {
     setSelectedItem(itemName);
+    setHiddenElement(true);
     if (selectedItem === "Wash & Iron") {
       setServiceAddData((prev) => ({
         ...prev,
@@ -367,79 +371,74 @@ const Laundry = ({
       }));
     }
   };
-  const togglePress = () => {
-    if (selectedItem === "Wash & Iron") {
-      setServiceAddData((prev) => ({
-        ...prev,
-        press: prev?.press === "Regular" ? "Premium" : "Regular",
-      }));
-    } else if (selectedItem === "Wash & Fold") {
-      setServiceWfAddData((prev) => ({
-        ...prev,
-        press: prev?.press === "Regular" ? "Premium" : "Regular",
-      }));
-    } else {
-      setServicePlAddData((prev) => ({
-        ...prev,
-        press: prev?.press === "Regular" ? "Premium" : "Regular",
-      }));
-    }
-  };
-  // const handleRemove = (id) => {
-  //   const updatedGarments = serviceAddData.garments.filter(
-  //     (garment) => garment.productDetails._id !== id
-  //   );
-  //   setServiceAddData((prev) => ({ ...prev, garments: updatedGarments }));
-  // };
 
   const addToCart = async () => {
     const mobileNumber = localStorage.getItem("mobileNumber");
     const userId = localStorage.getItem("userId");
-    
+
     if (mobileNumber === "" && userId == null) {
       toast.error("Please enter mobile number");
       return;
     }
-    
-    if (!serviceAddData?.garments?.length && 
-        !servicePlAddData?.garments?.length && 
-        !serviceWfAddData?.garments?.length) {
+
+    if (selectedItem === "Wash & Iron" && !serviceAddData?.garments?.length) {
+      toast.error("Add garments before confirming");
+      return;
+    } else if (
+      selectedItem === "Premium Laundry" &&
+      !servicePlAddData?.garments?.length
+    ) {
+      toast.error("Add garments before confirming");
+      return;
+    } else if (
+      selectedItem === "Wash & Fold" &&
+      !serviceWfAddData?.garments?.length
+    ) {
       toast.error("Add garments before confirming");
       return;
     }
-  
+
     const token = localStorage.getItem("authToken");
-    
-    // Get current service data based on selected service
-    const currentServiceData = selectedItem === "Wash & Iron"
-      ? serviceAddData
-      : selectedItem === "Wash & Fold"
-      ? serviceWfAddData
-      : servicePlAddData;
-  
-    // Create new data object without merging with existing data
+
+    const currentServiceData =
+      selectedItem === "Wash & Iron"
+        ? serviceAddData
+        : selectedItem === "Wash & Fold"
+        ? serviceWfAddData
+        : servicePlAddData;
+
+    const price =
+      selectedItem === "Wash & Iron"
+        ? serviceAddData?.price || 20
+        : selectedItem === "Wash & Fold"
+        ? serviceWfAddData?.price || 12
+        : selectedItem === "Premium Laundry"
+        ? servicePlAddData?.price || 40
+        : 0;
+
     const newData = {
+      isInCart: true,
       weight: currentServiceData?.serviceWeight || 0,
       customerId: userId,
       serviceName: selectedItem,
       productAddons: currentServiceData?.addons || [],
-      isPremium: currentServiceData?.press === "Premium",
       products: currentServiceData?.garments || [],
       pieceCount: currentServiceData?.garments?.length || 0,
-      totalPrice: 12, // Replace with dynamic calculation if necessary
+      totalPrice: price,
     };
-  
+
     if (isEditOrder) {
-      setUpdatedLaundryProductDetails(prev => {
+      setUpdatedLaundryProductDetails((prev) => {
         return [...(prev || []), newData];
       });
       toast.success("Added successfully");
     } else {
       try {
         if (isInCart && cartItemId) {
-          // Update only the current service data
           const response = await axios.put(
-            `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartItemId}`,
+            `${
+              import.meta.env.VITE_BACKEND_URL
+            }api/v1/Laundrycarts/update/${cartItemId}`,
             newData,
             {
               headers: {
@@ -449,7 +448,6 @@ const Laundry = ({
           );
           toast.success("Cart updated successfully");
         } else {
-          // Add new item to cart
           const response = await axios.post(
             `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/add`,
             newData,
@@ -469,46 +467,9 @@ const Laundry = ({
           toast.error("Internal server error");
         }
         console.error(error);
+      } finally {
+        setSelectedItem(null);
       }
-    }
-  
-    // Reset current service data after successful addition
-    const resetData = {
-      totalSelectedWeight: 0,
-      selectedService: null,
-      addons: [],
-      garments: [],
-      serviceWeight: 0,
-      press: "Regular",
-    };
-  
-    if (selectedItem === "Wash & Iron") {
-      setServiceAddData(resetData);
-    } else if (selectedItem === "Wash & Fold") {
-      setServiceWfAddData(resetData);
-    } else {
-      setServicePlAddData(resetData);
-    }
-  };
-
-  const handleRemove = (id, item) => {
-    console.log(id, item);
-
-    if (selectedItem === "Wash & Iron") {
-      const updatedGarments = serviceAddData.garments.filter(
-        (garment) => garment.productDetails._id !== id
-      );
-      setServiceAddData((prev) => ({ ...prev, garments: updatedGarments }));
-    } else if (selectedItem === "Wash & Fold") {
-      const updatedGarments = serviceWfAddData.garments.filter(
-        (garment) => garment.productDetails._id !== id
-      );
-      setServiceWfAddData((prev) => ({ ...prev, garments: updatedGarments }));
-    } else if (selectedItem === "Premium Laundry") {
-      const updatedGarments = servicePlAddData.garments.filter(
-        (garment) => garment.productDetails._id !== id
-      );
-      setServicePlAddData((prev) => ({ ...prev, garments: updatedGarments }));
     }
   };
 
@@ -520,8 +481,10 @@ const Laundry = ({
             <div className="grid grid-cols-3 w-full items-center gap-3 h-full">
               {laundryServices?.map((item, index) => {
                 const isSelected = laundryCart?.some(
-                  (cartItem) => cartItem.serviceName === item.name
+                  (cartItem) =>
+                    cartItem.serviceName === item.name && cartItem?.isInCart
                 );
+
                 return (
                   <div
                     key={index}
@@ -580,28 +543,47 @@ const Laundry = ({
                     >
                       ₹ {mode === "B2B" ? item.price * 2 : item?.price}/Kg
                     </p>
-                    <div className="flex items-center w-full justify-center mt-3 gap-3">
-                      <label
-                        htmlFor={`totalWeight-${index}`}
-                        className={`text-[10px] ${
-                          isSelected
-                            ? "text-white"
-                            : mode === "B2B"
-                            ? "text-gray-400 group-hover:text-white"
-                            : "text-gray-500 group-hover:text-white"
-                        }`}
-                      >
-                        Total Weight
-                      </label>
-                      <input
-                        id={`totalWeight-${index}`}
-                        type="number"
-                        value={weights[index]}
-                        onChange={(e) => {
-                          const value = Math.max(0, Number(e.target.value));
-                          handleWeightChange(index, value);
-                        }}
-                        className={`border border-gray-300 py-0.5 text-[12px] outline-none pl-3 lg:w-20 xl:w-14 rounded-md pr-2
+                    {isSelected ? (
+                      <div className="text-sm">
+                        Added Weight:{" "}
+                        {index === 1
+                          ? serviceAddData?.serviceWeight || 0
+                          : index === 0
+                          ? serviceWfAddData?.serviceWeight || 0
+                          : index === 2
+                          ? servicePlAddData?.serviceWeight || 0
+                          : 0}
+                      </div>
+                    ) : (
+                      <div className="flex items-center w-full justify-center mt-3 gap-3">
+                        <label
+                          htmlFor={`totalWeight-${index}`}
+                          className={`text-[10px] ${
+                            isSelected
+                              ? "text-white"
+                              : mode === "B2B"
+                              ? "text-gray-400 group-hover:text-white"
+                              : "text-gray-500 group-hover:text-white"
+                          }`}
+                        >
+                          Total Weight
+                        </label>
+                        <input
+                          id={`totalWeight-${index}`}
+                          type="number"
+                          value={
+                            index === 1
+                              ? serviceAddData?.serviceWeight || 0
+                              : index === 0
+                              ? serviceWfAddData?.serviceWeight || 0
+                              : index === 2
+                              ? servicePlAddData?.serviceWeight || 0
+                              : 0
+                          }
+                          onChange={(e) =>
+                            handleWeightChange(index, e.target.value)
+                          }
+                          className={`border border-gray-300 py-0.5 text-[12px] outline-none pl-3 lg:w-20 xl:w-14 rounded-md pr-2
                     ${
                       isSelected
                         ? "bg-[#004d57] text-white"
@@ -609,13 +591,17 @@ const Laundry = ({
                         ? "group-hover:bg-[#66BDC5] group-hover:text-white"
                         : "group-hover:bg-[#004D57] group-hover:text-white"
                     }`}
-                      />
-                    </div>
-                    {clickedItems[index] && weights[index] === 0 && (
-                      <p className="text-red-500/90 text-xs py-2 mt-1">
-                        Weight must be greater than 0
-                      </p>
+                        />
+                      </div>
                     )}
+                    {isSelected
+                      ? null
+                      : clickedItems[index] &&
+                        weights[index] === 0 && (
+                          <p className="text-red-500 font-medium group-hover:text-white text-xs py-2 mt-1">
+                            Increase Weight To Add
+                          </p>
+                        )}
                     <button
                       onClick={() => handleAddProductClick(index, item.name)}
                       className={`text-xs w-full gap-2 mt-2 py-2 rounded-lg ${
@@ -654,39 +640,6 @@ const Laundry = ({
                     </button>
                     <div>
                       <p>{selectedItem}</p>
-                    </div>
-                  </div>
-                  <div
-                    className={`flex mt-1 items-center justify-between w-72 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
-                    onClick={togglePress}
-                  >
-                    <div
-                      className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
-                        (selectedItem === "Wash & Iron" &&
-                          serviceAddData.press === "Regular") ||
-                        (selectedItem === "Wash & Fold" &&
-                          serviceWfAddData.press === "Regular") ||
-                        (selectedItem === "Premium Laundry" &&
-                          servicePlAddData.press === "Regular")
-                          ? "bg-[#006370] text-white"
-                          : "text-black"
-                      }`}
-                    >
-                      Regular
-                    </div>
-                    <div
-                      className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
-                        (selectedItem === "Wash & Iron" &&
-                          serviceAddData.press === "Premium") ||
-                        (selectedItem === "Wash & Fold" &&
-                          serviceWfAddData.press === "Premium") ||
-                        (selectedItem === "Premium Laundry" &&
-                          servicePlAddData.press === "Premium")
-                          ? "bg-[#006370] text-white"
-                          : "text-black"
-                      }`}
-                    >
-                      Premium
                     </div>
                   </div>
                 </div>
@@ -750,7 +703,11 @@ const Laundry = ({
                   <div>
                     <button
                       onClick={() => setSelectedAddonPopup(false)}
-                      className={`text-sm w-full gap-2 my-2 py-1.5 rounded-lg bg-gray-500/50 text-gray-600`}
+                      className={
+                        mode === "B2B"
+                          ? "bg-[#66BDC5] w-full py-2 mt-2 text-sm text-white rounded-md group-hover:text-[#66BDC5] group-hover:bg-white"
+                          : "bg-[#00414E] w-full py-2 mt-2 rounded-md text-sm text-gray-200 group-hover:bg-white group-hover:text-[#004d57]"
+                      }
                     >
                       Add Garments
                     </button>
@@ -775,7 +732,6 @@ const Laundry = ({
                           ? servicePlAddData.garments
                           : []
                         ).map((item) => {
-                          if (!item?.productDetails) return null;
                           return (
                             <div
                               key={item?.productDetails?._id || Math.random()}
@@ -783,15 +739,19 @@ const Laundry = ({
                             >
                               <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-1">
-                                  <button onClick={() => handleEdit(item)} className="text-green-500">
+                                  <button
+                                    onClick={() => {
+                                      setCartPId(item?.cartId);
+                                      setProductDetails(item?.productDetails);
+                                      setIsEditOpen(true);
+                                    }}
+                                    className="text-green-500"
+                                  >
                                     <MdModeEditOutline />
                                   </button>
                                   <button
                                     onClick={() =>
-                                      handleRemove(
-                                        item?.productDetails?._id,
-                                        item
-                                      )
+                                      deleteCartProduct(item?.cartId)
                                     }
                                     className="text-red-500 text-lg font-bold"
                                   >
@@ -801,23 +761,30 @@ const Laundry = ({
                                 {item?.productDetails?.name && (
                                   <div className="font-semibold">
                                     {item.productDetails.name}
-                                    {item?.garmentType?.label
-                                      ? ` [${item.garmentType.label}]`
+                                    {item?.garmentType
+                                      ? ` [${item?.garmentType}]`
                                       : ""}{" "}
                                     X {item?.quantity || 1}
                                   </div>
                                 )}
                               </div>
-                              <div className="text-[10px] flex gap-3">
-                                {item?.requirements?.name && (
-                                  <p>
-                                    <span className="font-semibold">
-                                      Requirements:
-                                    </span>{" "}
-                                    {item.requirements.name} (₹{" "}
-                                    {item?.requirements?.price || 0})
-                                  </p>
-                                )}
+                              <div className="text-[10px] flex flex-col">
+                                {Array.isArray(item?.requirements) &&
+                                  item.requirements.length > 0 && (
+                                    <p>
+                                      <span className="font-semibold">
+                                        Requirements:{" "}
+                                      </span>{" "}
+                                      {item.requirements.map((req, index) => (
+                                        <span key={index}>
+                                          {req.name} (₹ {req.price})
+                                          {index <
+                                            item.requirements.length - 1 &&
+                                            ", "}
+                                        </span>
+                                      ))}
+                                    </p>
+                                  )}
                                 {Array.isArray(item?.additionalServices) &&
                                   item.additionalServices.length > 0 && (
                                     <p>
@@ -839,9 +806,12 @@ const Laundry = ({
                               </div>
                               {Array.isArray(item?.comments) &&
                                 item.comments.length > 0 && (
-                                  <p className="text-[10px]">
-                                    Comments: {item.comments.join(", ")}
-                                  </p>
+                                  <div className="text-[10px]">
+                                    <span className=" font-semibold">
+                                      Comments:
+                                    </span>{" "}
+                                    <span>{item.comments.join(", ")}</span>
+                                  </div>
                                 )}
                             </div>
                           );
@@ -855,14 +825,15 @@ const Laundry = ({
                 <div className="absolute bg-white w-full bottom-0 p-3 border-t border-gray-300">
                   <div className="flex justify-center gap-10 mx-2  items-center w-full">
                     <div className="flex items-center font-medium gap-3">
-                      <p className="text-sm ">Count</p>
-                      <div className="border border-gray-300 w-44 py-2 justify-center rounded-lg my-1 px-2  text-sm flex items-center">
+                      <p className="text-sm">Count</p>
+                      <div className="border border-gray-300 w-44 py-2 justify-center rounded-lg my-1 px-2 text-sm flex items-center">
                         <button
                           className={`rounded-sm px-2 py-0.5 ${
                             mode === "B2B"
-                              ? "bg-[#66BDC5] text-white"
-                              : "bg-[#004d57] text-white"
+                              ? "bg-gray-600 text-white"
+                              : "bg-gray-600 text-white"
                           }`}
+                          disabled
                         >
                           +
                         </button>
@@ -879,6 +850,8 @@ const Laundry = ({
                                 : 0
                             }
                             className="w-16 font-semibold outline-none text-sm py-1 px-2"
+                            readOnly
+                            disabled
                           />
                           <span className="font-semibold text-sm uppercase">
                             pc
@@ -887,14 +860,16 @@ const Laundry = ({
                         <button
                           className={`rounded-sm px-2 py-0.5 ${
                             mode === "B2B"
-                              ? "bg-[#66BDC5] text-white"
-                              : "bg-[#004d57] text-white"
+                              ? "bg-gray-600 text-white"
+                              : "bg-gray-600 text-white"
                           }`}
+                          disabled
                         >
                           -
                         </button>
                       </div>
                     </div>
+
                     <div className="flex items-center gap-3">
                       <p className="text-sm">Weight</p>
                       <div className="border border-gray-300 w-44 py-2 justify-center rounded-lg my-1 px-2  text-sm flex items-center">
@@ -1042,20 +1017,26 @@ const Laundry = ({
                 <div className="mt-3">
                   <AlphabetsComponent onAlphabetClick={handleAlphabetClick} />
                 </div>
-                <div className="grid lg:grid-cols-4 xl:grid-cols-5 gap-4 my-2 h-[400px] justify-center items-start  overflow-scroll  custom-scrollbar">
+                <div className="grid relative lg:grid-cols-4 xl:grid-cols-5 gap-4 my-2 h-[400px] justify-center items-start overflow-scroll custom-scrollbar">
                   {filteredProducts?.map((item, index) => {
-                    const isInCart = laundryCart?.some((cartItem) =>
+                    const cartItem = laundryCart?.find((cartItem) =>
                       cartItem?.products?.some(
                         (lItem) =>
                           lItem?.productDetails?._id === item?._id &&
                           cartItem?.serviceName === selectedItem
                       )
                     );
+                    const isInCart = !!cartItem;
+                    const productInCart = cartItem?.products?.find(
+                      (lItem) => lItem?.productDetails?._id === item?._id
+                    );
+                    const productQuantity = productInCart?.quantity || 0;
                     return (
                       <div
                         key={index}
-                        className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center relative
-          ${isInCart ? "bg-[#006370] text-white" : ""}`}
+                        className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center relative ${
+                          isInCart ? "bg-[#006370] text-white" : ""
+                        }`}
                       >
                         <img
                           src={item.image}
@@ -1080,7 +1061,9 @@ const Laundry = ({
                           >
                             +
                           </button>
-                          <span className="px-3">0</span>
+                          <span className="px-3">
+                            {isInCart ? productQuantity : "0"}
+                          </span>
                           <button
                             className={`rounded-sm px-1 ${
                               mode === "B2B"
@@ -1091,9 +1074,47 @@ const Laundry = ({
                             -
                           </button>
                         </div>
+
+                        {isInCart && (
+                          <div className="absolute w-full top-1">
+                            <div className="relative w-full">
+                              <button
+                                onClick={() => {
+                                  setIsEditOpen(true);
+                                  setCartPId(cartItem?._id);
+                                  setProductDetails(
+                                    cartItem?.products[0]?.productDetails
+                                  );
+                                }}
+                                className="absolute left-1 text-green-500 rounded-sm text-xs"
+                              >
+                                <MdEdit size={20} />
+                              </button>
+                              <button
+                                className="absolute right-1 text-red-500 rounded-sm text-xs"
+                                onClick={() => deleteCartProduct(cartItem?._id)}
+                              >
+                                <MdDelete size={20} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
+
+                  <div className="absolute w-full bottom-0">
+                    <button
+                      onClick={() => setSelectedAddonPopup(true)}
+                      className={
+                        mode === "B2B"
+                          ? "bg-[#66BDC5] text-sm text-white w-full py-1.5 rounded-md group-hover:text-[#66BDC5] group-hover:bg-white"
+                          : "bg-[#00414E] text-sm text-gray-200 py-1.5 w-full rounded-md group-hover:bg-white group-hover:text-[#004d57]"
+                      }
+                    >
+                      Confirm
+                    </button>
+                  </div>
                 </div>
               </>
             )}
@@ -1102,6 +1123,8 @@ const Laundry = ({
       </div>
       <LaundryAddDataPopup
         serviceAddData={serviceAddData}
+        servicePlAddData={servicePlAddData}
+        serviceWfAddData={serviceWfAddData}
         setServiceAddData={setServiceAddData}
         setServiceWfAddData={setServiceWfAddData}
         setServicePlAddData={setServicePlAddData}
@@ -1120,19 +1143,12 @@ const Laundry = ({
         mode={mode}
         productDetails={productDetails}
       /> */}
-      <OrderEditPopup
-  isOpen={editOpen}
-  setIsOpen={setEditOpen}
-  productDetails={productDetails}
-  serviceAddData={serviceAddData}
-  setServiceAddData={setServiceAddData}
-  serviceWfAddData={serviceWfAddData}
-  setServiceWfAddData={setServiceWfAddData}
-  servicePlAddData={servicePlAddData}
-  setServicePlAddData={setServicePlAddData}
-  selectedItem={selectedItem}
-  editingGarment={editingGarment}  // Pass the garment being edited
-/>
+      <LaundryEditDataPopup
+        productDetails={productDetails}
+        isOpen={isEditOpen}
+        setIsOpen={setIsEditOpen}
+        cartId={cartPId}
+      />
     </>
   );
 };

@@ -4,178 +4,202 @@ import { useCart } from "../context/CartContenxt";
 import toast from "react-hot-toast";
 
 const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
-  const {cartProdcuts} = useCart();
+  const { laundryCart } = useCart();
 
   const [selectedDetails, setSelectedDetails] = useState({
-    type: null,
+    type: [],
     services: [],
-    requirement: null,
+    requirements: [],
     comments: [],
-    press: "Regular",
   });
 
+  const [quantity, setQuantity] = useState(0);
+
   useEffect(() => {
-    cartProdcuts?.map((item) => {
-      if (item?._id === cartId) {
-        const selectedServices =
-          productDetails?.serviceAddons?.filter((service) =>
-            item?.serviceAddons?.some(
-              (cartService) => cartService._id === service._id
-            )
-          ) || [];
-  
-        const selectedType =
-          productDetails?.type?.find(
-            (typeItem) =>
-              typeItem.label === item?.garmentType?.[0]?.name &&
-              typeItem.price === item?.garmentType?.[0]?.price
-          ) || null;
-  
-        const selectedRequirement =
-          productDetails?.requirements?.find(
-            (req) =>
-              req.name === item?.requirements?.[0]?.name &&
-              req.price === item?.requirements?.[0]?.price
-          ) || null;
-  
+    try {
+      const cartItem = laundryCart?.find(item => item?._id === cartId);
+      if (cartItem && productDetails) {
+        const selectedProduct = cartItem?.products?.find(
+          (item) => item.productDetails._id === productDetails?._id
+        );
+        console.log(selectedProduct);
+        const { garmentType, additionalServices, requirements, comments, quantity } = selectedProduct;
+        console.log(selectedProduct);
+
         setSelectedDetails({
-          type: selectedType,
-          services: selectedServices,
-          requirement: selectedRequirement,
-          comments: item?.comments || [],
-          press: item?.isPremium ? "Premium" : "Regular",
+          type: garmentType,
+          services: additionalServices,
+          requirements: requirements,
+          comments: comments,
         });
-  
-        setQuantity(item?.quantity || 0);
+
+        setQuantity(quantity || 0);
       }
-    });
-  }, [cartProdcuts, cartId, productDetails]);
-  
-  
+    } catch (error) {
+      console.error("Error in useEffect:", error);
+    }
+  }, [laundryCart, cartId, productDetails]);
 
   const togglePopup = () => setIsOpen(!isOpen);
-  const [quantity, setQuantity] = useState(0);
 
   const { refreshCart } = useCart();
 
-  
-
   const selectType = (type) => {
     if (!type) return;
-    setSelectedDetails((prev) => ({ ...prev, type }));
+    setSelectedDetails(prev => ({ ...prev, type }));
   };
 
   const toggleService = (service) => {
     if (!service) return;
-    setSelectedDetails((prev) => {
-      const currentServices = prev?.services || [];
-      const newServices = currentServices.includes(service)
-        ? currentServices.filter((s) => s !== service)
-        : [...currentServices, service];
-      return { ...prev, services: newServices };
+    setSelectedDetails(prev => {
+      const services = prev?.services || [];
+      return {
+        ...prev,
+        services: services.some(s => s._id === service._id)
+          ? services.filter(s => s._id !== service._id)
+          : [...services, service]
+      };
     });
   };
 
-  const selectRequirement = (requirement) => {
+  const toggleRequirement = (requirement) => {
     if (!requirement) return;
-    setSelectedDetails((prev) => ({ ...prev, requirement }));
+    setSelectedDetails(prev => {
+      const requirements = prev?.requirements || [];
+      return {
+        ...prev,
+        requirements: requirements.some(r => r._id === requirement._id)
+          ? requirements.filter(r => r._id !== requirement._id)
+          : [...requirements, requirement]
+      };
+    });
   };
 
   const toggleComment = (comment) => {
     if (!comment) return;
-    setSelectedDetails((prev) => {
-      const currentComments = prev?.comments || [];
-      const newComments = currentComments.includes(comment)
-        ? currentComments.filter((c) => c !== comment)
-        : [...currentComments, comment];
-      return { ...prev, comments: newComments };
+    setSelectedDetails(prev => {
+      const comments = prev?.comments || [];
+      return {
+        ...prev,
+        comments: comments.includes(comment)
+          ? comments.filter(c => c !== comment)
+          : [...comments, comment]
+      };
     });
   };
 
-  const togglePress = () => {
-    setSelectedDetails((prev) => ({
-      ...prev,
-      press: prev?.press === "Regular" ? "Premium" : "Regular",
-    }));
-  };
-
   const handleIncrement = () => {
-    setQuantity((prev) => prev + 1);
+    setQuantity(prev => prev + 1);
   };
 
-  const handleDecrement = () => { 
-    setQuantity((prev) => (prev <= 1 ? prev : prev - 1));
+  const handleDecrement = () => {
+    setQuantity(prev => (prev <= 1 ? prev : prev - 1));
   };
 
   const addToCart = async () => {
-    if (quantity === 0) {
-      toast.error("Increase Quantity");
-      return;
-    }
-    if (!selectedDetails?.type) {
-      toast.error("Select Garment Type");
-      return;
-    }
-
-    const mobileNumber = localStorage.getItem("mobileNumber");
-    const userId = localStorage.getItem("userId");
-    const token = localStorage.getItem("authToken");
-
-    if (!mobileNumber || !userId) {
-      setIsOpen(false);
-      toast.error("Please enter mobile number");
-      return;
-    }
-
     try {
-      const payload = {
-        customerId: userId,
-        productId: productDetails?._id ? [productDetails._id] : [],
-        serviceName: productDetails?.serviceName || "",
-        quantity: quantity,
-        garmentType : selectedDetails?.type ? [{ name: selectedDetails.type.label, price: selectedDetails?.type?.price }]: [],
-        serviceAddons: selectedDetails?.services || [],
-        requirements: selectedDetails?.requirement ? [selectedDetails.requirement] : [],
-        comments: selectedDetails?.comments || [],
-        isPremium: selectedDetails?.press === "Premium",
+      if (quantity === 0) {
+        throw new Error("Please increase quantity");
+      }
+      if (!selectedDetails?.type) {
+        throw new Error("Please select garment type");
+      }
+  
+      const mobileNumber = localStorage.getItem("mobileNumber");
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("authToken");
+  
+      if (!mobileNumber || !userId) {
+        setIsOpen(false);
+        throw new Error("Please enter mobile number");
+      }
+  
+      const garmentData = {
+        productDetails,
+        quantity,
+        garmentType: selectedDetails.type,
+        additionalServices: selectedDetails.services,
+        requirements: selectedDetails.requirements,
+        comments: selectedDetails.comments,
       };
-
-      const response = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/${cartId}`,
-        payload,
+  
+      // Fetch the current cart details
+      const cartResponse = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/${cartId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
-      toast.success(`${productDetails?.name || 'Item'} Added`);
+  
+      const currentCart = cartResponse?.data?.data;
+  
+      // Check if the product exists in the cart
+      const existingProductIndex = currentCart.products.findIndex(
+        (item) => item?.productDetails?._id === productDetails?._id
+      );
+  
+      if (existingProductIndex !== -1) {
+        // Update the existing product details
+        currentCart.products[existingProductIndex] = {
+          ...currentCart.products[existingProductIndex],
+          quantity: garmentData.quantity,
+          garmentType: garmentData.garmentType,
+          additionalServices: garmentData.additionalServices,
+          requirements: garmentData.requirements,
+          comments: garmentData.comments,
+        };
+      } else {
+        // Add the new product to the cart
+        currentCart?.products?.push(garmentData);
+      }
+  
+      // Update the cart with modified products
+      const updatedPayload = {
+        products: currentCart?.products,
+        weight: currentCart?.weight,
+        isInCart: false,
+        customerId: userId,
+        pieceCount: currentCart?.pieceCount,
+        totalPrice: currentCart?.products?.reduce(
+          (total, item) => total + item.quantity * item.productDetails.price,
+          0
+        ),
+      };
+  
+      await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartId}`,
+        updatedPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      toast.success(`${productDetails?.name || "Item"} updated successfully`);
       setSelectedDetails({
         type: null,
         services: [],
-        requirement: null,
+        requirements: [],
         comments: [],
-        press: "Regular",
       });
       setQuantity(0);
-       refreshCart();
+      await refreshCart();
       togglePopup();
     } catch (error) {
-      if (!userId) {
-        toast.error("Please enter mobile number");
-      } else {
-        toast.error("Internal server error");
-      }
       console.error("Error updating cart:", error);
-    } finally {
-      setQuantity(0);
+      toast.error(error.message || "Error updating cart");
     }
   };
+  
 
   if (!productDetails) {
     return null;
   }
+
+console.log(selectedDetails.type);
 
   return (
     <div className="flex justify-center items-center">
@@ -185,62 +209,64 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
             <h2 className="text-lg text-[#00414e] mb-4">
               {productDetails?.name || 'Product'}
             </h2>
+            {/* Type Selection */}
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Select {productDetails?.name || 'Product'} Type</p>
               <div className="flex justify-start gap-3">
                 {(productDetails?.type || []).map((type) => (
                   <button
-                    key={type?.label || type}
+                    key={type?.label}
                     onClick={() => selectType(type)}
                     className={`rounded-lg text-[10px] px-3 py-1 border capitalize ${
-                      selectedDetails?.type === type
+                      selectedDetails?.type?.label === type?.label
                         ? "bg-[#006370] text-white"
                         : "border-[#88A5BF] text-black/80"
                     }`}
                   >
-                    {selectedDetails?.press === "Regular"
-                      ? `${type?.label || type} (₹ ${type?.price || 0})`
-                      : `${type?.label || type} (₹ ${type?.premiumPrice || 0})`}
+                    {type.label}
                   </button>
                 ))}
               </div>
             </div>
+            {/* Services Selection */}
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Select One or More Services</p>
               <div className="flex justify-start gap-3">
                 {(productDetails?.serviceAddons || []).map((service) => (
                   <button
-                    key={service?.name || service}
+                    key={service?._id}
                     onClick={() => toggleService(service)}
                     className={`rounded-lg text-[10px] px-3 py-1 border ${
-                      (selectedDetails?.services || []).includes(service)
+                      selectedDetails?.services?.some(s => s._id === service._id)
                         ? "bg-[#006370] text-white"
                         : "border-[#88A5BF] text-black/80"
                     }`}
                   >
-                    {`${service?.name || service} (₹ ${service?.price || 0})`}
+                    {`${service?.name || ''} (₹ ${service?.price || 0})`}
                   </button>
                 ))}
               </div>
             </div>
+            {/* Requirements Selection */}
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Requirements</p>
               <div className="flex justify-start gap-3">
                 {(productDetails?.requirements || []).map((req) => (
                   <button
-                    key={req?.name || req}
-                    onClick={() => selectRequirement(req)}
+                    key={req?._id}
+                    onClick={() => toggleRequirement(req)}
                     className={`rounded-lg text-[10px] px-3 py-1 border ${
-                      selectedDetails?.requirement === req
+                      selectedDetails?.requirements?.some(r => r._id === req._id)
                         ? "bg-[#006370] text-white"
                         : "border-[#88A5BF] text-black/80"
                     }`}
                   >
-                    {`${req?.name || req} (₹ ${req?.price || 0})`}
+                    {`${req?.name || ''} (₹ ${req?.price || 0})`}
                   </button>
                 ))}
               </div>
             </div>
+            {/* Comments Selection */}
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Comments</p>
               <div className="grid grid-cols-4 justify-start gap-3">
@@ -249,7 +275,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
                     key={comment}
                     onClick={() => toggleComment(comment)}
                     className={`rounded-lg text-[10px] px-3 py-1 border ${
-                      (selectedDetails?.comments || []).includes(comment)
+                      selectedDetails?.comments?.includes(comment)
                         ? "bg-[#006370] text-white"
                         : "border-[#88A5BF] text-black/80"
                     }`}
@@ -259,6 +285,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
                 ))}
               </div>
             </div>
+            {/* Quantity Controls */}
             <div className="mx-8 flex items-center gap-3">
               <p>Quantity: </p>
               <div className="border border-gray-300 w-20 text-center justify-center my-3 rounded-lg p-1 text-sm flex items-center">
@@ -277,29 +304,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
                 </button>
               </div>
             </div>
-            <div
-              className={`flex mt-1 mx-8 items-center justify-between w-72 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
-              onClick={togglePress}
-            >
-              <div
-                className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
-                  selectedDetails?.press === "Regular"
-                    ? "bg-[#006370] text-white"
-                    : "text-black"
-                }`}
-              >
-                Regular
-              </div>
-              <div
-                className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
-                  selectedDetails?.press === "Premium"
-                    ? "bg-[#006370] text-white"
-                    : "text-black"
-                }`}
-              >
-                Premium
-              </div>
-            </div>
+            {/* Action Buttons */}
             <div className="mt-4 mx-8">
               <button
                 onClick={addToCart}

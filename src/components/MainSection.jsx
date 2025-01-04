@@ -22,6 +22,7 @@ const MainSection = ({ products }) => {
   const { cartItems, refreshCart } = useCart();
   const [customerNewOld, setCustomerNewOld] = useState("New Customer");
   const [isInputDisabled, setIsInputDisabled] = useState(false);
+  const [hiddenElement, setHiddenElement] = useState(false);
 
   const { data } = useFetch(
     mobileNumber
@@ -34,8 +35,7 @@ const MainSection = ({ products }) => {
   );
 
   useEffect(() => {
-    setCustomerNewOld("New Customer");
-    if (data?.data?.customer?.name) {
+    if (data?.data?.customer?.name && mobileNumber.length === 10) {
       localStorage.setItem("userId", data?.data?.customer?._id);
       refreshCart();
       setUserName(data?.data?.customer?.name);
@@ -49,16 +49,6 @@ const MainSection = ({ products }) => {
             color: "white",
           },
         });
-      } else {
-        setCustomerNewOld("New Customer");
-        // if(customerNewOld === "New Customer"){
-        //   toast.success("New Customer", {
-        //     style: {
-        //       background: "Red",
-        //       color: "white",
-        //     },
-        //   });
-        // }
       }
     } else if (mobileNumber) {
       setIsInputDisabled(false);
@@ -129,7 +119,12 @@ const MainSection = ({ products }) => {
 
   const componentsMap = {
     Laundry: (
-      <Laundry mode={mode} filteredLaundryProducts={filteredLaundryProducts} />
+      <Laundry
+        mode={mode}
+        filteredLaundryProducts={filteredLaundryProducts}
+        hiddenElement={hiddenElement}
+        setHiddenElement={setHiddenElement}
+      />
     ),
     "Dry Cleaning": (
       <DryCleaning mode={mode} filteredDcProducts={filteredDcProducts} />
@@ -153,7 +148,7 @@ const MainSection = ({ products }) => {
 
   const onChange = (checked) => {
     setMode(checked ? "B2C" : "B2B");
-    toast.success(`${mode === "B2C" ? "B2B" : "B2C"} Mode Selected`)
+    toast.success(`${mode === "B2C" ? "B2B" : "B2C"} Mode Selected`);
   };
 
   const fetchAddress = async () => {
@@ -197,11 +192,11 @@ const MainSection = ({ products }) => {
         if (responseSearching?.data?.data?.customer?.name) {
           setUserName(responseSearching?.data?.data?.customer?.name);
           toast("New Customer", {
-                style: {
-                  background: "red",
-                  color: "white",
-                },
-              });
+            style: {
+              background: "red",
+              color: "white",
+            },
+          });
           setIsInputDisabled(true);
           localStorage.setItem("mobileNumber", mobileNumber);
           localStorage.setItem("userName", userName);
@@ -212,6 +207,15 @@ const MainSection = ({ products }) => {
         }
         if (response.ok) {
           console.log("New user created successfully");
+          setCustomerNewOld("New Customer");
+        if(customerNewOld === "New Customer"){
+          toast.success("New Customer", {
+            style: {
+              background: "Red",
+              color: "white",
+            },
+          });
+        }
         } else {
           console.error("Error creating new customer", await response.json());
         }
@@ -225,7 +229,11 @@ const MainSection = ({ products }) => {
   return (
     <div className="flex ml-[240px] pt-8 h-screen gap-10 text-[#00414e] relative">
       <div className="flex-1 lg:w-[580px] xl:w-[700px]">
-        <div className="border-2 border-[#eef0f2] rounded-xl mx-5 my-2 w-full mt-8">
+        <div
+          className={`border-2 border-[#eef0f2] rounded-xl mx-5 my-2 w-full mt-8 ${
+            hiddenElement ? "hidden" : ""
+          }`}
+        >
           <div className="p-5">
             <div className="w-full flex justify-between">
               <div
@@ -283,7 +291,11 @@ const MainSection = ({ products }) => {
             </div>
           </div>
         </div>
-        <div className="border-2 border-[#eef0f2] rounded-xl mx-5 w-full ">
+        <div
+          className={`border-2 border-[#eef0f2] rounded-xl mx-5 w-full ${
+            hiddenElement ? "mt-8" : ""
+          }`}
+        >
           <div className="flex px-4 py-1 pt-1.5 justify-between items-center gap-4 text-xs">
             {[
               "Laundry",
@@ -300,10 +312,13 @@ const MainSection = ({ products }) => {
                       ? "bg-[#66BDC5] text-white"
                       : "bg-[#004D57] text-white"
                     : mode === "B2C"
-                    ? "bg-blue-100 text-gray-600" // Inactive button in B2C
-                    : "bg-[#d5e7ec] text-[#00414e]" // Inactive button in B2B
+                    ? "bg-blue-100 text-gray-600" 
+                    : "bg-[#d5e7ec] text-[#00414e]"
                 }`}
-                onClick={() => setSelectedTab(tab)}
+                onClick={() => {
+                  setSelectedTab(tab)
+                  setHiddenElement(false);
+                }}
               >
                 {tab}
               </button>

@@ -1,21 +1,41 @@
 import axios from "axios";
-import { useState } from "react";
-import { useCart } from "../context/CartContenxt";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useCart } from "../context/CartContenxt";
 
-const LaundryAddDataPopup = ({ setServiceAddData, selectedItem, setServicePlAddData, setServiceWfAddData, isOpen, setIsOpen, productDetails,  }) => {
-  const togglePopup = () => setIsOpen(!isOpen);
+const LaundryAddDataPopup = ({
+  serviceAddData,
+  serviceWfAddData,
+  servicePlAddData,
+  selectedItem,
+  isOpen,
+  setIsOpen,
+  productDetails,
+}) => {
   const [quantity, setQuantity] = useState(0);
-
-  // const { refreshCart } = useCart();
+  const { refreshCart, laundryCart } = useCart();
 
   const [selectedDetails, setSelectedDetails] = useState({
-    type: null, 
-    services: [], 
-    requirement: null, 
-    comments: [], 
-    // press: "Regular", 
+    type: [],
+    services: [],
+    requirements: [],
+    comments: [],
   });
+
+  const togglePopup = () => {
+    setIsOpen(!isOpen);
+    setSelectedDetails({
+      type: [],
+      services: [],
+      requirements: [],
+      comments: [],
+    });
+    setQuantity(0);
+  };
+
+  const [isInCart, setIsInCart] = useState(false);
+  const [cartItemId, setCartItemId] = useState(null);
+  const [existingCartItem, setExistingCartItem] = useState(null);
 
   const selectType = (type) => {
     setSelectedDetails((prev) => ({ ...prev, type }));
@@ -30,8 +50,13 @@ const LaundryAddDataPopup = ({ setServiceAddData, selectedItem, setServicePlAddD
     });
   };
 
-  const selectRequirement = (requirement) => {
-    setSelectedDetails((prev) => ({ ...prev, requirement }));
+  const toggleRequirement = (requirement) => {
+    setSelectedDetails((prev) => {
+      const newRequirements = prev?.requirements?.includes(requirement)
+        ? prev?.requirements?.filter((r) => r !== requirement)
+        : [...(prev?.requirements || []), requirement];
+      return { ...prev, requirements: newRequirements };
+    });
   };
 
   const toggleComment = (comment) => {
@@ -43,70 +68,141 @@ const LaundryAddDataPopup = ({ setServiceAddData, selectedItem, setServicePlAddD
     });
   };
 
-  // const togglePress = () => {
-  //   setSelectedDetails((prev) => ({
-  //     ...prev,
-  //     press: prev?.press === "Regular" ? "Premium" : "Regular",
-  //   }));
-  // };
-  
   const handleIncrement = () => {
     setQuantity(quantity + 1);
-  }
+  };
   const handleDecrement = () => {
-    if(quantity === 1) {
-      return
-    }else {
+    if (quantity === 1) {
+      return;
+    } else {
       setQuantity(quantity - 1);
     }
-  }
+  };
 
-  const addToServiceData = () => {
+  useEffect(() => {
+      if (selectedItem && laundryCart?.length > 0) {
+        const cartItem = laundryCart.find(
+          (item) => item?.serviceName === selectedItem && item?.isInCart
+        );
+        if (cartItem) {
+          setIsInCart(true);
+          setCartItemId(cartItem._id);
+          setExistingCartItem(cartItem);
+        } else {
+          setIsInCart(false);
+          setCartItemId(null);
+          setExistingCartItem(null);
+        }
+      } else {
+        setIsInCart(false);
+        setCartItemId(null);
+        setExistingCartItem(null);
+      }
+    }, [selectedItem, laundryCart]);
 
-
-    if(quantity === 0){
-            toast.error("Increase Quantity")
-            return
-   }
-   if(selectedDetails?.type == null){
-    toast.error("Select Garment Type")
-    return 
-  }
-   const garmentData = {
+    const addToServiceData = async () => {
+      if (quantity === 0) {
+        toast.error("Increase Quantity");
+        return;
+      }
+      if (selectedDetails?.type == null) {
+        toast.error("Select Garment Type");
+        return;
+      }
+      
+      const token = localStorage.getItem("authToken");
+      const userId = localStorage.getItem("userId");
+    
+      const garmentData = {
         productDetails,
-        quantity, 
+        quantity,
         garmentType: selectedDetails?.type,
         additionalServices: selectedDetails?.services,
-        onHangerPrice: selectedDetails?.requirement === "On Hanger" ? 20 : 12,
-        requirements: selectedDetails?.requirement,
+        requirements: selectedDetails?.requirements,
         comments: selectedDetails?.comments,
-        press: selectedDetails?.press,
-   }
-
-   if(selectedItem === "Wash & Iron"){
-     setServiceAddData((prevData) => ({
-      ...prevData,
-      selectedService: selectedItem, 
-      garments: [...prevData.garments, garmentData],
-    }));
-   } else if(selectedItem === "Wash & Fold"){
-    setServiceWfAddData((prevData) => ({
-      ...prevData,
-      selectedService: selectedItem,
-      garments: [...prevData.garments, garmentData]
-    }))
-  } else {
-     setServicePlAddData((prevData) => ({
-       ...prevData,
-       selectedService: selectedItem,
-       garments: [...prevData.garments, garmentData]
-     }))
-
-   }
-
-  setQuantity(0);
-  togglePopup();
-  }
+      };
+    
+      const currentServiceData = 
+        selectedItem === "Wash & Iron"
+          ? serviceAddData
+          : selectedItem === "Wash & Fold"
+          ? serviceWfAddData
+          : servicePlAddData;
+    
+      try {
+        if (isInCart && cartItemId) {
+          const existingCart = await axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/${cartItemId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+    
+          const updatedProducts = [
+            ...(currentServiceData?.garments || []),
+            garmentData
+          ];
+    
+          const updatedPrice = currentServiceData?.price || 0;
+          const response = await axios.put(
+            `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartItemId}`,
+            {
+              products: updatedProducts,
+              weight: currentServiceData?.serviceWeight || 0,
+              customerId: userId,
+              serviceName: selectedItem,
+              productAddons: currentServiceData?.addons || [],
+              pieceCount: updatedProducts.length,
+              totalPrice: updatedPrice,
+              isInCart: false,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          refreshCart();
+          toast.success("Cart updated successfully");
+        } else {
+          // Create new cart item
+          const response = await axios.post(
+            `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/add`,
+            {
+              products: [garmentData],
+              weight: currentServiceData?.serviceWeight || 0,
+              customerId: userId,
+              serviceName: selectedItem,
+              productAddons: currentServiceData?.addons || [],
+              pieceCount: 1,
+              totalPrice: currentServiceData?.price || 0,
+              isInCart: false,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          toast.success("Added to cart successfully");
+        }
+        
+        refreshCart();
+        setQuantity(0);
+        setSelectedDetails({
+          type: null,
+          services: [],
+          requirement: null,
+          comments: [],
+        });
+        togglePopup();
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to update cart");
+      }
+    };
 
   return (
     <div className="flex justify-center items-center">
@@ -117,7 +213,9 @@ const LaundryAddDataPopup = ({ setServiceAddData, selectedItem, setServicePlAddD
               {productDetails?.name}
             </h2>
             <div className="space-y-2 mt-5 mx-8">
-              <p className="text-gray-600">Select {productDetails?.name} Type</p>
+              <p className="text-gray-600">
+                Select {productDetails?.name} Type
+              </p>
               <div className="flex justify-start gap-3">
                 {productDetails?.type?.map((type) => (
                   <button
@@ -129,7 +227,7 @@ const LaundryAddDataPopup = ({ setServiceAddData, selectedItem, setServicePlAddD
                         : "border-[#88A5BF] text-black/80"
                     }`}
                   >
-                    { selectedDetails.press === "Regular" ? `${type?.label} (₹ ${type?.price}) ` : `${type?.label} (₹ ${type?.premiumPrice}) `}
+                    {type?.label}
                   </button>
                 ))}
               </div>
@@ -137,40 +235,38 @@ const LaundryAddDataPopup = ({ setServiceAddData, selectedItem, setServicePlAddD
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Select One or More Services</p>
               <div className="flex justify-start gap-3">
-                {productDetails?.serviceAddons?.map(
-                  (service) => (
-                    <button
-                      key={service}
-                      onClick={() => toggleService(service)}
-                      className={`rounded-lg text-[10px] px-3 py-1 border ${
-                        selectedDetails.services.includes(service)
-                          ? "bg-[#006370] text-white"
-                          : "border-[#88A5BF] text-black/80"
-                      }`}
-                    >
-                      {`${service?.name} (₹ ${service?.price}) `}
-                    </button>
-                  )
-                )}
+                {productDetails?.serviceAddons?.map((service) => (
+                  <button
+                    key={service}
+                    onClick={() => toggleService(service)}
+                    className={`rounded-lg text-[10px] px-3 py-1 border ${
+                      selectedDetails.services.includes(service)
+                        ? "bg-[#006370] text-white"
+                        : "border-[#88A5BF] text-black/80"
+                    }`}
+                  >
+                    {`${service?.name} (₹ ${service?.price}) `}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Requirements</p>
               <div className="flex justify-start gap-3">
-                {productDetails?.requirements?.map((req) => (
-                  <button
-                    key={req}
-                    onClick={() => selectRequirement(req)}
-                    className={`rounded-lg text-[10px] px-3 py-1 border ${
-                      selectedDetails.requirement === req
-                        ? "bg-[#006370] text-white"
-                        : "border-[#88A5BF] text-black/80"
-                    }`}
-                  >
-                     {`${req?.name} (₹ ${req?.price}) `}
-                  </button>
-                ))}
-              </div>
+  {productDetails?.requirements?.map((req) => (
+    <button
+      key={req}
+      onClick={() => toggleRequirement(req)}
+      className={`rounded-lg text-[10px] px-3 py-1 border ${
+        selectedDetails.requirements?.includes(req)
+          ? "bg-[#006370] text-white"
+          : "border-[#88A5BF] text-black/80"
+      }`}
+    >
+      {`${req?.name} (₹ ${req?.price}) `}
+    </button>
+  ))}
+</div>
             </div>
             <div className="space-y-2 mt-5 mx-8">
               <p className="text-gray-600">Comments</p>
@@ -192,23 +288,21 @@ const LaundryAddDataPopup = ({ setServiceAddData, selectedItem, setServicePlAddD
             </div>
             <div className="mx-8 flex items-center gap-3">
               <p>Quantity: </p>
-            <div className="border border-gray-300 w-20 text-center justify-center my-3 rounded-lg p-1 text-sm flex items-center">
-                    <button
-                      className="bg-[#006370] text-white rounded-sm px-1"
-                      onClick={handleIncrement}
-                    >
-                      +
-                    </button>
-                    <span className="text-gray-500 px-3">
-                      {quantity}
-                    </span>
-                    <button
-                      className="bg-[#006370] text-white rounded-sm px-1"
-                      onClick={handleDecrement}
-                    >
-                      -
-                    </button>
-                  </div>
+              <div className="border border-gray-300 w-20 text-center justify-center my-3 rounded-lg p-1 text-sm flex items-center">
+                <button
+                  className="bg-[#006370] text-white rounded-sm px-1"
+                  onClick={handleIncrement}
+                >
+                  +
+                </button>
+                <span className="text-gray-500 px-3">{quantity}</span>
+                <button
+                  className="bg-[#006370] text-white rounded-sm px-1"
+                  onClick={handleDecrement}
+                >
+                  -
+                </button>
+              </div>
             </div>
             <div className="mt-4 mx-8">
               <button

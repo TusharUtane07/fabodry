@@ -8,7 +8,12 @@ import { useCart } from "../context/CartContenxt";
 import axios from "axios";
 import OrderEditPopup from "./OrderEditPopup";
 import { useNavigate } from "react-router-dom";
-import { FaAngleLeft, FaAngleRight, FaCheck, FaRegAddressCard } from "react-icons/fa";
+import {
+  FaAngleLeft,
+  FaAngleRight,
+  FaCheck,
+  FaRegAddressCard,
+} from "react-icons/fa";
 import { RiDiscountPercentLine } from "react-icons/ri";
 import toast from "react-hot-toast";
 import EditConfirmedOrderPopup from "./EditConfirmedOrderPopup";
@@ -16,7 +21,12 @@ import { useSelectedAddons } from "../context/AddonContext";
 import { RxCross2 } from "react-icons/rx";
 import LaundryCartComponent from "./LaundryCartComponent";
 
-const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab }) => {
+const BillingSection = ({
+  customerAddress,
+  mode,
+  onAddressChange,
+  setSelectedTab,
+}) => {
   const [isChecked, setIsChecked] = useState(false);
   const [isHomeDeliveryPopupOpen, setIsHomeDeliveryPopupOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -80,20 +90,21 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
   };
 
   const calculateTotalItemPrice = (item) => {
-    const garmentPrice = (item?.garmentType[0]?.price || 0) * (item?.quantity || 0);
-  
+    const garmentPrice =
+      (item.isPremium===true ? item?.productId?.premiumPrice?.B2C : item?.garmentType[0]?.price || 0) * (item?.quantity || 0);
+
     const requirementsPrice =
       item?.requirements?.reduce(
         (acc, req) => acc + (req?.price || 0) * (item?.quantity || 0),
         0
       ) || 0;
-  
+
     const serviceAddonsPrice =
       item?.serviceAddons?.reduce(
         (acc, addon) => acc + (addon?.price || 0) * (item?.quantity || 0),
         0
       ) || 0;
-  
+
     return garmentPrice + requirementsPrice + serviceAddonsPrice;
   };
 
@@ -126,13 +137,31 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
     return 0;
   };
 
-  const calculateLaundryTotalPrice = (item) => {
-    const addonsPriceSum = item.productAddons?.reduce((total, addon) => {
-      return total + addon?.price;
-    }, 0) || 0;
-    const totalPricePerKg = Number(item?.totalPrice) + Number(addonsPriceSum);
-    const finalTotal = Number(totalPricePerKg) * Number(item?.weight)
-    return finalTotal;
+  const calculateTotalPrice = (item) => {
+    const productsAddonsAndRequirements =
+      item?.products?.reduce((total, product) => {
+        const additionalServicesTotal =
+          product.additionalServices?.reduce(
+            (sum, service) => sum + (service?.price || 0),
+            0
+          ) || 0;
+        const requirementsTotal =
+          product.requirements?.reduce(
+            (sum, req) => sum + (req?.price || 0),
+            0
+          ) || 0;
+        return total + additionalServicesTotal + requirementsTotal;
+      }, 0) || 0;
+
+    const addonsPriceSum =
+      item?.productAddons?.reduce((total, addon) => {
+        return total + addon?.price;
+      }, 0) || 0;
+    const totalPricePerKg = item?.totalPrice + addonsPriceSum;
+    console.log(totalPricePerKg, "ttp");
+    return (
+      totalPricePerKg * Number(item?.weight) + productsAddonsAndRequirements
+    );
   };
 
   const calculateGrossTotal = () => {
@@ -141,9 +170,10 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
       0
     );
 
-    const lItemTotal = laundryCart?.reduce (
-      (total, item ) => total + calculateLaundryTotalPrice(item), 0);
-
+    const lItemTotal = laundryCart?.reduce(
+      (total, item) => total + calculateTotalPrice(item),
+      0
+    );
     const finalTotal = lItemTotal + itemsTotal;
     return finalTotal;
   };
@@ -164,8 +194,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
       ? (grossTotal * selectedExpressDeliveryRate) / 100
       : 0;
 
-    const totalAmount =
-      grossTotal - discountAmount + expressCharge;
+    const totalAmount = grossTotal - discountAmount + expressCharge;
 
     return {
       grossTotal,
@@ -194,7 +223,6 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
     }
   };
 
-  const navigate = useNavigate();
   const createOrder = async () => {
     if (!validateForm()) {
       return;
@@ -209,28 +237,30 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
 
     const productName = [];
     const serviceName = [];
-    // cartItems?.map((item) => productName.push(item?.productId[0]?.name));
-    // cartItems?.map((item) => serviceName.push(item?.serviceName));
 
+    
     const token = localStorage.getItem("authToken");
     const userName = localStorage.getItem("userName");
     const userId = localStorage.getItem("userId");
     const mobileNumber = localStorage.getItem("mobileNumber");
     setIsSubmitting(true);
     try {
-      const address = selectedAddress 
-    ? selectedAddress 
-    : customerAddress && customerAddress[0]
-        ? `${customerAddress[0]?.label || ''} ${customerAddress[0]?.addressLine1 || ''}, ${customerAddress[0]?.city || ''}`.trim()
+      const address = selectedAddress
+        ? selectedAddress
+        : customerAddress && customerAddress[0]
+        ? `${customerAddress[0]?.label || ""} ${
+            customerAddress[0]?.addressLine1 || ""
+          }, ${customerAddress[0]?.city || ""}`.trim()
         : "No Saved Address";
 
+        const tc = calculateTotalCount();
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/admin/orders/create`,
         {
           productIds: productName,
           serviceNames: serviceName,
           branchName: selectedOption,
-          totalCount: String(laundryCart?.length + cartProdcuts?.lenght) || "0",
+          totalCount: String(tc),
           totalAmount: String(totalAmount) || "0",
           discountAmount: String(discountAmount) || "0",
           expressCharge: String(expressCharge) || "0",
@@ -246,7 +276,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
           paymentMethod: "CARD",
           paymentStatus: "unpaid",
           cart: cartProdcuts,
-          laundryCart: laundryCart
+          laundryCart: laundryCart,
         },
         {
           headers: {
@@ -269,10 +299,12 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
     const customerId = localStorage.getItem("userId");
     const token = localStorage.getItem("authToken");
     setIsDeleting(true);
-  
+
     try {
       const response = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/customer/${customerId}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }api/v1/carts/customer/${customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -280,7 +312,9 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
         }
       );
       await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/delete-all/${customerId}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }api/v1/laundrycarts/delete-all/${customerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -297,10 +331,30 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
       setIsDeleting(false);
     }
   };
+
+  const calculateTotalCount = () => {
+    let quantity = 0;
+  
+    cartProdcuts?.map((item) => {
+      if (item?.serviceAddons?.[0]?.name !== 'cleaning') {
+        quantity += item?.quantity || 0; 
+      }
+    });
+  
+    laundryCart?.map((item) => quantity+=item?.products?.length)
+    return quantity
+  };
   
 
   const isDisabled =
     isSubmitting || Object.values(formErrors).some((error) => error);
+
+  const truncateString = (str, length) => {
+    if (str?.length > length) {
+      return str?.substring(0, length) + "...";
+    }
+    return str;
+  };
   return (
     <div
       className="col-span-1 relative bg-white mt-8  w-full border-2 mr-4  border-[#eef0f2] rounded-xl overflow-y-scroll h-[100vh-62 w-fullpx] "
@@ -382,7 +436,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
           <div className="w-full h-72">
             {cartProdcuts?.length > 0 || laundryCart?.length > 0 ? (
               <div className="pb-10">
-                <LaundryCartComponent setSelectedTab={setSelectedTab}/>
+                <LaundryCartComponent setSelectedTab={setSelectedTab} />
                 {cartProdcuts?.length > 0 &&
                   cartProdcuts?.map((item) => {
                     return (
@@ -393,13 +447,20 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
                         <div className="flex justify-between px-2 w-full gap-2">
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1">
-                              { item?.serviceAddons[0]?.name === "cleaning" ? " " :  <button onClick={() => {
-                                setCartPId(item?._id);
-                                setIsEditPopupOpen(true);
-                                setProductDetails(item?.productId);
-                              }} className="text-green-500">
-                                <MdModeEditOutline />
-                              </button>}
+                              {item?.serviceAddons[0]?.name === "cleaning" ? (
+                                " "
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    setCartPId(item?._id);
+                                    setIsEditPopupOpen(true);
+                                    setProductDetails(item?.productId);
+                                  }}
+                                  className="text-green-500"
+                                >
+                                  <MdModeEditOutline />
+                                </button>
+                              )}
                               <button
                                 onClick={() => deleteCartProduct(item?._id)}
                                 className="text-red-500 text-lg font-bold"
@@ -422,12 +483,15 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
                           {item?.garmentType[0]?.price &&
                             (item?.serviceAddons[0]?.name === "cleaning" ? (
                               <div className="font-semibold text-sm">
-                                ₹ {item?.garmentType[0]?.price}
+                                ₹{" "}
+                                {item?.isPremium === true
+                                  ? item?.productId?.premiumPrice?.B2C
+                                  : item?.productId?.price?.B2C}
                               </div>
                             ) : (
                               <div className="font-semibold text-sm">
                                 ₹
-                                {(item?.garmentType[0]?.price || 0) *
+                                {( item?.isPremium === true ? item?.productId?.premiumPrice?.B2C:  item?.garmentType[0]?.price || 0) *
                                   (item?.quantity || 0)}
                                 {/* Check if there are valid prices for requirements or addons */}
                                 {item?.requirements?.some(
@@ -478,7 +542,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
                                     )}
 
                                     {" = ₹"}
-                                    {  calculateTotalItemPrice(item)                                    }
+                                    {calculateTotalItemPrice(item)}
                                   </>
                                 ) : null}
                               </div>
@@ -588,7 +652,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
           <div className="flex justify-between mt-1">
             <p>Total Count:</p>
             <span>
-              {!cartProdcuts && !laundryCart || cartProdcuts?.length === 0 && laundryCart?.length === 0 ? "0" : cartProdcuts?.length + laundryCart?.length}
+             { calculateTotalCount()}
             </span>
           </div>
           <div className="flex justify-between mt-1">
@@ -722,27 +786,33 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
             {isChecked && (
               <div className="">
                 {savedAddress ? (
-                  <div className="flex gap-2 flex-col">
-                    <div className="">
+                  <div className="flex gap-2 w-full">
+                    <div className="w-full">
                       <Select
                         variant="borderless"
-                        className="text-[10px] border border-gray-300 rounded-lg w-full"
+                        className="text-[10px] border w-full border-gray-300 rounded-lg"
                         defaultValue={
                           customerAddress && customerAddress[0]?.label
-                            ? `${customerAddress[0]?.label} ${customerAddress[0]?.addressLine1}, ${customerAddress[0]?.city}`
+                            ? truncateString(
+                                `${customerAddress[0]?.label} ${customerAddress[0]?.addressLine1}, ${customerAddress[0]?.city}`,
+                                40
+                              )
                             : "No Saved Address"
                         }
                         onChange={handleChangeForDeliveryAddress}
                         options={customerAddress?.map((address) => ({
                           value: `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
-                          label: `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
+                          label: truncateString(
+                            `(${address?.label}) ${address?.addressLine1}, ${address?.city}`,
+                            40
+                          ),
                         }))}
                       />
                     </div>
                     <div className="w-full">
                       <button
                         onClick={() => setIsHomeDeliveryPopupOpen(true)}
-                        className="text-[10px] text-gray-600 flex items-center justify-center gap-2 bg-gray-200 px-4 py-2 mt-1 rounded-md w-full"
+                        className="text-[10px] text-gray-600 flex items-center justify-center gap-2 bg-gray-200 px-4 py-2 rounded-md w-full"
                       >
                         <FaRegAddressCard size={16} />
                         <p>Add new Address</p>
@@ -752,7 +822,7 @@ const BillingSection = ({ customerAddress, mode, onAddressChange, setSelectedTab
                 ) : (
                   <button
                     onClick={() => setIsHomeDeliveryPopupOpen(true)}
-                    className="text-[10px] text-gray-600 flex items-center justify-center gap-2 bg-gray-200 w-full py-2 mt-1 rounded-md"
+                    className="text-[10px] text-gray-600 flex items-center justify-center gap-2 bg-gray-200 w-40 py-2 mt-1 rounded-md"
                   >
                     <FaRegAddressCard size={16} />
                     <p>Add new Address</p>

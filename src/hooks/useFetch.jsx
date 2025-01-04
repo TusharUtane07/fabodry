@@ -17,7 +17,6 @@ const useFetch = (url, options = {}, dependencies = []) => {
           ...options,
         });
         setData(response.data);
-
       } catch (err) {
         setError(err);
       } finally {

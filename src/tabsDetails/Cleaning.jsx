@@ -3,17 +3,17 @@ import sofa from "../assets/sofa.png";
 import kitchen from "../assets/kitchen.png";
 import toilet from "../assets/toilet.png";
 import { useEffect, useState } from "react";
-import SidebarPopup from "../components/SidebarPopup";
-import AddedProductPreviewPopup from "../components/AddedProductPreviewPopup";
 import { useCart } from "../context/CartContenxt";
 import axios from "axios";
 import useFetch from "../hooks/useFetch";
 import { IoChevronBackCircle } from "react-icons/io5";
 import { MdDelete, MdVerified } from "react-icons/md";
 import toast from "react-hot-toast";
+import { useUtility } from "../context/UtilityContext";
 
-const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetails }) => {
+const Cleaning = ({ mode, isEditOrder, setUpdatedOrderProductDetails }) => {
   const { refreshCart, cartProdcuts } = useCart();
+  const { validateMobileNumber } = useUtility();
 
   const categories = [
     {
@@ -50,7 +50,9 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
   const [isPremium, setIsPremium] = useState("Regular");
 
   const togglePress = () => {
-    setIsPremium((prevState) => (prevState === "Regular" ? "Premium" : "Regular"));
+    setIsPremium((prevState) =>
+      prevState === "Regular" ? "Premium" : "Regular"
+    );
   };
 
   const { data } = useFetch(
@@ -100,60 +102,67 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
     setIsPreviewPopupOpen(true);
   };
 
-  const addToCart = async (productId, serviceName, item, price, productName) => {
-    if(isEditOrder){
-      setUpdatedOrderProductDetails(prevState => {
+  const addToCart = async (
+    productId,
+    serviceName,
+    item,
+    price,
+    productName
+  ) => {
+    if (isEditOrder) {
+      setUpdatedOrderProductDetails((prevState) => {
         return [
-          ...(prevState || []), 
+          ...(prevState || []),
           {
             productId: item,
             serviceName: selectedItem || "",
             quantity: 1,
-            garmentType: mode == "B2B" ? [{ price: price?.B2B }] : [{ price: price?.B2C }],
+            garmentType:
+              mode == "B2B" ? [{ price: price?.B2B }] : [{ price: price?.B2C }],
             serviceAddons: [{ name: "cleaning" }],
             requirements: [{ "": "" }],
             comments: [""],
             isPremium: isPremium === "Regular" ? false : true,
-          }
+          },
         ];
       });
-      toast.success("Added New Garment")
-      return
+      toast.success("Added New Garment");
+      return;
     } else {
-    const token = localStorage.getItem("authToken");
-    const userId = localStorage.getItem("userId");
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/add`,
-        {
-          customerId: userId,
-          productId: [productId],
-          serviceName: selectedItem,
-          quantity: 1,
-          garmentType:
-            mode == "B2B" ? [{ price: price?.B2B }] : [{ price: price?.B2C }],
-          serviceAddons: [{ name: "cleaning" }],
-          requirements: [{ "": "" }],
-          comments: [""],
-          isPremium: isPremium === "Regular" ? false : true,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      const token = localStorage.getItem("authToken");
+      const userId = localStorage.getItem("userId");
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/add`,
+          {
+            customerId: userId,
+            productId: [productId],
+            serviceName: selectedItem,
+            quantity: 1,
+            garmentType:
+              mode == "B2B" ? [{ price: price?.B2B }] : [{ price: price?.B2C }],
+            serviceAddons: [{ name: "cleaning" }],
+            requirements: [{ "": "" }],
+            comments: [""],
+            isPremium: isPremium === "Regular" ? false : true,
           },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        toast.success(`${productName} added`);
+        await refreshCart();
+      } catch (error) {
+        if (userId == null) {
+          toast.error("please enter mobile number");
+        } else {
+          toast.error("Internal server error");
         }
-      );
-      toast.success(`${productName} added`);
-      await refreshCart();
-    } catch (error) {
-      if (userId == null) {
-        toast.error("please enter mobile number");
-      } else {
-        toast.error("Internal server error");
+        console.error("Error updating cart:", error);
       }
-      console.error("Error updating cart:", error);
     }
-  }
   };
 
   const deleteCartProduct = async (id) => {
@@ -207,10 +216,17 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
     });
   };
 
-  const getPrice = (priceObj) => {
-    if (!priceObj) return 0;
-    return mode === "B2B" ? priceObj?.B2B : priceObj?.B2C;
-  };
+  function PriceDisplay( item, isPremium) {
+    const displayedPrice = isPremium === "Premium"
+      ? mode === "B2B"
+        ? item?.premiumPrice?.B2B
+        : item?.premiumPrice?.B2C
+      : mode === "B2B"
+      ? item?.price?.B2B
+      : item?.price?.B2C;
+      console.log(displayedPrice, "cleaning price");
+    return displayedPrice;
+  }
 
   return (
     <div>
@@ -221,7 +237,12 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
               mode === "B2B" ? "text-[#66BDC5]" : "text-[#004d57]"
             }`}
           >
-            <button onClick={() => setSelectedItem(null)}>
+            <button
+              onClick={() => {
+                setSelectedItem(null);
+                setSelectedAlphabet("");
+              }}
+            >
               <IoChevronBackCircle size={25} />
             </button>
             <h2
@@ -261,21 +282,28 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
                 </svg>
               </button>
             </div>
-            <div className="flex gap-1 items-center">
-              <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
-                Total Count: {" "}
-                {cartProdcuts?.length > 0 ? cartProdcuts?.length : 0}
-              </div>
-              {/* <button
-                onClick={handlePreviewClick}
-                className={`text-xs rounded-md px-4 py-1.5 ${
-                  mode === "B2B"
-                    ? "bg-[#66BDC5] text-white"
-                    : "bg-[#004d57] text-white"
+            <div
+              className={`flex mt-1  items-center justify-between w-60 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
+              onClick={togglePress}
+            >
+              <div
+                className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
+                  isPremium === "Regular"
+                    ? "bg-[#006370] text-white"
+                    : "text-black"
                 }`}
               >
-                Preview
-              </button> */}
+                Regular
+              </div>
+              <div
+                className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
+                  isPremium === "Premium"
+                    ? "bg-[#006370] text-white"
+                    : "text-black"
+                }`}
+              >
+                Premium
+              </div>
             </div>
           </div>
 
@@ -284,14 +312,13 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
           </div>
           <div className="grid lg:grid-cols-4 xl:grid-cols-4 mx-auto justify-center gap-4  my-4">
             {getCategoryProducts()?.map((item, index) => {
+              console.log(item, "cleaning");
               const isInCart = cartProdcuts?.some(
-                (cartItem) =>
-                  cartItem?.productId?._id === item?._id
+                (cartItem) => cartItem?.productId?._id === item?._id
               );
 
               const correspondingCartItem = cartProdcuts?.find(
-                (cartItem) =>
-                  cartItem?.productId?._id === item?._id
+                (cartItem) => cartItem?.productId?._id === item?._id
               );
 
               return (
@@ -302,7 +329,7 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
                 >
                   <img src={sofa} alt="" className="w-14 h-14 mx-auto" />
                   <p className="text-sm pt-2 capitalize">{item?.name}</p>
-                  <p className="text-sm py-1">₹ {getPrice(item?.price)}/-</p>
+                  <p className="text-sm py-1">₹ {PriceDisplay(item, isPremium)}/-</p>
 
                   <div className="w-full mx-2">
                     <button
@@ -377,33 +404,10 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
               </button>
             </div>
             <div className="flex gap-1 items-center">
-            <div className="text-xs rounded-lg px-4 py-2  text-gray-500">
-                Total Count: {" "}
+              <div className="text-xs rounded-lg px-4 py-2  text-gray-500">
+                Total Count:{" "}
                 {cartProdcuts?.length > 0 ? cartProdcuts?.length : 0}
               </div>
-              <div
-              className={`flex mt-1  items-center justify-between w-60 py-0.5 h-8 px-1 text-[10px] bg-gray-300 rounded-full cursor-pointer`}
-              onClick={togglePress}
-            >
-              <div
-                className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
-                  isPremium === "Regular"
-                    ? "bg-[#006370] text-white"
-                    : "text-black"
-                }`}
-              >
-                Regular
-              </div>
-              <div
-                className={`flex-1 text-center py-1 rounded-full px-3 transition-all ${
-                  isPremium === "Premium"
-                    ? "bg-[#006370] text-white"
-                    : "text-black"
-                }`}
-              >
-                Premium
-              </div>
-            </div>
             </div>
           </div>
           <div className="mt-3">
@@ -412,7 +416,7 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
           <div className="grid lg:grid-cols-4 xl:grid-cols-4 gap-4 my-4">
             {filteredProducts?.map((item, index) => {
               const hasItemsInCart = cartProdcuts?.some(
-                cartItem => cartItem?.serviceName === item.name
+                (cartItem) => cartItem?.serviceName === item.name
               );
 
               return (
@@ -460,7 +464,11 @@ const Cleaning = ({ mode, orderDetails, isEditOrder, setUpdatedOrderProductDetai
                         ? "bg-[#66BDC5] text-white"
                         : "bg-[#004d57] text-white"
                     }`}
-                    onClick={() => setSelectedItem(item.name)}
+                    onClick={() => {
+                      if (!validateMobileNumber()) return;
+                      setSelectedItem(item.name);
+                      setSelectedAlphabet("");
+                    }}
                   >
                     {hasItemsInCart ? "View Details" : "Add Product"}
                   </button>
