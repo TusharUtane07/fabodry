@@ -120,7 +120,7 @@ const Laundry = ({
                 cartId: item?._id,
                 productDetails: product.productDetails,
                 quantity: product.quantity,
-                garmentType: product.garmentType?.label,
+                garmentType: product.garmentType,
                 additionalServices: product.additionalServices || [],
                 requirements: product.requirements || null,
                 comments: product.comments || [],
@@ -214,7 +214,9 @@ const Laundry = ({
 
   const deleteCartProduct = async (id) => {
     const token = localStorage.getItem("authToken");
+    
     try {
+      // Delete from database
       const response = await axios.delete(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/delete/${id}`,
         {
@@ -223,8 +225,40 @@ const Laundry = ({
           },
         }
       );
+  
+      // Clear the specific item from relevant states based on service type
+      const itemToDelete = laundryCart.find(item => item._id === id);
+      if (itemToDelete) {
+        switch (itemToDelete.serviceName) {
+          case "Wash & Fold":
+            setServiceWfAddData(prev => ({
+              ...prev,
+              garments: prev.garments.filter(garment => garment.cartId !== id),
+              totalSelectedWeight: prev.totalSelectedWeight - (itemToDelete.weight || 0)
+            }));
+            break;
+          
+          case "Wash & Iron":
+            setServiceAddData(prev => ({
+              ...prev,
+              garments: prev.garments.filter(garment => garment.cartId !== id),
+              totalSelectedWeight: prev.totalSelectedWeight - (itemToDelete.weight || 0)
+            }));
+            break;
+          
+          case "Premium Laundry":
+            setServicePlAddData(prev => ({
+              ...prev,
+              garments: prev.garments.filter(garment => garment.cartId !== id),
+              totalSelectedWeight: prev.totalSelectedWeight - (itemToDelete.weight || 0)
+            }));
+            break;
+        }
+      }
+  
+      // Refresh the cart after state updates
+      refreshCart();
       toast.success("Deleted Successfully");
-      await refreshCart();
     } catch (error) {
       toast.error("Error Deleting");
       console.log("Error deleting product: ", error, error.message);
@@ -381,6 +415,7 @@ const Laundry = ({
       return;
     }
 
+    
     if (selectedItem === "Wash & Iron" && !serviceAddData?.garments?.length) {
       toast.error("Add garments before confirming");
       return;
@@ -397,16 +432,20 @@ const Laundry = ({
       toast.error("Add garments before confirming");
       return;
     }
-
+    
     const token = localStorage.getItem("authToken");
-
+    
     const currentServiceData =
-      selectedItem === "Wash & Iron"
-        ? serviceAddData
-        : selectedItem === "Wash & Fold"
-        ? serviceWfAddData
-        : servicePlAddData;
-
+    selectedItem === "Wash & Iron"
+    ? serviceAddData
+    : selectedItem === "Wash & Fold"
+    ? serviceWfAddData
+    : servicePlAddData;
+    if (currentServiceData?.serviceWeight === 0){
+      toast.error("Please increase weight before adding")
+      return;
+    }
+    
     const price =
       selectedItem === "Wash & Iron"
         ? serviceAddData?.price || 20
@@ -762,7 +801,7 @@ const Laundry = ({
                                   <div className="font-semibold">
                                     {item.productDetails.name}
                                     {item?.garmentType
-                                      ? ` [${item?.garmentType}]`
+                                      ? ` [${item?.garmentType?.label}]`
                                       : ""}{" "}
                                     X {item?.quantity || 1}
                                   </div>
@@ -915,11 +954,17 @@ const Laundry = ({
                           </span>
                         </div>
                         <button
-                          onClick={() =>
-                            handleWeightAdjustment(
-                              Math.max(0, serviceAddData.serviceWeight - 1)
-                            )
-                          }
+                         onClick={() =>
+                          handleWeightAdjustment(
+                            selectedItem === "Wash & Iron"
+                              ? serviceAddData.serviceWeight - 1
+                              : selectedItem === "Wash & Fold"
+                              ? serviceWfAddData.serviceWeight - 1
+                              : selectedItem === "Premium Laundry"
+                              ? servicePlAddData.serviceWeight - 1
+                              : 0
+                          )
+                        }
                           className={`rounded-sm px-2 py-0.5 ${
                             mode === "B2B"
                               ? "bg-[#66BDC5] text-white"
@@ -1026,6 +1071,7 @@ const Laundry = ({
                           cartItem?.serviceName === selectedItem
                       )
                     );
+                    console.log(cartItem, "cit");
                     const isInCart = !!cartItem;
                     const productInCart = cartItem?.products?.find(
                       (lItem) => lItem?.productDetails?._id === item?._id
@@ -1082,9 +1128,7 @@ const Laundry = ({
                                 onClick={() => {
                                   setIsEditOpen(true);
                                   setCartPId(cartItem?._id);
-                                  setProductDetails(
-                                    cartItem?.products[0]?.productDetails
-                                  );
+                                  setProductDetails(cartItem?.products[0]?.productDetails);
                                 }}
                                 className="absolute left-1 text-green-500 rounded-sm text-xs"
                               >

@@ -6,6 +6,7 @@ import {
   Routes,
   Route,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import Orders from "./pages/Orders.jsx";
@@ -40,6 +41,14 @@ import { UtilityProvider } from "./context/UtilityContext.jsx";
 const AppLayout = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
+
+  // Assume you have a function to check if the user is logged in (using context or localStorage)
+  const isLoggedIn = localStorage.getItem("authToken") !== null;
+
+  // Redirect to login page if the user is not logged in
+  if (!isLoggedIn && !isLoginPage) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <CartProvider>
