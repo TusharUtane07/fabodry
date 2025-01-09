@@ -138,6 +138,12 @@ const BillingSection = ({
   };
 
   const calculateTotalPrice = (item) => {
+    if (!item?.isInCart) {
+      return 0; // Return 0 if the item is not in the cart
+    }
+  
+    console.log(item, "itemsss");
+  
     const productsAddonsAndRequirements =
       item?.products?.reduce((total, product) => {
         const additionalServicesTotal =
@@ -152,17 +158,18 @@ const BillingSection = ({
           ) || 0;
         return total + additionalServicesTotal + requirementsTotal;
       }, 0) || 0;
-
+  
     const addonsPriceSum =
       item?.productAddons?.reduce((total, addon) => {
         return total + addon?.price;
       }, 0) || 0;
     const totalPricePerKg = item?.totalPrice + addonsPriceSum;
-    console.log(totalPricePerKg, "ttp");
+  
     return (
       totalPricePerKg * Number(item?.weight) + productsAddonsAndRequirements
     );
   };
+  
 
   const calculateGrossTotal = () => {
     const itemsTotal = cartProdcuts?.reduce(
@@ -215,7 +222,7 @@ const BillingSection = ({
           },
         }
       );
-      await refreshCart();
+     refreshCart();
       toast.success("Deleted Successfully");
     } catch (error) {
       toast.error("Error Deleting");
@@ -336,14 +343,20 @@ const BillingSection = ({
     let quantity = 0;
   
     cartProdcuts?.map((item) => {
-      if (item?.serviceAddons?.[0]?.name !== 'cleaning') {
-        quantity += item?.quantity || 0; 
+      if (item?.isInCart && item?.serviceAddons?.[0]?.name !== "cleaning") {
+        quantity += item?.quantity || 0;
       }
     });
   
-    laundryCart?.map((item) => quantity+=item?.products?.length)
-    return quantity
+    laundryCart?.map((item) => {
+      if (item?.isInCart) {
+        quantity += item?.products?.length || 0;
+      }
+    });
+  
+    return quantity;
   };
+  
   
 
   const isDisabled =

@@ -354,7 +354,7 @@ const Laundry = ({
       setServicePlAddData((prev) => ({
         ...prev,
         selectedService: itemName,
-        serviceWeight: prev.serviceWeight,
+        serviceWeight: prev?.serviceWeight,
       }));
     }
     setFilteredProducts(filteredLaundryProducts);
@@ -409,43 +409,37 @@ const Laundry = ({
   const addToCart = async () => {
     const mobileNumber = localStorage.getItem("mobileNumber");
     const userId = localStorage.getItem("userId");
-
-    if (mobileNumber === "" && userId == null) {
+  
+    if (mobileNumber === "" || !userId) {
       toast.error("Please enter mobile number");
       return;
     }
-
-    
+  
     if (selectedItem === "Wash & Iron" && !serviceAddData?.garments?.length) {
       toast.error("Add garments before confirming");
       return;
-    } else if (
-      selectedItem === "Premium Laundry" &&
-      !servicePlAddData?.garments?.length
-    ) {
+    } else if (selectedItem === "Premium Laundry" && !servicePlAddData?.garments?.length) {
       toast.error("Add garments before confirming");
       return;
-    } else if (
-      selectedItem === "Wash & Fold" &&
-      !serviceWfAddData?.garments?.length
-    ) {
+    } else if (selectedItem === "Wash & Fold" && !serviceWfAddData?.garments?.length) {
       toast.error("Add garments before confirming");
       return;
     }
-    
+  
     const token = localStorage.getItem("authToken");
-    
+  
     const currentServiceData =
-    selectedItem === "Wash & Iron"
-    ? serviceAddData
-    : selectedItem === "Wash & Fold"
-    ? serviceWfAddData
-    : servicePlAddData;
-    if (currentServiceData?.serviceWeight === 0){
-      toast.error("Please increase weight before adding")
+      selectedItem === "Wash & Iron"
+        ? serviceAddData
+        : selectedItem === "Wash & Fold"
+        ? serviceWfAddData
+        : servicePlAddData;
+  
+    if (currentServiceData?.serviceWeight === 0) {
+      toast.error("Please increase weight before adding");
       return;
     }
-    
+  
     const price =
       selectedItem === "Wash & Iron"
         ? serviceAddData?.price || 20
@@ -454,63 +448,55 @@ const Laundry = ({
         : selectedItem === "Premium Laundry"
         ? servicePlAddData?.price || 40
         : 0;
-
+  
     const newData = {
-      isInCart: true,
       weight: currentServiceData?.serviceWeight || 0,
-      customerId: userId,
-      serviceName: selectedItem,
       productAddons: currentServiceData?.addons || [],
       products: currentServiceData?.garments || [],
       pieceCount: currentServiceData?.garments?.length || 0,
       totalPrice: price,
+      isInCart: true
     };
-
-    if (isEditOrder) {
-      setUpdatedLaundryProductDetails((prev) => {
-        return [...(prev || []), newData];
-      });
-      toast.success("Added successfully");
-    } else {
-      try {
-        if (isInCart && cartItemId) {
-          const response = await axios.put(
-            `${
-              import.meta.env.VITE_BACKEND_URL
-            }api/v1/Laundrycarts/update/${cartItemId}`,
-            newData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          toast.success("Cart updated successfully");
-        } else {
-          const response = await axios.post(
-            `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/add`,
-            newData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          toast.success("Added to cart successfully");
-        }
-        refreshCart();
-      } catch (error) {
-        if (userId == null) {
-          toast.error("Please enter mobile number");
-        } else {
-          toast.error("Internal server error");
-        }
-        console.error(error);
-      } finally {
-        setSelectedItem(null);
+  
+    try {
+      if (isInCart && cartItemId) {
+        // Update the cart without merging arrays
+        const response = await axios.put(
+          `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartItemId}`,
+          newData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        toast.success("Cart updated successfully");
+      } else {
+        // Add new cart item (if not already in cart)
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/add`,
+          newData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        toast.success("Added to cart successfully");
       }
+      refreshCart();
+      setServiceWfAddData(null)
+      setServiceAddData(null)
+      setServicePlAddData(null)
+    } catch (error) {
+      if (!userId) {
+        toast.error("Please enter mobile number");
+      } else {
+        toast.error("Internal server error");
+      }
+      console.error(error);
+    } finally {
+      setSelectedItem(null);
     }
   };
+  
+  
 
   return (
     <>
@@ -690,15 +676,15 @@ const Laundry = ({
                           key={addon.id}
                           className={`flex items-center gap-4 border rounded-lg px-3 py-1.5 cursor-pointer transition-colors ${
                             (selectedItem === "Wash & Iron" &&
-                              serviceAddData.addons.some(
+                              serviceAddData?.addons?.some(
                                 (a) => a.id === addon.id
                               )) ||
                             (selectedItem === "Wash & Fold" &&
-                              serviceWfAddData.addons.some(
+                              serviceWfAddData?.addons?.some(
                                 (a) => a.id === addon.id
                               )) ||
                             (selectedItem === "Premium Laundry" &&
-                              servicePlAddData.addons.some(
+                              servicePlAddData?.addons?.some(
                                 (a) => a.id === addon.id
                               ))
                               ? mode === "B2B"
@@ -712,15 +698,15 @@ const Laundry = ({
                             type="checkbox"
                             checked={
                               (selectedItem === "Wash & Iron" &&
-                                serviceAddData.addons.some(
+                                serviceAddData?.addons?.some(
                                   (a) => a.id === addon.id
                                 )) ||
                               (selectedItem === "Wash & Fold" &&
-                                serviceWfAddData.addons.some(
+                                serviceWfAddData?.addons?.some(
                                   (a) => a.id === addon.id
                                 )) ||
                               (selectedItem === "Premium Laundry" &&
-                                servicePlAddData.addons.some(
+                                servicePlAddData?.addons?.some(
                                   (a) => a.id === addon.id
                                 ))
                             }
