@@ -224,9 +224,19 @@ const Cleaning = ({ mode, isEditOrder, setUpdatedOrderProductDetails }) => {
       : mode === "B2B"
       ? item?.price?.B2B
       : item?.price?.B2C;
-      console.log(displayedPrice, "cleaning price");
     return displayedPrice;
   }
+
+
+  const getTotalCount = () => {
+    let count = 0;
+      cartProdcuts?.filter(product => product?.serviceAddons[0]?.name === "cleaning")
+      .forEach(product => {
+        count += product.quantity;
+      });
+  
+    return count;
+  };
 
   return (
     <div>
@@ -312,7 +322,6 @@ const Cleaning = ({ mode, isEditOrder, setUpdatedOrderProductDetails }) => {
           </div>
           <div className="grid lg:grid-cols-4 xl:grid-cols-4 mx-auto justify-center gap-4  my-4">
             {getCategoryProducts()?.map((item, index) => {
-              console.log(item, "cleaning");
               const isInCart = cartProdcuts?.some(
                 (cartItem) => cartItem?.productId?._id === item?._id
               );
@@ -406,7 +415,7 @@ const Cleaning = ({ mode, isEditOrder, setUpdatedOrderProductDetails }) => {
             <div className="flex gap-1 items-center">
               <div className="text-xs rounded-lg px-4 py-2  text-gray-500">
                 Total Count:{" "}
-                {cartProdcuts?.length > 0 ? cartProdcuts?.length : 0}
+                {getTotalCount()}
               </div>
             </div>
           </div>

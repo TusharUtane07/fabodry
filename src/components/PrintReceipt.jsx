@@ -11,7 +11,7 @@ const PrintReceipt = () => {
     const orderData = location.state?.order;
     if (orderData) {
       const order = JSON.parse(orderData);
-      
+
       const currentDate = new Date();
       const formattedDate = currentDate.toLocaleDateString("en-US", {
         year: "numeric",
@@ -24,42 +24,42 @@ const PrintReceipt = () => {
         hour12: true,
       });
 
-      const items = order.cartItems.map(item => ({
+      const items = order.cartItems.map((item) => ({
         name: item.productId.name,
         price: item.garmentType[0]?.price || item.productId.price.B2C,
         serviceName: item.serviceName,
-        addons: item.serviceAddons.map(addon => addon.name).filter(Boolean),
-        quantity: item.quantity
+        addons: item.serviceAddons.map((addon) => addon.name).filter(Boolean),
+        quantity: item.quantity,
       }));
 
       const calculateTotalPrice = (item) => {
-        const addonsPriceSum = item.productAddons?.reduce((total, addon) => {
-          return total + addon.price;
-        }, 0) || 0;
+        const addonsPriceSum =
+          item.productAddons?.reduce((total, addon) => {
+            return total + addon.price;
+          }, 0) || 0;
         const totalPricePerKg = item.totalPrice + addonsPriceSum;
         return totalPricePerKg * Number(item.weight);
       };
 
-      const items2 = order.laundryCartItems.map(item => ({
+      const items2 = order.laundryCartItems.map((item) => ({
         name: item.serviceName,
         price: calculateTotalPrice(item),
         serviceName: "Laundry",
-        addons: item.productAddons.map(addon => addon.name).filter(Boolean),
-        quantity: item.weight
-      }))
+        addons: item.productAddons.map((addon) => addon.name).filter(Boolean),
+        quantity: item.weight,
+      }));
 
-      const totalAmount = 
-      items.reduce((sum, item) => {
-        const price = parseFloat(item.price) || 0;
-        const quantity = parseInt(item.quantity, 10) || 0;
-        return sum + (price * quantity);
-      }, 0) + 
-      items2.reduce((sum, item) => {
-        const price = parseFloat(item.price) || 0;
-        const quantity = parseInt(item.quantity, 10) || 0;
-        return sum + (price * quantity);
-      }, 0);
-      console.log(order);
+      const totalAmount =
+        items.reduce((sum, item) => {
+          const price = parseFloat(item.price) || 0;
+          const quantity = parseInt(item.quantity, 10) || 0;
+          return sum + price * quantity;
+        }, 0) +
+        items2.reduce((sum, item) => {
+          const price = parseFloat(item.price) || 0;
+          const quantity = parseInt(item.quantity, 10) || 0;
+          return sum + price * quantity;
+        }, 0);
       setReceiptData({
         orderId: order._id,
         branchName: order?.branchName,
@@ -75,7 +75,7 @@ const PrintReceipt = () => {
         totalAmount: order?.totalAmount,
         discountAmount: Number(order?.discountAmount),
         date: formattedDate,
-        time: formattedTime
+        time: formattedTime,
       });
 
       // const afterPrint = () => {
@@ -97,18 +97,28 @@ const PrintReceipt = () => {
     navigate(-1);
   };
 
+  useEffect(() => {
+    document.fonts.load("1em Roboto Mono").then(() => {
+    });
+  }, []);
+
   return (
-    <div className="min-h-screen">
+    <div
+      className="min-h-screen font-sans"
+      style={{
+        fontFamily: "'Roboto Mono', monospace",
+      }}
+    >
       {/* Buttons - Only visible on screen */}
       <div className="print:hidden flex items-center justify-center gap-3 pt-20">
-        <button 
-          onClick={handlePrint} 
+        <button
+          onClick={handlePrint}
           className="px-4 py-2 bg-[#00414e] text-white rounded"
         >
           Proceed If thermal printer is ready
         </button>
-        <button 
-          onClick={handleBack} 
+        <button
+          onClick={handleBack}
           className="px-4 py-2 bg-gray-500 text-white rounded"
         >
           Back
@@ -116,76 +126,110 @@ const PrintReceipt = () => {
       </div>
 
       {/* Receipt Content - Centered in print view */}
-      <div style={{ fontFamily: 'Roboto Mono, sans-serif' }} className="print:p-0 print:m-0 print:absolute print:top-0 print:left-0 print:w-[90mm] print:min-w-[90mm] print:max-w-[90mm]">
+      <div
+        style={{ fontFamily: "Roboto Mono, sans-serif" }}
+        className="font-roboto receipt-should-roboto-font print:p-0 print:m-0 print:absolute print:top-0 print:left-0 print:w-[90mm] print:min-w-[90mm] print:max-w-[90mm]"
+      >
         <div className="justify-center text-xs print:text-[10px] flex flex-col items-center mt-10 print:border-none">
           {/* Logo */}
           <div className="w-40 print:w-24 my-2">
             <img src={fabodry} alt="Fabodry Logo" className="w-full" />
           </div>
           <div className=" flex flex-col w-[300px] items-center mb-2 text-sm">
-            <p className="font-medium  text-lg">{receiptData?.branchName}</p>
-            <p className="my-1 text-gray-500">{receiptData?.address}</p>
-            <p className="text-gray-500">Phone: {receiptData?.phone}</p>
+            <p className="font-medium  text-sm">{receiptData?.branchName}</p>
+            <p className="my-1 text-xs text-gray-500">{receiptData?.address}</p>
+            <p className="text-gray-500 text-xs">Phone: {receiptData?.phone}</p>
           </div>
 
           {/* Header Info */}
-          <div className="w-[300px] px-4 py-3 text-start border-t-2 border-dotted border-gray-500">
-          <div className="flex items-center justify-between my-1 gap-3 text-gray-500">
-            <p className="text-xs my-1"><span className="font-medium text-black">Order ID:</span> {receiptData?.orderId?.slice(0, 6)}</p>
-            <p className="text-xs my-1">{receiptData?.date} {receiptData?.time}</p>
-          </div>
+          <div className="w-[300px] px-4  text-start border-t-2 border-dashed border-gray-500">
+            <div className="flex items-center justify-between my-1 gap-3 text-gray-500">
+              <p className="text-xs my-1">
+                <span className="font-medium text-black">Order ID:</span>{" "}
+                {receiptData?.orderId?.slice(0, 6)}
+              </p>
+              <p className="text-xs my-1">
+                {receiptData?.date} {receiptData?.time}
+              </p>
+            </div>
             <div className="flex flex-col gap-2">
-              <p className="text-gray-500"><span className="font-medium text-black">Customer Name: </span>{receiptData?.customerName}</p>
-              <p className="text-gray-500"><span className="font-medium text-black">Phone: </span>{receiptData?.cPhone}</p>
-              <p className="text-gray-500"><span className="font-medium text-black">Address: </span>{receiptData?.addressC}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-gray-500">
+                  <span className="font-medium text-black">Name: </span>
+                  {receiptData?.customerName}
+                </p>
+                <p className="text-gray-500">
+                  <span className="font-medium text-black">Phone: </span>
+                  {receiptData?.cPhone}
+                </p>
+              </div>
+              <p className="text-gray-500">
+                <span className="font-medium text-black">Address: </span>
+                {receiptData?.addressC}
+              </p>
             </div>
           </div>
 
           {/* Items Table */}
-          <div className="w-[300px] border-t-2 border-dotted border-gray-500 pt-5 my-2">
-            <table className="w-[300px] text-start">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="py-1 text-xs font-semibold text-start">Item</th>
-                  <th className="py-1 text-xs font-semibold text-right">Qty</th>
-                  <th className="py-1 text-xs font-semibold text-right">Price</th>
-                </tr>
-              </thead>
-              <tbody className="text-xs">
-                {receiptData?.items?.map((item, index) => (
-                  <tr key={index} className="">
-                    <td className="py-1">
-                      <div>{item.name}</div>
-                      {item.addons.length > 0 && (
-                        <div className="text-[9px] text-gray-500">
-                          + {item.addons.join(", ")}
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-1 text-right text-[12px]">{item.quantity}</td>
-                    <td className="py-1 text-right text-[12px]">₹{item.price}</td>
-                  </tr>
-                ))}
-                {receiptData?.items2.map((item, index) => (
-                  <tr key={index} className="">
-                    <td className="py-1">
-                      <div>{item.name}</div>
-                      {item.addons.length > 0 && (
-                        <div className="text-[9px] text-gray-500 w-40">
-                          + {item.addons.join(", ")}
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-1 text-right text-[12px]">{item.quantity}/KG</td>
-                    <td className="py-1 text-right text-[12px]">₹ {item.price}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <div className="w-[300px] border-t-2 border-dashed border-gray-500 pt-2 my-2">
+  <table className="w-[300px] text-start border-collapse border border-gray-300">
+    <thead>
+      <tr className="border border-gray-300">
+        <th className="py-1 px-2 text-xs font-semibold text-start border border-gray-300">
+          Item
+        </th>
+        <th className="py-1 px-2 text-xs font-semibold text-right border border-gray-300">
+          Qty
+        </th>
+        <th className="py-1 px-2 text-xs font-semibold text-right border border-gray-300">
+          Price
+        </th>
+      </tr>
+    </thead>
+    <tbody className="text-xs">
+      {receiptData?.items?.map((item, index) => (
+        <tr key={index} className="border border-gray-300">
+          <td className="py-1 px-2 border border-gray-300">
+            <div>{item.name}</div>
+            {item.addons.length > 0 && (
+              <div className="text-[9px] text-gray-500">
+                + {item.addons.join(", ")}
+              </div>
+            )}
+          </td>
+          <td className="py-1 px-2 text-right text-[12px] border border-gray-300">
+            {item.quantity}
+          </td>
+          <td className="py-1 px-2 text-right text-[12px] border border-gray-300">
+            ₹{item.price}
+          </td>
+        </tr>
+      ))}
+      {receiptData?.items2.map((item, index) => (
+        <tr key={index} className="border border-gray-300">
+          <td className="py-1 px-2 border border-gray-300">
+            <div>{item.name}</div>
+            {item.addons.length > 0 && (
+              <div className="text-[9px] text-gray-500 w-40">
+                + {item.addons.join(", ")}
+              </div>
+            )}
+          </td>
+          <td className="py-1 px-2 text-right text-[12px] border border-gray-300">
+            {item.quantity}/KG
+          </td>
+          <td className="py-1 px-2 text-right text-[12px] border border-gray-300">
+            ₹ {item.price}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
 
           {/* Total */}
-          <div className="w-[300px] py-2 border-t border-gray-200 flex flex-col gap-2">
+          <div className="w-[300px] py-1 flex flex-col gap-2">
             <div className="flex justify-between">
               <span className="font-semibold">Total Count:</span>
               <span>{receiptData?.count}</span>
@@ -198,14 +242,14 @@ const PrintReceipt = () => {
               <span className="font-semibold">Express Amount:</span>
               <span>₹{receiptData?.express}</span>
             </div>
-            <div className="flex justify-between font-medium mt-4 text-xl">
+            <div className="flex justify-between font-medium mt-2 text-lg">
               <span>Total:</span>
               <span>₹{receiptData?.totalAmount}</span>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="w-[300px] text-center uppercase border-t-2 border-b-2 border-dotted border-gray-500 py-3 text-lg print:text-[16px]">
+          <div className="w-[300px] text-center uppercase border-t-2 border-b-2 border-dashed border-gray-500 py-3 text-sm font-bold print:text-[16px]">
             <p>&quot;&quot;&quot;Thank You&quot;&quot;&quot;</p>
           </div>
           <div className="mt-2">

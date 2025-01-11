@@ -1,24 +1,30 @@
 import { RxCross2 } from "react-icons/rx";
 import { useCart } from "../context/CartContenxt";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit, MdModeEditOutline } from "react-icons/md";
 import { useState } from "react";
 import OrderEditPopup from "./OrderEditPopup";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const OtherServicesMultipleEdit = ({ serviceName, isOpen, setIsOpen, mode }) => {
+const OtherServicesMultipleEdit = ({
+  serviceName,
+  isOpen,
+  setIsOpen,
+  mode,
+  productId
+}) => {
   const { refreshCart, cartProdcuts } = useCart();
   const [editGarmentsOpen, setEditGarmentsOpen] = useState(false);
   const [cartPId, setCartPId] = useState(null);
   const [productDetails, setProductDetails] = useState(null);
 
-  const dcProducts = cartProdcuts?.filter((item) => item?.serviceName === serviceName);
-  
-  const getPrice = (priceObj) => {
-    if (!priceObj) return 0;
-    return mode === "B2B" ? priceObj?.B2B : priceObj?.B2C;
-  };
-
+  const filteredProducts = cartProdcuts?.filter(
+    (item) =>
+    {
+      return item?.serviceName === serviceName &&
+      item?.productId?._id === productId
+    }
+  );
 
   const deleteCartProduct = async (id) => {
     const token = localStorage.getItem("authToken");
@@ -33,7 +39,7 @@ const OtherServicesMultipleEdit = ({ serviceName, isOpen, setIsOpen, mode }) => 
       );
       console.log("Delete response: ", response);
       toast.success("Deleted Successfully");
-      setIsOpen(false)
+      setIsOpen(false);
       await refreshCart();
     } catch (error) {
       toast.error("Error Deleting");
@@ -46,76 +52,103 @@ const OtherServicesMultipleEdit = ({ serviceName, isOpen, setIsOpen, mode }) => 
     <>
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg relative">
+          <div className="bg-white p-6 w-[600px] h-[600px] overflow-y-scroll rounded-lg shadow-lg relative">
+            {/* <div className="fixed w-full bottom-0">
+              <button className="w-full bg-[#004d57] text-white text-sm py-2 rounded-md">Confirm</button>
+            </div> */}
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Edit Garments</h2>
+              <h2 className="text-lg font-semibold">Added Garments</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-500 hover:text-gray-700 font-semibold text-xl"
+                className="text-gray-500 hover:text-gray-700 font-semibold text-2xl"
               >
                 <RxCross2 />
               </button>
             </div>
-            <div className="mt-4 relative flex justify-center items-center gap-3 w-full">
-              {dcProducts?.map((item, index) => {
+            <div className="mt-4 relative flex flex-col justify-center items-center gap-3 w-full">
+              {filteredProducts?.map((item) => {
                 return (
                   <div
-                    key={index}
-                    className="border cursor-pointer border-gray-300 rounded-lg px-8 flex flex-col justify-center items-center relative mb-4¯"
+                    key={item?._id}
+                    className="border border-gray-300 p-2 rounded-lg capitalize mt-0.5 mb-2 w-full"
                   >
-                      <div className="absolute w-full top-2">
-                        <div className="flex justify-between items-center">
+                    <div className="flex justify-between px-2 w-full gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 text-lg">
+                          {item?.serviceAddons[0]?.name === "cleaning" ? (
+                            " "
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setCartPId(item?._id);
+                                setEditGarmentsOpen(true);
+                                setProductDetails(item?.productId);
+                              }}
+                              className="text-green-500"
+                            >
+                              <MdModeEditOutline />
+                            </button>
+                          )}
                           <button
-                            className="p-1  text-green-500"
-                            onClick={() => {
-                              setCartPId(item?._id);
-                              setEditGarmentsOpen(true);
-                              setProductDetails(item?.productId);
-                            }}
+                            onClick={() => deleteCartProduct(item?._id)}
+                            className="text-red-500 text-xl font-bold"
                           >
-                            <MdEdit size={20} />
-                          </button>
-                          <button
-                            className="p-1 text-red-500"
-                            onClick={() =>
-                              deleteCartProduct(item?._id)
-                            }
-                          >
-                            <MdDelete size={20} />
+                            <RxCross2 />
                           </button>
                         </div>
+                        {item?.productId?.name && (
+                          <div className="font-semibold">
+                            {item?.productId?.name}
+                            {item?.garmentType[0]?.name
+                              ? ` [${item?.garmentType[0]?.name}]`
+                              : ""}{" "}
+                            {item?.serviceAddons[0]?.name === "cleaning"
+                              ? ""
+                              : ` X ${item?.quantity || 1}`}
+                          </div>
+                        )}
                       </div>
-                    <img
-                      src={item?.productId?.image}
-                      alt=""
-                      className="w-12 h-12 mx-auto mt-8"
-                    />
-                    <p className="text-sm pt-2 capitalize">{item?.productId?.name}</p>
-                    <p className="text-sm  capitalize">[{item?.garmentType[0]?.name}]</p>
-                    <p className="text-xs py-1">₹ {getPrice(item?.productId?.price)}/-</p>
-                    <div className="border border-gray-300 rounded-lg my-1 p-1 text-sm flex items-center">
-                      <button
-                        className={`rounded-sm px-1 ${
-                          mode === "B2B"
-                            ? "bg-[#66BDC5] text-white"
-                            : "bg-[#004d57] text-white"
-                        }`}
-                      >
-                        +
-                      </button>
-                      <span className="px-3">
-                        {item?.quantity || 0}
-                      </span>
-                      <button
-                        className={`rounded-sm px-1 ${
-                          mode === "B2B"
-                            ? "bg-[#66BDC5] text-white"
-                            : "bg-[#004d57] text-white"
-                        }`}
-                      >
-                        -
-                      </button>
                     </div>
+                    {item?.serviceAddons[0]?.name === "cleaning" ? (
+                      <div className="text-[12px]">
+                        <p>
+                          {item?.isPremium === true ? "Premium" : "Regular"}
+                        </p>
+                        <p>Service: {item?.serviceName}</p>
+                      </div>
+                    ) : (
+                      <div className="text-[12px]">
+                        <div className="flex items-center gap-1">
+                          <p className="font-medium">
+                            {item?.isPremium === true ? "Premium" : "Regular"} -
+                          </p>
+                          <p className="font-medium">
+                            Service: {item?.serviceName}
+                          </p>
+                        </div>
+                        {item?.requirements[0]?.name && (
+                          <p>
+                            Requirements: {item?.requirements[0]?.name} (₹{" "}
+                            {item?.requirements[0]?.price || 0})
+                          </p>
+                        )}
+                        {item?.serviceAddons?.length > 0 && (
+                          <p>
+                            Additional Services:{" "}
+                            {item?.serviceAddons?.map((service, index) => (
+                              <span key={index}>
+                                {service?.name} (₹ {service?.price})
+                                {index < item?.serviceAddons?.length - 1 &&
+                                  ", "}
+                              </span>
+                            ))}
+                          </p>
+                        )}
+                        {/* {item?.comments?.length > 0 && (
+                      <p>Comments: {item.comments.join(", ")}</p>
+                    )} */}
+                      </div>
+                    )}
                   </div>
                 );
               })}

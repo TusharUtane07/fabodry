@@ -19,6 +19,7 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
   const [editOpen, setEditOpen] = useState(false);
   const [editGarmentsOpen, setEditGarmentsOpen] = useState(false);
   const [cartPId, setCartPId] = useState(null);
+  const [productsId, setProductsId] = useState(null);
 
   const [isAddedPopupOpen, setIsAddedPopupOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -79,13 +80,20 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
     setFilteredProducts(filtered);
   };
 
-  const handlePreviewClick = () => {
-    setIsPreviewPopupOpen(true);
-  };
-
   const getPrice = (priceObj) => {
     if (!priceObj) return 0;
     return mode === "B2B" ? priceObj?.B2B : priceObj?.B2C;
+  };
+
+  const getTotalCount = () => {
+    let count = 0;
+  
+      cartProdcuts?.filter(product => product?.serviceName === "Starching")
+      .forEach(product => {
+        count += product.quantity;
+      });
+  
+    return count;
   };
 
   return (
@@ -119,9 +127,7 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
         <div className="flex gap-1 items-center">
           <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
             Total Count:{" "}
-            {!cartProdcuts || cartProdcuts?.length === 0
-              ? "0"
-              : cartProdcuts?.length}
+            {getTotalCount()}
           </div>
           {/* <button
             onClick={handlePreviewClick}
@@ -139,14 +145,19 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
       </div>
       <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4">
         {filteredProducts?.map((item, index) => {
-          const correspondingCartItem = cartProdcuts?.find(
-            (cartItem) => cartItem?.productId?._id === item._id
+          const correspondingCartItem = cartProdcuts?.filter(
+            (cartItem) => cartItem.productId?._id === item?._id
           );
+
+          let quantity = 0;
+          const quantityToDisplay = correspondingCartItem?.map((item) => {
+            quantity += item?.quantity;
+          })
           return (
             <div
               key={index}
               className={`border cursor-pointer border-gray-300 rounded-lg p-1 flex flex-col justify-center items-center relative ${
-                isProductInCart(item._id) ? "bg-[#004d57] text-white" : ""
+                isProductInCart(item._id) ? "bg-[#006370] text-white" : ""
               }`}
             >
               <img src={item?.image} alt="" className="w-12 h-12 mx-auto " />
@@ -163,7 +174,7 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
                 >
                   +
                 </button>
-                <span className=" px-3">{correspondingCartItem?.quantity || 0}</span>
+                <span className=" px-3">{quantity}</span>
                 <button
                   className={`rounded-sm px-1 ${
                     mode === "B2B"
@@ -180,14 +191,14 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
                     <button
                       className="absolute left-1 text-green-500 rounded-sm text-xs"
                       onClick={() => {
-                        const oneOrMore = cartProdcuts?.filter((litem) => litem?.serviceName === item.serviceName);
-                        setCartPId(correspondingCartItem?._id);
+                        const oneOrMore = cartProdcuts?.filter((litem) => litem?.serviceName === item.serviceName && litem?.productId?._id === item?._id);
+                        setCartPId(correspondingCartItem[0]?._id);
 
-                        console.log(oneOrMore.length, "item");
                         if(oneOrMore && oneOrMore.length === 1){
                           setEditOpen(true)
                           setProductDetails(item);
                         }else {
+                          setProductsId(item?._id)
                           setEditGarmentsOpen(true)
                         }
                       }}
@@ -196,9 +207,16 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
                     </button>
                     <button
                       className="absolute right-1 text-red-500 rounded-sm text-xs"
-                      onClick={() =>
-                        deleteCartProduct(correspondingCartItem?._id)
-                      }
+                      onClick={() => {
+                        const oneOrMore = cartProdcuts?.filter((litem) => litem?.serviceName === item.serviceName && litem?.productId?._id === item?._id);
+                        setCartPId(correspondingCartItem[0]?._id);
+                        if(oneOrMore && oneOrMore.length === 1){
+                          deleteCartProduct(correspondingCartItem[0]?._id)
+                        }else{
+                          setProductsId(item?._id)
+                            setEditGarmentsOpen(true)
+                        }
+                      }}
                     >
                       <MdDelete size={20} />
                     </button>
@@ -236,7 +254,7 @@ const StarchingTab = ({ mode, filteredStarchingProducts, orderDetails, isEditOrd
         cartItems={cartItems}
         productDetails={productDetails}
       /> */}      
-      <OtherServicesMultipleEdit serviceName={"Starching"} isOpen={editGarmentsOpen} setIsOpen={setEditGarmentsOpen} mode={mode}/>
+           <OtherServicesMultipleEdit  serviceName={"Starching"}  isOpen={editGarmentsOpen} setIsOpen={setEditGarmentsOpen} mode={mode}  productId={productsId}/>
 
     </div>
   );

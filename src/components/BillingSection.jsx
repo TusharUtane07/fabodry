@@ -142,7 +142,6 @@ const BillingSection = ({
       return 0; // Return 0 if the item is not in the cart
     }
   
-    console.log(item, "itemsss");
   
     const productsAddonsAndRequirements =
       item?.products?.reduce((total, product) => {
@@ -343,14 +342,17 @@ const BillingSection = ({
     let quantity = 0;
   
     cartProdcuts?.map((item) => {
-      if (item?.isInCart && item?.serviceAddons?.[0]?.name !== "cleaning") {
+      if (item?.serviceAddons?.[0]?.name !== "cleaning") {
         quantity += item?.quantity || 0;
       }
     });
   
     laundryCart?.map((item) => {
       if (item?.isInCart) {
-        quantity += item?.products?.length || 0;
+        const pieceCount = item?.products?.reduce((total, product) => {
+          return total + product.quantity;
+      }, 0);
+      quantity+= pieceCount
       }
     });
   
@@ -646,7 +648,7 @@ const BillingSection = ({
           </div>
         ) : (
           <div className="text-center mt-4">
-            {cartProdcuts?.length >= 1 ? (
+            {cartProdcuts?.length >= 1 || laundryCart?.length >= 1  ? (
               <button
                 onClick={() => setIsDrawerOpen(true)}
                 className="px-3 py-2 flex items-center justify-center gap-2 text-xs bg-gray-200 text-gray-600 rounded-lg w-full"
@@ -844,7 +846,7 @@ const BillingSection = ({
               </div>
             )}
 
-            {cartProdcuts?.length > 0 ? (
+            {cartProdcuts?.length > 0 || laundryCart?.length > 0 ? (
               <div className="flex gap-2 w-full items-center">
                 <div className="flex gap-2">
                   <label className="inline-flex items-center cursor-pointer">

@@ -105,9 +105,8 @@ const Laundry = ({
     serviceWeight: 0,
     price: laundryServices[2].price,
   });
-
   useEffect(() => {
-    if (laundryCart && laundryCart?.length > 0) {
+    if (laundryCart && laundryCart?.length > 0 && laundryCart[0]?.products?.length > 0) {
       laundryCart?.forEach((cartItem) => {
         const serviceName = cartItem?.serviceName;
         const serviceAddons = cartItem?.productAddons || [];
@@ -117,6 +116,7 @@ const Laundry = ({
           if (item.serviceName === serviceName) {
             item.products?.forEach((product) => {
               serviceGarments.push({
+                productId: product?.productId,
                 cartId: item?._id,
                 productDetails: product.productDetails,
                 quantity: product.quantity,
@@ -155,9 +155,30 @@ const Laundry = ({
           }
         }
       });
+    } else {
+      setServiceWfAddData((prevState) => ({
+        ...prevState,
+        addons: [],
+        garments: [],
+        price: laundryServices[0].price,
+      }));
+      
+      setServicePlAddData((prevState) => ({
+        ...prevState,
+        addons: [],
+        garments: [],
+        price: laundryServices[2].price,
+      }));
+      
+      setServiceAddData((prevState) => ({
+        ...prevState,
+        addons: [],
+        garments: [],
+        price: laundryServices[1].price,
+      }));
+      
     }
-  }, [laundryCart, selectedItem]);
-
+  }, [laundryCart, selectedItem, refreshCart]);
 
   const [cartItemId, setCartItemId] = useState(null);
   const [existingCartItem, setExistingCartItem] = useState(null);
@@ -181,7 +202,7 @@ const Laundry = ({
       setCartItemId(null);
       setExistingCartItem(null);
     }
-  }, [selectedItem, laundryCart]);
+  }, [selectedItem, laundryCart, refreshCart]);
 
   const [selectAddonPopup, setSelectedAddonPopup] = useState(false);
   const [weights, setWeights] = useState(() =>
@@ -212,13 +233,13 @@ const Laundry = ({
     }
   };
 
-  const deleteCartProduct = async (id) => {
+  const deleteCartProduct = async (cartId, id) => {
     const token = localStorage.getItem("authToken");
     
     try {
       // Delete from database
       const response = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/delete/${id}`,
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/remove-product/${cartId}/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -226,7 +247,6 @@ const Laundry = ({
         }
       );
   
-      // Clear the specific item from relevant states based on service type
       const itemToDelete = laundryCart.find(item => item._id === id);
       if (itemToDelete) {
         switch (itemToDelete.serviceName) {
@@ -342,50 +362,47 @@ const Laundry = ({
       setServiceAddData((prev) => ({
         ...prev,
         selectedService: itemName,
-        serviceWeight: prev.serviceWeight,
       }));
     } else if (selectedItem === "Wash & Fold") {
       setServiceWfAddData((prev) => ({
         ...prev,
         selectedService: itemName,
-        serviceWeight: prev.serviceWeight,
       }));
     } else {
       setServicePlAddData((prev) => ({
         ...prev,
         selectedService: itemName,
-        serviceWeight: prev?.serviceWeight,
       }));
     }
     setFilteredProducts(filteredLaundryProducts);
     setSearchQuery("");
     setSelectedAddonPopup(true);
   };
-
   const handleAddonSelect = (addon) => {
     if (selectedItem === "Wash & Iron") {
       setServiceAddData((prev) => ({
         ...prev,
-        addons: prev.addons.some((a) => a.id === addon.id)
-          ? prev.addons.filter((a) => a.id !== addon.id)
-          : [...prev.addons, addon],
+        addons: prev?.addons?.some((a) => a?.id === addon?.id)
+          ? prev.addons.filter((a) => a?.id !== addon?.id)
+          : [...(prev.addons || []), addon], // Ensure addons is an array
       }));
     } else if (selectedItem === "Wash & Fold") {
       setServiceWfAddData((prev) => ({
         ...prev,
-        addons: prev.addons.some((a) => a.id === addon.id)
-          ? prev.addons.filter((a) => a.id !== addon.id)
-          : [...prev.addons, addon],
+        addons: prev?.addons?.some((a) => a?.id === addon?.id)
+          ? prev.addons.filter((a) => a?.id !== addon?.id)
+          : [...(prev.addons || []), addon], // Ensure addons is an array
       }));
     } else {
       setServicePlAddData((prev) => ({
         ...prev,
-        addons: prev.addons.some((a) => a.id === addon.id)
-          ? prev.addons.filter((a) => a.id !== addon.id)
-          : [...prev.addons, addon],
+        addons: prev?.addons?.some((a) => a?.id === addon?.id)
+          ? prev.addons.filter((a) => a?.id !== addon?.id)
+          : [...(prev.addons || []), addon], // Ensure addons is an array
       }));
     }
   };
+  
 
   const handleWeightAdjustment = (newWeight) => {
     if (selectedItem === "Wash & Iron") {
@@ -507,7 +524,7 @@ const Laundry = ({
               {laundryServices?.map((item, index) => {
                 const isSelected = laundryCart?.some(
                   (cartItem) =>
-                    cartItem.serviceName === item.name && cartItem?.isInCart
+                    cartItem.serviceName === item.name && cartItem?.isInCart && cartItem?.products?.length > 0
                 );
 
                 return (
@@ -671,7 +688,8 @@ const Laundry = ({
                 <div className="p-2 border-b border-gray-300">
                   <div className="">
                     <div className="grid grid-cols-2 gap-3">
-                      {addons?.map((addon) => (
+                      {addons?.map((addon) => { 
+                        return(
                         <div
                           key={addon.id}
                           className={`flex items-center gap-4 border rounded-lg px-3 py-1.5 cursor-pointer transition-colors ${
@@ -722,7 +740,7 @@ const Laundry = ({
                             </p>
                           </div>
                         </div>
-                      ))}
+                      )})}
                     </div>
                   </div>
                   <div>
@@ -776,7 +794,7 @@ const Laundry = ({
                                   </button>
                                   <button
                                     onClick={() =>
-                                      deleteCartProduct(item?.cartId)
+                                      deleteCartProduct( item?.cartId, item?.productId)
                                     }
                                     className="text-red-500 text-lg font-bold"
                                   >
@@ -1026,12 +1044,10 @@ const Laundry = ({
                     </button>
                   </div>
                   <div className="flex gap-1 items-center">
-                    <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
+                    {/* <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
                       Total Count:{" "}
-                      {!laundryCart || laundryCart?.length === 0
-                        ? "0"
-                        : laundryCart?.length}
-                    </div>
+                    
+                    </div> */}
                     {/* <button
                       onClick={handlePreviewClick}
                       className={`text-xs rounded-md px-4 py-1.5 ${
@@ -1057,12 +1073,12 @@ const Laundry = ({
                           cartItem?.serviceName === selectedItem
                       )
                     );
-                    console.log(cartItem, "cit");
                     const isInCart = !!cartItem;
                     const productInCart = cartItem?.products?.find(
                       (lItem) => lItem?.productDetails?._id === item?._id
                     );
                     const productQuantity = productInCart?.quantity || 0;
+
                     return (
                       <div
                         key={index}
@@ -1111,18 +1127,18 @@ const Laundry = ({
                           <div className="absolute w-full top-1">
                             <div className="relative w-full">
                               <button
-                                onClick={() => {
-                                  setIsEditOpen(true);
-                                  setCartPId(cartItem?._id);
-                                  setProductDetails(cartItem?.products[0]?.productDetails);
-                                }}
                                 className="absolute left-1 text-green-500 rounded-sm text-xs"
+                                onClick={() => {
+                                  setCartPId(cartItem?._id);
+                                  setProductDetails(item);
+                                  setIsEditOpen(true);
+                                }}
                               >
                                 <MdEdit size={20} />
                               </button>
                               <button
                                 className="absolute right-1 text-red-500 rounded-sm text-xs"
-                                onClick={() => deleteCartProduct(cartItem?._id)}
+                                onClick={() => deleteCartProduct(cartItem?._id, item?._id)}
                               >
                                 <MdDelete size={20} />
                               </button>
@@ -1166,13 +1182,6 @@ const Laundry = ({
         orderDetails={orderDetails}
         setUpdatedLaundryProductDetails={setUpdatedLaundryProductDetails}
       />
-      {/* <AddedProductPreviewPopup
-        isOpen={isAddedPopupOpen}
-        setIsOpen={setIsAddedPopupOpen}
-        cartItems={cartItems}
-        mode={mode}
-        productDetails={productDetails}
-      /> */}
       <LaundryEditDataPopup
         productDetails={productDetails}
         isOpen={isEditOpen}

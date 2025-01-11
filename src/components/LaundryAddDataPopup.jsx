@@ -82,7 +82,7 @@ const LaundryAddDataPopup = ({
   useEffect(() => {
       if (selectedItem && laundryCart?.length > 0) {
         const cartItem = laundryCart.find(
-          (item) => item?.serviceName === selectedItem && item?.isInCart
+          (item) => item?.serviceName === selectedItem 
         );
         if (cartItem) {
           setIsInCart(true);
@@ -114,6 +114,7 @@ const LaundryAddDataPopup = ({
       const userId = localStorage.getItem("userId");
     
       const garmentData = {
+        "productId": productDetails?._id,
         productDetails,
         quantity,
         garmentType: selectedDetails?.type,
@@ -128,18 +129,8 @@ const LaundryAddDataPopup = ({
           : selectedItem === "Wash & Fold"
           ? serviceWfAddData
           : servicePlAddData;
-    
       try {
-        if (isInCart && cartItemId) {
-          const existingCart = await axios.get(
-            `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/${cartItemId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-    
+        if (cartItemId) {
           const updatedProducts = [
             ...(currentServiceData?.garments || []),
             garmentData
@@ -156,7 +147,7 @@ const LaundryAddDataPopup = ({
               productAddons: currentServiceData?.addons || [],
               pieceCount: updatedProducts.length,
               totalPrice: updatedPrice,
-              isInCart: false,
+              isInCart: existingCartItem?.isInCart,
             },
             {
               headers: {
@@ -167,7 +158,6 @@ const LaundryAddDataPopup = ({
           refreshCart();
           toast.success("Cart updated successfully");
         } else {
-          // Create new cart item
           const response = await axios.post(
             `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/add`,
             {

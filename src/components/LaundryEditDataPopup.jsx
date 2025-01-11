@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContenxt";
 import toast from "react-hot-toast";
 
-const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
+const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, onClose }) => {
   const { laundryCart } = useCart();
 
   const [selectedDetails, setSelectedDetails] = useState({
@@ -22,9 +22,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
         const selectedProduct = cartItem?.products?.find(
           (item) => item.productDetails._id === productDetails?._id
         );
-        console.log(selectedProduct);
         const { garmentType, additionalServices, requirements, comments, quantity } = selectedProduct;
-        console.log(selectedProduct);
 
         setSelectedDetails({
           type: garmentType,
@@ -159,13 +157,10 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
       const updatedPayload = {
         products: currentCart?.products,
         weight: currentCart?.weight,
-        isInCart: false,
+        isInCart: currentCart?.isInCart,
         customerId: userId,
         pieceCount: currentCart?.pieceCount,
-        totalPrice: currentCart?.products?.reduce(
-          (total, item) => total + item.quantity * item.productDetails.price,
-          0
-        ),
+        totalPrice: currentCart?.totalPrice,
       };
   
       await axios.put(
@@ -188,6 +183,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
       setQuantity(0);
       await refreshCart();
       togglePopup();
+      onClose &&onClose();
     } catch (error) {
       console.error("Error updating cart:", error);
       toast.error(error.message || "Error updating cart");
@@ -199,7 +195,6 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
     return null;
   }
 
-console.log(selectedDetails.type);
 
   return (
     <div className="flex justify-center items-center">

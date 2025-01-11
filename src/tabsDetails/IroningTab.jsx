@@ -24,6 +24,7 @@ const Ironing = ({
   const [editGarmentsOpen, setEditGarmentsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [cartPId, setCartPId] = useState(null);
+  const [productId, setProductId] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState(
@@ -82,15 +83,21 @@ const Ironing = ({
     setFilteredProducts(filtered);
   };
 
-  const handlePreviewClick = () => {
-    setIsPreviewPopupOpen(true);
-  };
-
   const getPrice = (priceObj) => {
     if (!priceObj) return 0;
     return mode === "B2B" ? priceObj?.B2B : priceObj?.B2C;
   };
 
+  const getTotalCount = () => {
+    let count = 0;
+  
+      cartProdcuts?.filter(product => product?.serviceName === "Ironing")
+      .forEach(product => {
+        count += product.quantity;
+      });
+  
+    return count;
+  };
   return (
     <div>
       <div className="flex justify-between items-center">
@@ -122,9 +129,7 @@ const Ironing = ({
         <div className="flex gap-1 items-center">
           <div className="text-xs rounded-lg px-8 py-2  text-gray-500">
             Total Count:{" "}
-            {!cartProdcuts || cartProdcuts?.length === 0
-              ? "0"
-              : cartProdcuts?.length}
+            {getTotalCount()}
           </div>
           {/* <button
             onClick={handlePreviewClick}
@@ -143,9 +148,14 @@ const Ironing = ({
 
       <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4">
         {filteredProducts?.map((item, index) => {
-          const correspondingCartItem = cartProdcuts?.find(
-            (cartItem) => cartItem?.productId?._id === item?._id
+          const correspondingCartItem = cartProdcuts?.filter(
+            (cartItem) => cartItem.productId?._id === item?._id
           );
+
+          let quantity = 0;
+          const quantityToDisplay = correspondingCartItem?.map((item) => {
+            quantity += item?.quantity;
+          });
           return (
             <div
               key={index}
@@ -167,9 +177,7 @@ const Ironing = ({
                 >
                   +
                 </button>
-                <span className=" px-3">
-                  {correspondingCartItem?.quantity || 0}
-                </span>
+                <span className=" px-3">{quantity}</span>
                 <button
                   className={`rounded-sm px-1 ${
                     mode === "B2B"
@@ -186,15 +194,17 @@ const Ironing = ({
                     <button
                       className="absolute left-1 text-green-500 rounded-sm text-xs"
                       onClick={() => {
-                        const oneOrMore = cartProdcuts?.filter((litem) => litem?.serviceName === item.serviceName);
-                        setCartPId(correspondingCartItem?._id);
+                        const oneOrMore = cartProdcuts?.filter(
+                          (litem) => litem?.serviceName === item.serviceName && litem?.productId?._id === item?._id
+                        );
+                        setCartPId(correspondingCartItem[0]?._id);
 
-                        console.log(oneOrMore.length, "item");
-                        if(oneOrMore && oneOrMore.length === 1){
-                          setEditOpen(true)
+                        if (oneOrMore && oneOrMore.length === 1) {
+                          setEditOpen(true);
                           setProductDetails(item);
-                        }else {
-                          setEditGarmentsOpen(true)
+                        } else {
+                          setProductId(item?._id);
+                          setEditGarmentsOpen(true);
                         }
                       }}
                     >
@@ -202,9 +212,19 @@ const Ironing = ({
                     </button>
                     <button
                       className="absolute right-1 text-red-500 rounded-sm text-xs"
-                      onClick={() =>
-                        deleteCartProduct(correspondingCartItem?._id)
-                      }
+                      onClick={() => {
+                        const oneOrMore = cartProdcuts?.filter(
+                          (litem) => litem?.serviceName === item.serviceName && litem?.productId?._id === item?._id
+                        );
+                        setCartPId(correspondingCartItem[0]?._id);
+                        if (oneOrMore && oneOrMore.length === 1) {
+                          deleteCartProduct(correspondingCartItem[0]?._id);
+                        } else {
+
+                          setProductId(item?._id)
+                          setEditGarmentsOpen(true);
+                        }
+                      }}
                     >
                       <MdDelete size={20} />
                     </button>
@@ -236,7 +256,13 @@ const Ironing = ({
         cartId={cartPId}
       />
 
-<OtherServicesMultipleEdit serviceName={"Ironing"} isOpen={editGarmentsOpen} setIsOpen={setEditGarmentsOpen} mode={mode}/>
+      <OtherServicesMultipleEdit
+        serviceName={"Ironing"}
+        isOpen={editGarmentsOpen}
+        setIsOpen={setEditGarmentsOpen}
+        mode={mode}
+        productId={productId}
+      />
 
       {/* <SidebarPopup 
         isOpen={isPreviewPopupOpen} 

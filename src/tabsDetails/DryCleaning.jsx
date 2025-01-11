@@ -21,6 +21,7 @@ const DryCleaning = ({
 
   const [editOpen, setEditOpen] = useState(false);
   const [cartPId, setCartPId] = useState(null);
+  const [productId, setProductId] = useState(null);
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,7 +37,7 @@ const DryCleaning = ({
 
   const handleIncrement = (item) => {
     setProductDetails(item);
-    if(!validateMobileNumber()) return;
+    if (!validateMobileNumber()) return;
     setIsPopupOpen(true);
   };
 
@@ -84,6 +85,17 @@ const DryCleaning = ({
     return mode === "B2B" ? priceObj?.B2B : priceObj?.B2C;
   };
 
+  const getTotalCount = () => {
+    let count = 0;
+  
+      cartProdcuts?.filter(product => product?.serviceName === "dc")
+      .forEach(product => {
+        count += product.quantity;
+      });
+  
+    return count;
+  };
+  
   return (
     <div>
       <div className="flex justify-between items-center">
@@ -114,10 +126,7 @@ const DryCleaning = ({
         </div>
         <div className="flex gap-1 items-center">
           <div className="text-xs rounded-lg px-8 text-gray-500">
-            Total Count:{" "}
-            {!cartProdcuts || cartProdcuts?.length === 0
-              ? "0"
-              : cartProdcuts?.length}
+            Total Count: {getTotalCount()}
           </div>
         </div>
       </div>
@@ -126,9 +135,14 @@ const DryCleaning = ({
       </div>
       <div className="grid lg:grid-cols-4 xl:grid-cols-6 gap-4 my-4">
         {filteredProducts?.map((item, index) => {
-          const correspondingCartItem = cartProdcuts?.find(
+          const correspondingCartItem = cartProdcuts?.filter(
             (cartItem) => cartItem.productId?._id === item?._id
           );
+
+          let quantity = 0;
+          const quantityToDisplay = correspondingCartItem?.map((item) => {
+            quantity += item?.quantity;
+          });
           return (
             <div
               key={index}
@@ -150,9 +164,7 @@ const DryCleaning = ({
                 >
                   +
                 </button>
-                <span className=" px-3">
-                  {correspondingCartItem?.quantity || 0}
-                </span>
+                <span className=" px-3">{quantity}</span>
                 <button
                   className={`rounded-sm px-1 ${
                     mode === "B2B"
@@ -169,15 +181,19 @@ const DryCleaning = ({
                     <button
                       className="absolute left-1 text-green-500 rounded-sm  text-xs"
                       onClick={() => {
-                        const oneOrMore = cartProdcuts?.filter((litem) => litem?.serviceName === item.serviceName);
-                        setCartPId(correspondingCartItem?._id);
+                        const oneOrMore = cartProdcuts?.filter(
+                          (litem) =>
+                            litem?.serviceName === item.serviceName &&
+                            litem?.productId?._id === item?._id
+                        );
+                        setCartPId(correspondingCartItem[0]?._id);
 
-                        console.log(oneOrMore.length, "item");
-                        if(oneOrMore && oneOrMore.length === 1){
-                          setEditOpen(true)
+                        if (oneOrMore && oneOrMore.length === 1) {
+                          setEditOpen(true);
                           setProductDetails(item);
-                        }else {
-                          setEditGarmentsOpen(true)
+                        } else {
+                          setProductId(item?._id);
+                          setEditGarmentsOpen(true);
                         }
                       }}
                     >
@@ -185,9 +201,20 @@ const DryCleaning = ({
                     </button>
                     <button
                       className="absolute right-1 text-red-500 rounded-sm text-xs"
-                      onClick={() =>
-                        deleteCartProduct(correspondingCartItem?._id)
-                      }
+                      onClick={() => {
+                        const oneOrMore = cartProdcuts?.filter(
+                          (litem) =>
+                            litem?.serviceName === item.serviceName &&
+                            litem?.productId?._id === item?._id
+                        );
+                        setCartPId(correspondingCartItem[0]?._id);
+                        if (oneOrMore && oneOrMore.length === 1) {
+                          deleteCartProduct(correspondingCartItem[0]?._id);
+                        } else {
+                          setProductId(item?._id);
+                          setEditGarmentsOpen(true);
+                        }
+                      }}
                     >
                       <MdDelete size={20} />
                     </button>
@@ -212,7 +239,13 @@ const DryCleaning = ({
         setIsOpen={setEditOpen}
         cartId={cartPId}
       />
-      <OtherServicesMultipleEdit  serviceName={"dc"} isOpen={editGarmentsOpen} setIsOpen={setEditGarmentsOpen} mode={mode}/>
+      <OtherServicesMultipleEdit
+        serviceName={"dc"}
+        isOpen={editGarmentsOpen}
+        setIsOpen={setEditGarmentsOpen}
+        mode={mode}
+        productId={productId}
+      />
     </div>
   );
 };

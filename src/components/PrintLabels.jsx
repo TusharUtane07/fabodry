@@ -1,8 +1,9 @@
+/* eslint-disable no-unsafe-optional-chaining */
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import fabodry from '../assets/fabodry.svg';
 
-const PrintLabelsPage = ({orderData}) => {
+const PrintLabelsPage = () => {
   const [labels, setLabels] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,9 +33,7 @@ const PrintLabelsPage = ({orderData}) => {
       }
 
       const deliveryDate = formatDate(order?.deliveryDate);
-      
       const labelData = [
-        // eslint-disable-next-line no-unsafe-optional-chaining
         ...order?.cartItems?.map((product, index) => {
           return {
             orderId: order?._id,
@@ -46,10 +45,9 @@ const PrintLabelsPage = ({orderData}) => {
             dd: deliveryDate,
             time: formattedTime,
             isPremium: product.isPremium,
-            isExpress: product.expressCharge ? true : false
+            isExpress: order?.expressCharge ? true : false
           };
         }),
-        // eslint-disable-next-line no-unsafe-optional-chaining
         ...order?.laundryCartItems?.map((product, index) => {
           return {
             orderId: order?._id,
@@ -61,106 +59,122 @@ const PrintLabelsPage = ({orderData}) => {
             dd: deliveryDate,
             time: formattedTime,
             isPremium: product.isPremium,
-            isExpress: product?.expressCharge?.length > 0 ? true : false
+            isExpress: order?.expressCharge ? true : false
           };
         }),
       ];
       
-      // After constructing labelData, call setLabels to set the state
       setLabels(labelData);
-      
-      const printTimer = setTimeout(() => {
-        window.print();
-      }, 100);
-      const afterPrint = () => {
-        navigate('/orders/all');
-      };
-
-      window.addEventListener('afterprint', afterPrint);
-      return () => {
-        clearTimeout(printTimer);
-        window.removeEventListener('afterprint', afterPrint);
-      };
     }
-  }, [location, navigate]);
+  }, [location]);
 
-  const printStyles = `
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #print-section, #print-section * {
-        visibility: visible;
-      }
-      #print-section > div {
-        break-inside: avoid;
-        page-break-inside: avoid;
-        text-align: center; /* Center content */
-        margin: 0 auto; /* Center the div within the page */
-        width: 70mm; /* Set a fixed width for labels */
-        padding: 10mm; /* Add padding inside the label */
-        border: 1px solid black; /* Optional for a border around the label */
-        border-bottom: 1px dotted black; /* Dotted line for separation */
-      }
-      #print-section > div:last-child {
-        border-bottom: none;
-      }
-      img {
-        display: block;
-        margin: 0 auto 5px; /* Center image and add spacing below */
-        width: 100px; /* Adjust image width */
-        height: auto;
-      }
-      @page {
-        size: auto;
-        margin: 10mm; /* Add margin for thermal printers */
-      }
-    }
-  `;
+  const handlePrint = () => {
+    window.print();
+  };
+  const handleBack = () => {
+    navigate(-1);
+  };
 
   return (
-    <>
-      <style>{printStyles}</style>
-      <div id="print-section" style={{ fontFamily: 'Arial, sans-serif' }}>
+    <div className="min-h-screen font-sans">
+      {/* Buttons - Only visible on screen */}
+      <div className="print:hidden flex items-center justify-center gap-3 pt-20">
+        <button
+          onClick={handlePrint}
+          className="px-4 py-2 bg-[#00414e] text-white rounded"
+        >
+          Proceed If thermal printer is ready
+        </button>
+        <button
+          onClick={handleBack}
+          className="px-4 py-2 bg-gray-500 text-white rounded"
+        >
+          Back
+        </button>
+      </div>
+
+      {/* Labels Content */}
+      <div 
+        id="print-section" 
+        className="flex flex-col items-center mt-10 mx-auto print:p-0 print:m-0 print:absolute print:top-0 print:left-0 print:w-[90mm] print:min-w-[90mm] print:max-w-[90mm]"
+      >
         {labels?.map((label, index) => (
-          <div  className='relative' key={index}>
-            <img src={fabodry} alt="" />
-            <p>
-              <strong></strong> {label.date}, {label.time}
-            </p>
-            <p><strong>{label.orderId.slice(0, 6)}</strong></p>
-            <p>
-              <strong> {label.customerName}</strong>
-            </p>
-            <p className='absolute top-2 right-2'>
-              <p className='bg-black text-white p-1 rounded-full border border-gray-800'>{label.isPremium ? "PR" : "RG"}</p> 
-              {/* {label.orderId} */}
-            </p>
-            <p className='absolute top-2 left-2'>
-              <p className='bg-black text-white p-1 rounded-full border border-gray-800'>{label.isExpress ? "EX": "RG"}</p> 
-              {/* {label.orderId} */}
-            </p>
-            <p>
-              <strong> {label.garment}</strong>
-            </p>
-            <p
-              style={{
-                border: '1px solid black',
-                padding: '2px',
-                display: 'inline-block',
-              }}
-            >
-              <strong>Service:</strong> {label.serviceName}
-            </p>
-            <p style={{
-              padding:'2px'
-            }}>
-              <strong>DD:</strong> {label.dd} - [{label.count}]
-            </p>
+          <div 
+            key={index} 
+            className="w-[250px] relative mb-4 py-4   border-b-2 border-dashed border-gray-500"
+          >
+            <div className="w-40 print:w-24 mx-auto mb-4">
+              <img src={fabodry} alt="" className="w-full" />
+            </div>
+            
+            <div className="text-center text-sm print:text-[10px]">
+              <p className="mb-2">
+                {label.date}, {label.time}
+              </p>
+              <p className="font-bold mb-2">Order ID: {label.orderId.slice(0, 6)}</p>
+              <p className="font-bold mb-2"> {label.customerName}</p>
+              
+              <div className='absolute top-2 right-2'>
+                <span className='bg-black text-white p-1.5 rounded-full text-[10px]'>
+                  {label.isPremium ? "PR" : "RG"}
+                </span>
+              </div>
+              <div className='absolute top-2 left-2'>
+              {label.isExpress &&  <span className='bg-black text-white p-1.5 text-[10px] rounded-full '>
+                  EX
+                </span>} 
+              </div>
+              
+              <p className="font-bold mb-2">{label.garment}</p>
+              
+              <p className="inline-block border border-gray-300 px-2 py-1 mb-2">
+                <strong>Service:</strong> {label.serviceName}
+              </p>
+              
+              <p className="mb-2">
+                <strong>DD:</strong> {label.dd} - [{label.count}]
+              </p>
+            </div>
           </div>
         ))}
       </div>
-    </>
+
+      {/* Print Styles */}
+      <style>
+        {`
+          @media print {
+            @page {
+              margin: 0;
+              size: 60mm 200mm;
+            }
+            body * {
+              visibility: hidden;
+            }
+            #root {
+              visibility: hidden;
+            }
+            .print\\:absolute {
+              visibility: visible;
+              position: absolute;
+            }
+            .print\\:absolute * {
+              visibility: visible;
+            }
+            .print\\:hidden {
+              display: none;
+            }
+            #print-section {
+              font-size: 14px;
+            }
+            #print-section > div {
+              border-color: #666;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+          }
+        `}
+      </style>
+    </div>
   );
 };
 

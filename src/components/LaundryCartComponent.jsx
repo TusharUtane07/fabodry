@@ -1,10 +1,11 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { MdModeEditOutline } from "react-icons/md";
 import { RxCross2 } from "react-icons/rx";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { useCart } from "../context/CartContenxt";
 import axios from "axios";
 import toast from "react-hot-toast";
+import LaundryServiceEditMultiple from "./LaundryServiceEditMultiple";
 
 const commentsData = [
   {
@@ -101,6 +102,9 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
   const { laundryCart, refreshCart } = useCart();
   const scrollContainerRefs = useRef({});
 
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+
   const calculateTotalPrice = (item) => {
     const productsAddonsAndRequirements =
       item?.products?.reduce((total, product) => {
@@ -122,7 +126,6 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
         return total + addon?.price;
       }, 0) || 0;
     const totalPricePerKg = item?.totalPrice + addonsPriceSum;
-    console.log(totalPricePerKg, "ttp");
     return (
       totalPricePerKg * Number(item?.weight) + productsAddonsAndRequirements
     );
@@ -157,7 +160,7 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
           },
         }
       );
-      await refreshCart();
+       refreshCart();
       toast.success("Deleted Successfully");
     } catch (error) {
       toast.error("Error Deleting");
@@ -172,9 +175,14 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
 
   return (
     <>
-      {laundryCart
+      {laundryCart && laundryCart
         ?.filter((item) => item?.isInCart)
         ?.map((lItem, cartIndex) => {
+          
+          if (!lItem?.products || lItem.products.length === 0) {
+            // Skip rendering if lItem.products is empty or undefined
+            return null;
+          }
           const productsAddonsAndRequirements =
             lItem?.products?.reduce((total, product) => {
               const additionalServicesTotal =
@@ -195,8 +203,11 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
               0
             ) || 0;
           const totalPricePerKg = lItem.totalPrice + addonsPriceSum;
-
+          const pieceCount = lItem?.products?.reduce((total, product) => {
+            return total + product.quantity;
+        }, 0);
           return (
+            <>
             <div
               key={cartIndex}
               className="mb-4 border border-gray-300 p-2 rounded-lg capitalize"
@@ -206,7 +217,8 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
-                        setSelectedTab("Laundry");
+                        setEditItem(lItem); // Store the item being edited
+                        setIsEditOpen(true);
                       }}
                       className="text-green-500"
                     >
@@ -233,7 +245,7 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
               </div>
 
               <div className="text-[12px] flex items-center gap-2 font-medium">
-                <p> Piece count: {lItem?.pieceCount}</p>
+                <p> Piece count: {pieceCount}</p>
               </div>
 
               {lItem?.productAddons?.length > 0 ? (
@@ -282,7 +294,7 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
                       >
                         <p>
                           <span className="font-semibold">
-                            {item?.productDetails?.name}{" "}
+                            {item?.productDetails?.name} [{item?.garmentType?.label}] X {item?.quantity}
                           </span>
                           <span>
                             {item?.additionalServices?.map((service, index) => {
@@ -350,6 +362,14 @@ const LaundryCartComponent = ({ setSelectedTab }) => {
                 </button>
               </div>
             </div>
+            {isEditOpen && editItem && (
+        <LaundryServiceEditMultiple 
+          isOpen={isEditOpen}
+          setIsOpen={setIsEditOpen}
+          products={editItem?.products}
+        />
+      )}
+        </>
           );
         })}
     </>

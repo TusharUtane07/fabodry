@@ -15,15 +15,17 @@ import toast from "react-hot-toast";
 const MainSection = ({ products }) => {
   const [selectedTab, setSelectedTab] = useState("Laundry");
   const [mode, setMode] = useState("B2C");
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [userName, setUserName] = useState("");
   const [customerAddress, setCustomerAddress] = useState(null);
-  const [debouncedUserName, setDebouncedUserName] = useState("");
   const { cartItems, refreshCart } = useCart();
-  const [customerNewOld, setCustomerNewOld] = useState("New Customer");
-  const [isInputDisabled, setIsInputDisabled] = useState(false);
   const [hiddenElement, setHiddenElement] = useState(false);
-
+  
+  const [isInputDisabled, setIsInputDisabled] = useState(false);
+  const [customerNewOld, setCustomerNewOld] = useState("New Customer");
+  const [debouncedUserName, setDebouncedUserName] = useState("");
+  const [userName, setUserName] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [hasShownOldCustomerToast, setHasShownOldCustomerToast] = useState(false);
+  
   const { data } = useFetch(
     mobileNumber
       ? `${
@@ -41,21 +43,27 @@ const MainSection = ({ products }) => {
       setUserName(data?.data?.customer?.name);
       setIsInputDisabled(true);
       setCustomerAddress(data?.data?.customer?.addresses);
-      if (customerNewOld !== "Old Customer" && mobileNumber.length === 10) {
-        setCustomerNewOld("Old Customer");
+      
+      // Show "Old Customer" toast only if it hasn't been shown yet
+      if (!hasShownOldCustomerToast) {
         toast("Old Customer", {
           style: {
             background: "green",
             color: "white",
           },
         });
+        setHasShownOldCustomerToast(true);
+        setCustomerNewOld("Old Customer")
       }
-    } else if (mobileNumber) {
+      
+    } else {
+      createCustomer();
       setIsInputDisabled(false);
       setUserName("");
+      // Reset the toast flag when switching to a new customer
+      setHasShownOldCustomerToast(false);
     }
-    createCustomer();
-  }, [data, mobileNumber, debouncedUserName]);
+  }, [data, mobileNumber]);
 
   useEffect(() => {
     const debounced = debounce(() => {
@@ -63,6 +71,7 @@ const MainSection = ({ products }) => {
     }, 2000);
 
     debounced();
+
     return () => debounced.cancel();
   }, [userName]);
 
@@ -75,11 +84,11 @@ const MainSection = ({ products }) => {
     if (mobileNumber.trim() === "") {
       setUserName("");
       setCustomerAddress(null);
-      setCustomerNewOld("New Customer");
       localStorage.removeItem("mobileNumber");
       localStorage.removeItem("userName");
       localStorage.removeItem("userId");
       refreshCart();
+      setHasShownOldCustomerToast(false); // Reset toast flag when mobile number is cleared
     } else {
       refreshCart();
     }
@@ -87,11 +96,76 @@ const MainSection = ({ products }) => {
 
   useEffect(() => {
     if (mobileNumber) {
+      setCustomerNewOld("New Customer")
       createCustomer();
       refreshCart();
     }
-  }, []);
+  }, [mobileNumber]);
 
+  const createCustomer = async () => {
+    if (
+      data?.data?.message === "Customer found" &&
+      mobileNumber?.length === 10
+    ) {
+      setCustomerNewOld("Old Customer")
+      return;
+    } 
+
+    if (mobileNumber.length === 10 && userName) {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}api/v1/admin/customers/create`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: debouncedUserName,
+              mobile: mobileNumber,
+            }),
+          }
+        );
+        const responseSearching = await axios.get(
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }api/v1/customers/search?mobile=${mobileNumber}`
+        );
+
+        if (responseSearching?.data?.data?.customer?.name) {
+          setUserName(responseSearching?.data?.data?.customer?.name);
+          setIsInputDisabled(true);
+          localStorage.setItem("mobileNumber", mobileNumber);
+          localStorage.setItem("userName", userName);
+          localStorage.setItem(
+            "userId",
+            responseSearching?.data?.data?.customer?._id
+          );
+        }
+        
+        if (response.ok) {
+          console.log("New user created successfully");
+          toast("New Customer", {
+            style: {
+              background: "red",
+              color: "white",
+            },
+          });
+          refreshCart();
+        } else {
+          console.error("Error creating new customer", await response.json());
+        }
+        refreshCart();
+      } catch (error) {
+        console.error("Network error while creating customer", error);
+      }
+    }
+  };
+
+  // Rest of the component code remains the same...
+  
   function filterProductsByServiceName(products, serviceName) {
     return products?.filter(
       (product) =>
@@ -159,71 +233,6 @@ const MainSection = ({ products }) => {
     );
 
     setCustomerAddress(responseSearching?.data?.data?.customer?.addresses);
-  };
-
-  const createCustomer = async () => {
-    if (
-      data?.data?.message === "Customer found" &&
-      mobileNumber?.length === 10
-    ) {
-      return;
-    } else if (mobileNumber.length === 10 && debouncedUserName) {
-      try {
-        const token = localStorage.getItem("authToken");
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}api/v1/admin/customers/create`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: debouncedUserName,
-              mobile: mobileNumber,
-            }),
-          }
-        );
-        const responseSearching = await axios.get(
-          `${
-            import.meta.env.VITE_BACKEND_URL
-          }api/v1/customers/search?mobile=${mobileNumber}`
-        );
-        if (responseSearching?.data?.data?.customer?.name) {
-          setUserName(responseSearching?.data?.data?.customer?.name);
-          toast("New Customer", {
-            style: {
-              background: "red",
-              color: "white",
-            },
-          });
-          setIsInputDisabled(true);
-          localStorage.setItem("mobileNumber", mobileNumber);
-          localStorage.setItem("userName", userName);
-          localStorage.setItem(
-            "userId",
-            responseSearching?.data?.data?.customer?._id
-          );
-        }
-        if (response.ok) {
-          console.log("New user created successfully");
-          setCustomerNewOld("New Customer");
-        if(customerNewOld === "New Customer"){
-          toast.success("New Customer", {
-            style: {
-              background: "Red",
-              color: "white",
-            },
-          });
-        }
-        } else {
-          console.error("Error creating new customer", await response.json());
-        }
-        refreshCart();
-      } catch (error) {
-        console.error("Network error while creating customer", error);
-      }
-    }
   };
 
   return (
@@ -316,7 +325,7 @@ const MainSection = ({ products }) => {
                     : "bg-[#d5e7ec] text-[#00414e]"
                 }`}
                 onClick={() => {
-                  setSelectedTab(tab)
+                  setSelectedTab(tab);
                   setHiddenElement(false);
                 }}
               >
