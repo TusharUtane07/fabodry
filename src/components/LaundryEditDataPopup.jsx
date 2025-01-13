@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContenxt";
 import toast from "react-hot-toast";
 
-const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, onClose }) => {
+const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, selectedIndex, onClose }) => {
   const { laundryCart } = useCart();
 
   const [selectedDetails, setSelectedDetails] = useState({
@@ -13,30 +13,35 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, onClose }) 
     comments: [],
   });
 
+  console.log("this is cartId: ",);
   const [quantity, setQuantity] = useState(0);
 
   useEffect(() => {
     try {
       const cartItem = laundryCart?.find(item => item?._id === cartId);
       if (cartItem && productDetails) {
-        const selectedProduct = cartItem?.products?.find(
-          (item) => item.productDetails._id === productDetails?._id
+        const products = cartItem?.products?.filter(
+          item => item.productDetails._id === productDetails._id
         );
-        const { garmentType, additionalServices, requirements, comments, quantity } = selectedProduct;
+        const selectedProduct = products[selectedIndex];
 
-        setSelectedDetails({
-          type: garmentType,
-          services: additionalServices,
-          requirements: requirements,
-          comments: comments,
-        });
+        if (selectedProduct) {
+          const { garmentType, additionalServices, requirements, comments, quantity } = selectedProduct;
 
-        setQuantity(quantity || 0);
+          setSelectedDetails({
+            type: garmentType,
+            services: additionalServices || [],
+            requirements: requirements || [],
+            comments: comments || [],
+          });
+
+          setQuantity(quantity || 0);
+        }
       }
     } catch (error) {
       console.error("Error in useEffect:", error);
     }
-  }, [laundryCart, cartId, productDetails]);
+  }, [laundryCart, cartId, productDetails, selectedIndex]);
 
   const togglePopup = () => setIsOpen(!isOpen);
 
@@ -102,26 +107,28 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, onClose }) 
       if (!selectedDetails?.type) {
         throw new Error("Please select garment type");
       }
-  
-      const mobileNumber = localStorage.getItem("mobileNumber");
+
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("authToken");
-  
-      if (!mobileNumber || !userId) {
+
+      if (!userId) {
         setIsOpen(false);
         throw new Error("Please enter mobile number");
       }
-  
+
       const garmentData = {
-        productDetails,
+        productDetails: {
+          ...productDetails,
+          _instanceIndex: undefined // Remove the instance index before saving
+        },
         quantity,
         garmentType: selectedDetails.type,
         additionalServices: selectedDetails.services,
         requirements: selectedDetails.requirements,
         comments: selectedDetails.comments,
       };
-  
-      // Fetch the current cart details
+
+      // Fetch the current cart
       const cartResponse = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/${cartId}`,
         {
@@ -130,39 +137,33 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, onClose }) 
           },
         }
       );
-  
+
       const currentCart = cartResponse?.data?.data;
-  
-      // Check if the product exists in the cart
-      const existingProductIndex = currentCart.products.findIndex(
-        (item) => item?.productDetails?._id === productDetails?._id
+
+      // Find all products with the same productId
+      const sameProducts = currentCart.products.filter(
+        item => item?.productDetails?._id === productDetails._id
       );
-  
-      if (existingProductIndex !== -1) {
-        // Update the existing product details
-        currentCart.products[existingProductIndex] = {
-          ...currentCart.products[existingProductIndex],
-          quantity: garmentData.quantity,
-          garmentType: garmentData.garmentType,
-          additionalServices: garmentData.additionalServices,
-          requirements: garmentData.requirements,
-          comments: garmentData.comments,
-        };
-      } else {
-        // Add the new product to the cart
-        currentCart?.products?.push(garmentData);
-      }
-  
-      // Update the cart with modified products
+
+      // Update the specific instance
+      currentCart.products = currentCart.products.map((item, index) => {
+        if (item?.productDetails?._id === productDetails._id && 
+            sameProducts.indexOf(item) === selectedIndex) {
+          return garmentData;
+        }
+        return item;
+      });
+
+      // Update the cart
       const updatedPayload = {
-        products: currentCart?.products,
-        weight: currentCart?.weight,
-        isInCart: currentCart?.isInCart,
+        products: currentCart.products,
+        weight: currentCart.weight,
+        isInCart: currentCart.isInCart,
         customerId: userId,
-        pieceCount: currentCart?.pieceCount,
-        totalPrice: currentCart?.totalPrice,
+        pieceCount: currentCart.pieceCount,
+        totalPrice: currentCart.totalPrice,
       };
-  
+
       await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartId}`,
         updatedPayload,
@@ -172,7 +173,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, onClose }) 
           },
         }
       );
-  
+
       toast.success(`${productDetails?.name || "Item"} updated successfully`);
       setSelectedDetails({
         type: null,
@@ -182,8 +183,8 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, onClose }) 
       });
       setQuantity(0);
       await refreshCart();
-      togglePopup();
-      onClose &&onClose();
+      setIsOpen(false);
+      onClose && onClose();
     } catch (error) {
       console.error("Error updating cart:", error);
       toast.error(error.message || "Error updating cart");

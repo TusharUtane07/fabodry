@@ -114,13 +114,14 @@ const LaundryAddDataPopup = ({
       const userId = localStorage.getItem("userId");
     
       const garmentData = {
-        "productId": productDetails?._id,
+        productId: productDetails?._id + (Math.floor(Math.random() * 900) + 100) ,
         productDetails,
         quantity,
         garmentType: selectedDetails?.type,
         additionalServices: selectedDetails?.services,
         requirements: selectedDetails?.requirements,
         comments: selectedDetails?.comments,
+        isInCart: false,
       };
     
       const currentServiceData = 
@@ -132,21 +133,23 @@ const LaundryAddDataPopup = ({
       try {
         if (cartItemId) {
           const updatedProducts = [
-            ...(currentServiceData?.garments || []),
-            garmentData
+            ...(currentServiceData?.garments?.map(garment => ({
+              ...garment,
+            })) || []),
+            { ...garmentData} // Add the new garmentData with isInCart
           ];
-    
-          const updatedPrice = currentServiceData?.price || 0;
-          const response = await axios.put(
+          
+           const response = await axios.put(
             `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartItemId}`,
             {
               products: updatedProducts,
+              cartId: cartItemId, 
               weight: currentServiceData?.serviceWeight || 0,
               customerId: userId,
               serviceName: selectedItem,
               productAddons: currentServiceData?.addons || [],
               pieceCount: updatedProducts.length,
-              totalPrice: updatedPrice,
+              totalPrice: currentServiceData?.totalPrice,
               isInCart: existingCartItem?.isInCart,
             },
             {
@@ -161,6 +164,7 @@ const LaundryAddDataPopup = ({
           const response = await axios.post(
             `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/add`,
             {
+              productId: productDetails?._id + (Math.floor(Math.random() * 900) + 100) ,
               products: [garmentData],
               weight: currentServiceData?.serviceWeight || 0,
               customerId: userId,

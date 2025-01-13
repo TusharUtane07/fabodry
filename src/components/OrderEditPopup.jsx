@@ -133,7 +133,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId }) => {
         productId: productDetails?._id ? [productDetails._id] : [],
         serviceName: productDetails?.serviceName || "",
         quantity: quantity,
-        garmentType : selectedDetails?.type ? [{ name: selectedDetails.type.label, price: selectedDetails?.type?.price }]: [],
+        garmentType: selectedDetails?.type ? [{ name: selectedDetails.type.label, price: selectedDetails?.press === "Premium" ? selectedDetails?.type?.premiumPrice : selectedDetails?.type?.price }] : [],
         serviceAddons: selectedDetails?.services || [],
         requirements: selectedDetails?.requirement ? [selectedDetails.requirement] : [],
         comments: selectedDetails?.comments || [],

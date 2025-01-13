@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { RxCross2 } from "react-icons/rx";
 import LaundryAddDataPopup from "../components/LaundryAddDataPopup";
 import LaundryEditDataPopup from "../components/LaundryEditDataPopup";
+import LaundryServiceEditMultiple from "../components/LaundryServiceEditMultiple";
 
 const Laundry = ({
   mode,
@@ -32,6 +33,10 @@ const Laundry = ({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isInCart, setIsInCart] = useState(false);
   const [cartPId, setCartPId] = useState(null);
+  const [editGarmentsOpen, setEditGarmentsOpen] = useState(false);
+  const [matchingServices, setMatchingServices] = useState([]);
+  const [productId, setProductId] = useState(null);
+  const [selectedProductIndex, setSelectedProductIndex] = useState(null);
 
   const addons = [
     {
@@ -106,7 +111,11 @@ const Laundry = ({
     price: laundryServices[2].price,
   });
   useEffect(() => {
-    if (laundryCart && laundryCart?.length > 0 && laundryCart[0]?.products?.length > 0) {
+    if (
+      laundryCart &&
+      laundryCart?.length > 0 &&
+      laundryCart[0]?.products?.length > 0
+    ) {
       laundryCart?.forEach((cartItem) => {
         const serviceName = cartItem?.serviceName;
         const serviceAddons = cartItem?.productAddons || [];
@@ -139,7 +148,6 @@ const Laundry = ({
             serviceWeight: cartItem.weight || 0,
           };
 
-          
           switch (serviceName) {
             case "Wash & Fold":
               setServiceWfAddData(serviceData);
@@ -162,21 +170,20 @@ const Laundry = ({
         garments: [],
         price: laundryServices[0].price,
       }));
-      
+
       setServicePlAddData((prevState) => ({
         ...prevState,
         addons: [],
         garments: [],
         price: laundryServices[2].price,
       }));
-      
+
       setServiceAddData((prevState) => ({
         ...prevState,
         addons: [],
         garments: [],
         price: laundryServices[1].price,
       }));
-      
     }
   }, [laundryCart, selectedItem, refreshCart]);
 
@@ -186,7 +193,7 @@ const Laundry = ({
   useEffect(() => {
     if (selectedItem && laundryCart?.length > 0) {
       const cartItem = laundryCart.find(
-        (item) => item?.serviceName === selectedItem 
+        (item) => item?.serviceName === selectedItem
       );
       if (cartItem) {
         setIsInCart(true);
@@ -235,47 +242,58 @@ const Laundry = ({
 
   const deleteCartProduct = async (cartId, id) => {
     const token = localStorage.getItem("authToken");
-    
+
     try {
       // Delete from database
       const response = await axios.delete(
-        `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/remove-product/${cartId}/${id}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }api/v1/laundrycarts/remove-product/${cartId}/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-  
-      const itemToDelete = laundryCart.find(item => item._id === id);
+
+      const itemToDelete = laundryCart.find((item) => item._id === id);
       if (itemToDelete) {
         switch (itemToDelete.serviceName) {
           case "Wash & Fold":
-            setServiceWfAddData(prev => ({
+            setServiceWfAddData((prev) => ({
               ...prev,
-              garments: prev.garments.filter(garment => garment.cartId !== id),
-              totalSelectedWeight: prev.totalSelectedWeight - (itemToDelete.weight || 0)
+              garments: prev.garments.filter(
+                (garment) => garment.cartId !== id
+              ),
+              totalSelectedWeight:
+                prev.totalSelectedWeight - (itemToDelete.weight || 0),
             }));
             break;
-          
+
           case "Wash & Iron":
-            setServiceAddData(prev => ({
+            setServiceAddData((prev) => ({
               ...prev,
-              garments: prev.garments.filter(garment => garment.cartId !== id),
-              totalSelectedWeight: prev.totalSelectedWeight - (itemToDelete.weight || 0)
+              garments: prev.garments.filter(
+                (garment) => garment.cartId !== id
+              ),
+              totalSelectedWeight:
+                prev.totalSelectedWeight - (itemToDelete.weight || 0),
             }));
             break;
-          
+
           case "Premium Laundry":
-            setServicePlAddData(prev => ({
+            setServicePlAddData((prev) => ({
               ...prev,
-              garments: prev.garments.filter(garment => garment.cartId !== id),
-              totalSelectedWeight: prev.totalSelectedWeight - (itemToDelete.weight || 0)
+              garments: prev.garments.filter(
+                (garment) => garment.cartId !== id
+              ),
+              totalSelectedWeight:
+                prev.totalSelectedWeight - (itemToDelete.weight || 0),
             }));
             break;
         }
       }
-  
+
       // Refresh the cart after state updates
       refreshCart();
       toast.success("Deleted Successfully");
@@ -402,7 +420,6 @@ const Laundry = ({
       }));
     }
   };
-  
 
   const handleWeightAdjustment = (newWeight) => {
     if (selectedItem === "Wash & Iron") {
@@ -435,10 +452,16 @@ const Laundry = ({
     if (selectedItem === "Wash & Iron" && !serviceAddData?.garments?.length) {
       toast.error("Add garments before confirming");
       return;
-    } else if (selectedItem === "Premium Laundry" && !servicePlAddData?.garments?.length) {
+    } else if (
+      selectedItem === "Premium Laundry" &&
+      !servicePlAddData?.garments?.length
+    ) {
       toast.error("Add garments before confirming");
       return;
-    } else if (selectedItem === "Wash & Fold" && !serviceWfAddData?.garments?.length) {
+    } else if (
+      selectedItem === "Wash & Fold" &&
+      !serviceWfAddData?.garments?.length
+    ) {
       toast.error("Add garments before confirming");
       return;
     }
@@ -466,20 +489,29 @@ const Laundry = ({
         ? servicePlAddData?.price || 40
         : 0;
   
+    // Update isInCart for each garment
+    const updatedGarments = currentServiceData?.garments?.map((garment) => ({
+      ...garment,
+      isInCart: true,
+      productId: productDetails?._id + (Math.floor(Math.random() * 900) + 100) ,
+    })) || [];
+  
     const newData = {
       weight: currentServiceData?.serviceWeight || 0,
       productAddons: currentServiceData?.addons || [],
-      products: currentServiceData?.garments || [],
-      pieceCount: currentServiceData?.garments?.length || 0,
+      products: updatedGarments,
+      pieceCount: updatedGarments.length,
       totalPrice: price,
-      isInCart: true
+      isInCart: true,
     };
   
     try {
       if (isInCart && cartItemId) {
         // Update the cart without merging arrays
         const response = await axios.put(
-          `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartItemId}`,
+          `${
+            import.meta.env.VITE_BACKEND_URL
+          }api/v1/Laundrycarts/update/${cartItemId}`,
           newData,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -498,9 +530,9 @@ const Laundry = ({
         toast.success("Added to cart successfully");
       }
       refreshCart();
-      setServiceWfAddData(null)
-      setServiceAddData(null)
-      setServicePlAddData(null)
+      setServiceWfAddData(null);
+      setServiceAddData(null);
+      setServicePlAddData(null);
     } catch (error) {
       if (!userId) {
         toast.error("Please enter mobile number");
@@ -513,8 +545,6 @@ const Laundry = ({
     }
   };
   
-  
-
   return (
     <>
       <div className="w-full h-fit text-center">
@@ -524,7 +554,9 @@ const Laundry = ({
               {laundryServices?.map((item, index) => {
                 const isSelected = laundryCart?.some(
                   (cartItem) =>
-                    cartItem.serviceName === item.name && cartItem?.isInCart && cartItem?.products?.length > 0
+                    cartItem.serviceName === item.name &&
+                    cartItem?.isInCart &&
+                    cartItem?.products?.length > 0
                 );
 
                 return (
@@ -688,33 +720,11 @@ const Laundry = ({
                 <div className="p-2 border-b border-gray-300">
                   <div className="">
                     <div className="grid grid-cols-2 gap-3">
-                      {addons?.map((addon) => { 
-                        return(
-                        <div
-                          key={addon.id}
-                          className={`flex items-center gap-4 border rounded-lg px-3 py-1.5 cursor-pointer transition-colors ${
-                            (selectedItem === "Wash & Iron" &&
-                              serviceAddData?.addons?.some(
-                                (a) => a.id === addon.id
-                              )) ||
-                            (selectedItem === "Wash & Fold" &&
-                              serviceWfAddData?.addons?.some(
-                                (a) => a.id === addon.id
-                              )) ||
-                            (selectedItem === "Premium Laundry" &&
-                              servicePlAddData?.addons?.some(
-                                (a) => a.id === addon.id
-                              ))
-                              ? mode === "B2B"
-                                ? "border-[#66BDC5] bg-[#66BDC5]/10"
-                                : "border-[#004d57] bg-[#004d57]/10"
-                              : "border-gray-300 hover:border-gray-400"
-                          }`}
-                          onClick={() => handleAddonSelect(addon)}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={
+                      {addons?.map((addon) => {
+                        return (
+                          <div
+                            key={addon.id}
+                            className={`flex items-center gap-4 border rounded-lg px-3 py-1.5 cursor-pointer transition-colors ${
                               (selectedItem === "Wash & Iron" &&
                                 serviceAddData?.addons?.some(
                                   (a) => a.id === addon.id
@@ -727,20 +737,43 @@ const Laundry = ({
                                 servicePlAddData?.addons?.some(
                                   (a) => a.id === addon.id
                                 ))
-                            }
-                            onChange={(e) => e.stopPropagation()}
-                            className="w-4 h-4"
-                          />
-                          <div className="flex-1">
-                            <p className="text-xs font-medium">
-                              {addon.name} | ₹{addon.price}/KG
-                            </p>
-                            <p className="text-gray-500 text-[10px]">
-                              {addon.description}
-                            </p>
+                                ? mode === "B2B"
+                                  ? "border-[#66BDC5] bg-[#66BDC5]/10"
+                                  : "border-[#004d57] bg-[#004d57]/10"
+                                : "border-gray-300 hover:border-gray-400"
+                            }`}
+                            onClick={() => handleAddonSelect(addon)}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={
+                                (selectedItem === "Wash & Iron" &&
+                                  serviceAddData?.addons?.some(
+                                    (a) => a.id === addon.id
+                                  )) ||
+                                (selectedItem === "Wash & Fold" &&
+                                  serviceWfAddData?.addons?.some(
+                                    (a) => a.id === addon.id
+                                  )) ||
+                                (selectedItem === "Premium Laundry" &&
+                                  servicePlAddData?.addons?.some(
+                                    (a) => a.id === addon.id
+                                  ))
+                              }
+                              onChange={(e) => e.stopPropagation()}
+                              className="w-4 h-4"
+                            />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium">
+                                {addon.name} | ₹{addon.price}/KG
+                              </p>
+                              <p className="text-gray-500 text-[10px]">
+                                {addon.description}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      )})}
+                        );
+                      })}
                     </div>
                   </div>
                   <div>
@@ -774,7 +807,7 @@ const Laundry = ({
                             Array.isArray(servicePlAddData?.garments)
                           ? servicePlAddData.garments
                           : []
-                        ).map((item) => {
+                        ).map((item, index) => {
                           return (
                             <div
                               key={item?.productDetails?._id || Math.random()}
@@ -786,6 +819,7 @@ const Laundry = ({
                                     onClick={() => {
                                       setCartPId(item?.cartId);
                                       setProductDetails(item?.productDetails);
+                                      setSelectedProductIndex(index);
                                       setIsEditOpen(true);
                                     }}
                                     className="text-green-500"
@@ -794,7 +828,11 @@ const Laundry = ({
                                   </button>
                                   <button
                                     onClick={() =>
-                                      deleteCartProduct( item?.cartId, item?.productId)
+                                      toast.success("handle locic here")
+                                      // deleteCartProduct(
+                                      //   item?.cartId,
+                                      //   item?.productId
+                                      // )
                                     }
                                     className="text-red-500 text-lg font-bold"
                                   >
@@ -885,11 +923,20 @@ const Laundry = ({
                             type="number"
                             value={
                               selectedItem === "Wash & Iron"
-                                ? serviceAddData?.garments?.length || 0
+                                ? serviceAddData?.garments?.reduce(
+                                    (total, item) => total + item.quantity,
+                                    0
+                                  ) || 0
                                 : selectedItem === "Wash & Fold"
-                                ? serviceWfAddData?.garments?.length || 0
+                                ? serviceWfAddData?.garments?.reduce(
+                                    (total, item) => total + item.quantity,
+                                    0
+                                  ) || 0
                                 : selectedItem === "Premium Laundry"
-                                ? servicePlAddData?.garments?.length || 0
+                                ? servicePlAddData?.garments?.reduce(
+                                    (total, item) => total + item.quantity,
+                                    0
+                                  ) || 0
                                 : 0
                             }
                             className="w-16 font-semibold outline-none text-sm py-1 px-2"
@@ -958,17 +1005,17 @@ const Laundry = ({
                           </span>
                         </div>
                         <button
-                         onClick={() =>
-                          handleWeightAdjustment(
-                            selectedItem === "Wash & Iron"
-                              ? serviceAddData.serviceWeight - 1
-                              : selectedItem === "Wash & Fold"
-                              ? serviceWfAddData.serviceWeight - 1
-                              : selectedItem === "Premium Laundry"
-                              ? servicePlAddData.serviceWeight - 1
-                              : 0
-                          )
-                        }
+                          onClick={() =>
+                            handleWeightAdjustment(
+                              selectedItem === "Wash & Iron"
+                                ? serviceAddData.serviceWeight - 1
+                                : selectedItem === "Wash & Fold"
+                                ? serviceWfAddData.serviceWeight - 1
+                                : selectedItem === "Premium Laundry"
+                                ? servicePlAddData.serviceWeight - 1
+                                : 0
+                            )
+                          }
                           className={`rounded-sm px-2 py-0.5 ${
                             mode === "B2B"
                               ? "bg-[#66BDC5] text-white"
@@ -1001,6 +1048,7 @@ const Laundry = ({
               </div>
             ) : (
               <>
+                {/* Product List */}
                 <div
                   className={`border border-gray-300 py-2 rounded-lg font-semibold capitalize flex items-center gap-3 px-3 ${
                     mode === "B2B" ? "text-[#66BDC5]" : "text-[#004d57]"
@@ -1074,10 +1122,29 @@ const Laundry = ({
                       )
                     );
                     const isInCart = !!cartItem;
-                    const productInCart = cartItem?.products?.find(
-                      (lItem) => lItem?.productDetails?._id === item?._id
-                    );
-                    const productQuantity = productInCart?.quantity || 0;
+                    // Group products by name and calculate their total quantities
+                    const productSummary =
+                      cartItem?.products?.reduce((acc, currentItem) => {
+                        const productName = currentItem.productDetails.name;
+
+                        // Initialize product data in the accumulator if not already present
+                        if (!acc[productName]) {
+                          acc[productName] = {
+                            details: currentItem.productDetails,
+                            totalQuantity: 0,
+                          };
+                        }
+
+                        // Add the current item's quantity to the total quantity
+                        acc[productName].totalQuantity +=
+                          currentItem.quantity || 0;
+
+                        return acc;
+                      }, {}) || {};
+
+                    // Find the current product's total quantity
+                    const currentProductQuantity =
+                      productSummary[item.name]?.totalQuantity || 0;
 
                     return (
                       <div
@@ -1110,7 +1177,7 @@ const Laundry = ({
                             +
                           </button>
                           <span className="px-3">
-                            {isInCart ? productQuantity : "0"}
+                            {isInCart ? currentProductQuantity : "0"}
                           </span>
                           <button
                             className={`rounded-sm px-1 ${
@@ -1129,16 +1196,36 @@ const Laundry = ({
                               <button
                                 className="absolute left-1 text-green-500 rounded-sm text-xs"
                                 onClick={() => {
+                                  const oneOrMore = cartItem?.products?.filter((litem) => { 
+                                    return litem?.productDetails?._id === item._id})
                                   setCartPId(cartItem?._id);
-                                  setProductDetails(item);
-                                  setIsEditOpen(true);
+                                  if(oneOrMore && oneOrMore.length === 1){
+                                    setProductDetails(item);
+                                    setIsEditOpen(true);
+                                  } else {
+                                    setProductId(item?._id);
+                                    setMatchingServices(cartItem?.products)
+                                    setEditGarmentsOpen(true);
+                                    console.log("more items");
+                                  }
                                 }}
                               >
                                 <MdEdit size={20} />
                               </button>
                               <button
                                 className="absolute right-1 text-red-500 rounded-sm text-xs"
-                                onClick={() => deleteCartProduct(cartItem?._id, item?._id)}
+                                onClick={() => {
+                                  const oneOrMore = cartItem?.products?.filter((litem) => { 
+                                    return litem?.productDetails?._id === item._id})
+                                  if(oneOrMore && oneOrMore.length === 1){
+                                    console.log(oneOrMore);
+                                    deleteCartProduct(cartItem?._id, oneOrMore[0].productId)
+                                  } else {
+                                    setProductId(item?._id);
+                                    setMatchingServices(cartItem?.products)
+                                    setEditGarmentsOpen(true);
+                                  }
+                                }}
                               >
                                 <MdDelete size={20} />
                               </button>
@@ -1186,8 +1273,18 @@ const Laundry = ({
         productDetails={productDetails}
         isOpen={isEditOpen}
         setIsOpen={setIsEditOpen}
+        selectedIndex={selectedProductIndex || 0}
         cartId={cartPId}
       />
+
+      {editGarmentsOpen && (
+        <LaundryServiceEditMultiple
+          isOpen={editGarmentsOpen}
+          setIsOpen={setEditGarmentsOpen}
+          productId={productId}
+          products={matchingServices}
+        />
+      )}
     </>
   );
 };

@@ -20,6 +20,7 @@ import EditConfirmedOrderPopup from "./EditConfirmedOrderPopup";
 import { useSelectedAddons } from "../context/AddonContext";
 import { RxCross2 } from "react-icons/rx";
 import LaundryCartComponent from "./LaundryCartComponent";
+import Swal from "sweetalert2";
 
 const BillingSection = ({
   customerAddress,
@@ -206,7 +207,7 @@ const BillingSection = ({
       grossTotal,
       discountAmount,
       expressCharge,
-      totalAmount,
+      totalAmount: isNaN(totalAmount) ? 0 : totalAmount,
     };
   };
 
@@ -228,7 +229,7 @@ const BillingSection = ({
       console.log("Error deleting product: ", error, error.message);
     }
   };
-
+// TODO:Check address toggle issue there is issue in Address.
   const createOrder = async () => {
     if (!validateForm()) {
       return;
@@ -293,7 +294,27 @@ const BillingSection = ({
       setSelectedOrder(response?.data?.data);
       toast.success("Order Created Successfully");
       setIsOpen(true);
-      deleteAllCartItems();
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/customer/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/delete-all/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      localStorage.removeItem("userId");
+      localStorage.removeItem("mobileNumber");
+      localStorage.removeItem("userName");
+      refreshCart(); 
     } catch (error) {
       console.error("Error creating order:", error);
     } finally {
@@ -304,38 +325,57 @@ const BillingSection = ({
   const deleteAllCartItems = async () => {
     const customerId = localStorage.getItem("userId");
     const token = localStorage.getItem("authToken");
-    setIsDeleting(true);
-
-    try {
-      const response = await axios.delete(
-        `${
-          import.meta.env.VITE_BACKEND_URL
-        }api/v1/carts/customer/${customerId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      await axios.delete(
-        `${
-          import.meta.env.VITE_BACKEND_URL
-        }api/v1/laundrycarts/delete-all/${customerId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      refreshCart();
-    } catch (error) {
-      if (customerId == null) {
-        toast.error("No Order to Cancel");
-      }
-      console.error("Error Deleting All Cart Items: ", error.message, error);
-    } finally {
-      setIsDeleting(false);
+  
+    if (!customerId) {
+      toast.error("No Order to Cancel");
+      return;
     }
+  
+    Swal.fire({
+      title: "Are you sure?",
+      text: "This action will delete all items from your cart!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#00414E",
+      cancelButtonColor: "#d33",
+      cancelButtonText: "Cancel",
+      confirmButtonText: "Yes",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setIsDeleting(true);
+        try {
+          await axios.delete(
+            `${import.meta.env.VITE_BACKEND_URL}api/v1/carts/customer/${customerId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          await axios.delete(
+            `${import.meta.env.VITE_BACKEND_URL}api/v1/laundrycarts/delete-all/${customerId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+  
+          localStorage.removeItem("userId");
+          localStorage.removeItem("mobileNumber");
+          localStorage.removeItem("userName");
+          refreshCart();
+          
+  
+          Swal.fire("Deleted!", "All items have been removed from your cart.", "success");
+        } catch (error) {
+          console.error("Error Deleting All Cart Items: ", error.message, error);
+          Swal.fire("Error", "Failed to delete items. Please try again later.", "error");
+        } finally {
+          setIsDeleting(false);
+        }
+      }
+    });
   };
 
   const calculateTotalCount = () => {
@@ -454,6 +494,7 @@ const BillingSection = ({
                 <LaundryCartComponent setSelectedTab={setSelectedTab} />
                 {cartProdcuts?.length > 0 &&
                   cartProdcuts?.map((item) => {
+
                     return (
                       <div
                         key={item?._id}
@@ -506,7 +547,7 @@ const BillingSection = ({
                             ) : (
                               <div className="font-semibold text-sm">
                                 ₹
-                                {( item?.isPremium === true ? item?.productId?.premiumPrice?.B2C:  item?.garmentType[0]?.price || 0) *
+                                {( item?.garmentType[0]?.price || 0) *
                                   (item?.quantity || 0)}
                                 {/* Check if there are valid prices for requirements or addons */}
                                 {item?.requirements?.some(

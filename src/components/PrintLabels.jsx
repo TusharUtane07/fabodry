@@ -35,6 +35,7 @@ const PrintLabelsPage = () => {
       const deliveryDate = formatDate(order?.deliveryDate);
       const labelData = [
         ...order?.cartItems?.map((product, index) => {
+          console.log(order, "orders");
           return {
             orderId: order?._id,
             customerName: order?.customerName,
@@ -45,7 +46,7 @@ const PrintLabelsPage = () => {
             dd: deliveryDate,
             time: formattedTime,
             isPremium: product.isPremium,
-            isExpress: order?.expressCharge ? true : false
+            isExpress: order?.expressCharge > 0  ? true : false
           };
         }),
         ...order?.laundryCartItems?.map((product, index) => {
@@ -59,7 +60,7 @@ const PrintLabelsPage = () => {
             dd: deliveryDate,
             time: formattedTime,
             isPremium: product.isPremium,
-            isExpress: order?.expressCharge ? true : false
+            isExpress: order?.expressCharge > 0 ? true : false
           };
         }),
       ];
@@ -74,6 +75,9 @@ const PrintLabelsPage = () => {
   const handleBack = () => {
     navigate(-1);
   };
+
+console.log(labels, "labels"
+);
 
   return (
     <div className="min-h-screen font-sans">
