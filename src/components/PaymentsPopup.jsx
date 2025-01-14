@@ -4,12 +4,12 @@ const PaymentPopup = ({ isOpen, setIsOpen, order }) => {
   return (
     <div className="relative">
       {/* Trigger Button */}
-      <button
+      {/* <button
         className="bg-blue-500 text-white px-4 py-2 rounded"
         onClick={() => setIsOpen(true)}
       >
         Open Payment Popup
-      </button>
+      </button> */}
 
       {/* Popup */}
       {isOpen && (

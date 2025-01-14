@@ -135,6 +135,7 @@ const LaundryAddDataPopup = ({
           const updatedProducts = [
             ...(currentServiceData?.garments?.map(garment => ({
               ...garment,
+              isInCart: isInCart,
             })) || []),
             { ...garmentData} // Add the new garmentData with isInCart
           ];

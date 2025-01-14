@@ -671,7 +671,7 @@ const Laundry = ({
                     {isSelected
                       ? null
                       : clickedItems[index] &&
-                        weights[index] === 0 && (
+                        weights[index] === 0 &&(
                           <p className="text-red-500 font-medium group-hover:text-white text-xs py-2 mt-1">
                             Increase Weight To Add
                           </p>
@@ -818,6 +818,8 @@ const Laundry = ({
                                   <button
                                     onClick={() => {
                                       setCartPId(item?.cartId);
+                                      // alert(item.productId)
+                                      setProductId(item?.productId)
                                       setProductDetails(item?.productDetails);
                                       setSelectedProductIndex(index);
                                       setIsEditOpen(true);
@@ -1200,6 +1202,7 @@ const Laundry = ({
                                   setCartPId(cartItem?._id);
                                   if(oneOrMore && oneOrMore.length === 1){
                                     setProductDetails(item);
+                                    setProductId(oneOrMore[0]?.productId)
                                     setIsEditOpen(true);
                                   } else {
                                     setProductId(item?._id);
@@ -1271,6 +1274,7 @@ const Laundry = ({
       <LaundryEditDataPopup
         productDetails={productDetails}
         isOpen={isEditOpen}
+        productId={productId}
         setIsOpen={setIsEditOpen}
         selectedIndex={selectedProductIndex || 0}
         cartId={cartPId}

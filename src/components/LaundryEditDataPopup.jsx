@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContenxt";
 import toast from "react-hot-toast";
 
-const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, selectedIndex, onClose }) => {
+const OrderEditPopup = ({ isOpen, setIsOpen, productDetails,productId, cartId, selectedIndex, onClose }) => {
   const { laundryCart } = useCart();
 
   const [selectedDetails, setSelectedDetails] = useState({
@@ -21,27 +21,28 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, selectedInd
       const cartItem = laundryCart?.find(item => item?._id === cartId);
       if (cartItem && productDetails) {
         const products = cartItem?.products?.filter(
-          item => item.productDetails._id === productDetails._id
+          item => { 
+            return item.productId=== productId}
         );
-        const selectedProduct = products[selectedIndex];
+        // const selectedProduct = products[selectedIndex];
 
-        if (selectedProduct) {
-          const { garmentType, additionalServices, requirements, comments, quantity } = selectedProduct;
+        // if (selectedProduct) {
+          // const { garmentType, additionalServices, requirements, comments, quantity } = selectedProduct;
 
           setSelectedDetails({
-            type: garmentType,
-            services: additionalServices || [],
-            requirements: requirements || [],
-            comments: comments || [],
+            type: products[0]?.garmentType,
+            services: products[0]?.additionalServices || [],
+            requirements: products[0]?.requirements || [],
+            comments: products[0]?.comments || [],
           });
 
-          setQuantity(quantity || 0);
-        }
+          setQuantity(products[0]?.quantity || 0);
+        // }
       }
     } catch (error) {
       console.error("Error in useEffect:", error);
     }
-  }, [laundryCart, cartId, productDetails, selectedIndex]);
+  }, [laundryCart, cartId, productDetails, selectedIndex, productId]);
 
   const togglePopup = () => setIsOpen(!isOpen);
 
@@ -119,7 +120,6 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, selectedInd
       const garmentData = {
         productDetails: {
           ...productDetails,
-          _instanceIndex: undefined // Remove the instance index before saving
         },
         quantity,
         garmentType: selectedDetails.type,
@@ -127,7 +127,7 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, selectedInd
         requirements: selectedDetails.requirements,
         comments: selectedDetails.comments,
       };
-
+      
       // Fetch the current cart
       const cartResponse = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/${cartId}`,
@@ -137,20 +137,20 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, selectedInd
           },
         }
       );
-
       const currentCart = cartResponse?.data?.data;
-
-      // Find all products with the same productId
-      const sameProducts = currentCart.products.filter(
-        item => item?.productDetails?._id === productDetails._id
-      );
-
       // Update the specific instance
-      currentCart.products = currentCart.products.map((item, index) => {
-        if (item?.productDetails?._id === productDetails._id && 
-            sameProducts.indexOf(item) === selectedIndex) {
-          return garmentData;
+      currentCart.products = currentCart.products.map((item) => {
+        // If this is the item we want to update
+        if (
+          item?.productId === productId        ) {
+          return {
+            ...garmentData,
+            productId: item?.productId,
+            isInCart: true
+          };
         }
+        
+        // Return the original item unchanged
         return item;
       });
 
@@ -163,6 +163,8 @@ const OrderEditPopup = ({ isOpen, setIsOpen, productDetails, cartId, selectedInd
         pieceCount: currentCart.pieceCount,
         totalPrice: currentCart.totalPrice,
       };
+
+      console.log(updatedPayload.products, "products actually gone");
 
       await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}api/v1/Laundrycarts/update/${cartId}`,

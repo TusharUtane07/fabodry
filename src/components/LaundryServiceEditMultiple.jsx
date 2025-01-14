@@ -18,6 +18,7 @@ const LaundryServiceEditMultiple = ({
   const [productDetails, setProductDetails] = useState(null);
   const [selectedProductIndex, setSelectedProductIndex] = useState(null);
   const [normalizedProducts, setNormalizedProducts] = useState([]);
+  const [productIds, setProductId] = useState(null)
 
   const handleClose = () => {
     setIsOpen(false);
@@ -78,13 +79,12 @@ const LaundryServiceEditMultiple = ({
   const handleEditClick = (item, index) => {
     // Use the normalized cartId when setting up edit
     const validCartId = item.cartId || normalizedProducts.find(p => p.cartId)?.cartId;
+
     setCartPId(validCartId);
     setProductDetails({
       ...item?.productDetails,
-      _instanceIndex: index,
-      instanceId: item.instanceId,
     });
-    setSelectedProductIndex(index);
+    setProductId(item.productId)
     setIsProductEditOpen(true);
   };
 
@@ -175,12 +175,17 @@ const LaundryServiceEditMultiple = ({
                 </div>
               ))}
             </div>
+            <div className="sticky bottom-0 pt-4 bg-white">
+              <button  onClick={() => setIsOpen(false)} className="w-full bg-[#004d57] text-white text-sm py-2 rounded-md">
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       )}
       <LaundryEditDataPopup
         productDetails={productDetails}
-        productId={productId}
+        productId={productIds}
         isOpen={isProductEditOpen}
         setIsOpen={setIsProductEditOpen}
         cartId={cartPId}
