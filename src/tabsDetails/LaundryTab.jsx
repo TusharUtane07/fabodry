@@ -828,11 +828,10 @@ const Laundry = ({
                                   </button>
                                   <button
                                     onClick={() =>
-                                      toast.success("handle locic here")
-                                      // deleteCartProduct(
-                                      //   item?.cartId,
-                                      //   item?.productId
-                                      // )
+                                      deleteCartProduct(
+                                        item?.cartId,
+                                        item?.productId
+                                      )
                                     }
                                     className="text-red-500 text-lg font-bold"
                                   >

@@ -140,12 +140,12 @@ const BillingSection = ({
 
   const calculateTotalPrice = (item) => {
     if (!item?.isInCart) {
-      return 0; // Return 0 if the item is not in the cart
+      return 0; 
     }
   
   
     const productsAddonsAndRequirements =
-      item?.products?.reduce((total, product) => {
+      item?.products?.filter(product => product?.isInCart)?.reduce((total, product) => {
         const additionalServicesTotal =
           product.additionalServices?.reduce(
             (sum, service) => sum + (service?.price || 0),
@@ -164,9 +164,9 @@ const BillingSection = ({
         return total + addon?.price;
       }, 0) || 0;
     const totalPricePerKg = item?.totalPrice + addonsPriceSum;
-  
+  const returnableAmount = item?.products?.length > 0 ? totalPricePerKg * Number(item?.weight) + productsAddonsAndRequirements : 0;
     return (
-      totalPricePerKg * Number(item?.weight) + productsAddonsAndRequirements
+      returnableAmount
     );
   };
   
